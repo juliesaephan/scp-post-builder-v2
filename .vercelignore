@@ -1,0 +1,2 @@
+# Ignore platform-specific development dependencies
+node_modules/@rollup/rollup-darwin-*
