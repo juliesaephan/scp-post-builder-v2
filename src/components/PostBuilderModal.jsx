@@ -5,6 +5,7 @@ import PreviewCarousel from './PreviewCarousel'
 import CrossChannelEditor from './CrossChannelEditor'
 import IndividualChannelEditor from './IndividualChannelEditor'
 import MediaManager from './MediaManager'
+import CaptionCounterGroup from './CaptionCounterGroup'
 import { getRandomMediaItems } from '../data/mockMedia'
 
 const PostBuilderModal = ({ onClose }) => {
@@ -17,6 +18,11 @@ const PostBuilderModal = ({ onClose }) => {
   const [media, setMedia] = useState([]) // Master media library
   const [selectedMediaByChannel, setSelectedMediaByChannel] = useState({}) // Channel-specific media selections
   const [customizedChannels, setCustomizedChannels] = useState({}) // Track which channels have been customized
+  
+  // Caption relationship state
+  const [channelCaptions, setChannelCaptions] = useState({}) // Individual channel captions
+  const [captionsLinked, setCaptionsLinked] = useState(true) // Whether captions are connected to main
+  
   const [crossChannelMode, setCrossChannelMode] = useState(false)
   const [individualChannelMode, setIndividualChannelMode] = useState(false) // Individual channel editing mode
   const [editingChannelId, setEditingChannelId] = useState(null) // Which channel is being edited individually
@@ -253,8 +259,44 @@ const PostBuilderModal = ({ onClose }) => {
     }
   }, [selectedChannels, media, customizedChannels])
 
+  // Initialize channel captions with main caption inheritance
+  useEffect(() => {
+    selectedChannels.forEach(channel => {
+      // Initialize channel captions if not already set
+      if (!channelCaptions[channel.id] && captionsLinked) {
+        setChannelCaptions(prev => ({
+          ...prev,
+          [channel.id]: caption // Inherit main caption
+        }))
+      }
+    })
+
+    // Clean up captions for removed channels
+    const activeChannelIds = new Set(selectedChannels.map(ch => ch.id))
+    const cleanedCaptions = {}
+    Object.entries(channelCaptions).forEach(([channelId, channelCaption]) => {
+      if (activeChannelIds.has(channelId)) {
+        cleanedCaptions[channelId] = channelCaption
+      }
+    })
+    
+    if (Object.keys(cleanedCaptions).length !== Object.keys(channelCaptions).length) {
+      setChannelCaptions(cleanedCaptions)
+    }
+  }, [selectedChannels, caption, channelCaptions, captionsLinked])
+
   const handleCaptionChange = (e) => {
-    setCaption(e.target.value)
+    const newCaption = e.target.value
+    setCaption(newCaption)
+    
+    // Update connected channel captions
+    if (captionsLinked) {
+      const updatedChannelCaptions = {}
+      selectedChannels.forEach(channel => {
+        updatedChannelCaptions[channel.id] = newCaption
+      })
+      setChannelCaptions(updatedChannelCaptions)
+    }
   }
 
   const handleCustomizeClick = () => {
@@ -297,21 +339,20 @@ const PostBuilderModal = ({ onClose }) => {
     if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
     if (tempChanges.channels !== undefined) setSelectedChannels(tempChanges.channels)
     
-    // Handle captions - if they're linked, use any channel's caption as the master
-    // If they're separate, we keep the individual captions (for now using first channel's caption as master)
-    if (tempChanges.channelCaptions && Object.keys(tempChanges.channelCaptions).length > 0) {
-      if (tempChanges.captionsLinked) {
-        // Use any channel's caption since they're all the same
+    // Handle captions - Apply channel captions and linking status (DO NOT update main caption)
+    if (tempChanges.channelCaptions !== undefined) {
+      setChannelCaptions(tempChanges.channelCaptions)
+    }
+    if (tempChanges.captionsLinked !== undefined) {
+      setCaptionsLinked(tempChanges.captionsLinked)
+      
+      // If captions are being re-linked, update main caption from "Apply to All"
+      if (tempChanges.captionsLinked && tempChanges.channelCaptions) {
         const firstChannelId = Object.keys(tempChanges.channelCaptions)[0]
-        setCaption(tempChanges.channelCaptions[firstChannelId] || '')
-      } else {
-        // For now, use the first channel's caption as the main caption
-        // In a full implementation, you might want to store individual captions separately
-        const firstChannelId = Object.keys(tempChanges.channelCaptions)[0]
-        setCaption(tempChanges.channelCaptions[firstChannelId] || '')
+        if (firstChannelId) {
+          setCaption(tempChanges.channelCaptions[firstChannelId] || '')
+        }
       }
-    } else if (tempChanges.caption !== undefined) {
-      setCaption(tempChanges.caption)
     }
     
     setCrossChannelMode(false)
@@ -324,10 +365,14 @@ const PostBuilderModal = ({ onClose }) => {
     if (tempChanges.selectedMediaByChannel !== undefined) setSelectedMediaByChannel(tempChanges.selectedMediaByChannel)
     if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
     
+    // Apply individual channel captions (DO NOT update main caption)
+    if (tempChanges.channelCaptions !== undefined) {
+      setChannelCaptions(tempChanges.channelCaptions)
+    }
     
-    // Apply individual channel caption if changed
-    if (tempChanges.channelCaption !== undefined && tempChanges.channelCaption !== caption) {
-      setCaption(tempChanges.channelCaption)
+    // Mark captions as disconnected if individual channel was edited
+    if (tempChanges.channelCaptions !== undefined) {
+      setCaptionsLinked(false)
     }
     
     setIndividualChannelMode(false)
@@ -532,6 +577,14 @@ const PostBuilderModal = ({ onClose }) => {
                           fontSize: '14px',
                           minHeight: '120px'
                         }}
+                      />
+                      
+                      {/* Caption Character Counters */}
+                      <CaptionCounterGroup 
+                        selectedChannels={selectedChannels}
+                        caption={caption}
+                        channelCaptions={channelCaptions}
+                        captionsLinked={captionsLinked}
                       />
                     </div>
                   </div>
