@@ -181,13 +181,13 @@ const PostBuilderModal = ({ onClose }) => {
     }
   }
 
-  // Initialize channel media selections when channels are added
+  // Initialize empty channel media selections when channels are added
   useEffect(() => {
     selectedChannels.forEach(channel => {
       if (!selectedMediaByChannel[channel.id]) {
         setSelectedMediaByChannel(prev => ({
           ...prev,
-          [channel.id]: [...media] // Start with all master media selected
+          [channel.id]: [] // Start with empty selection for each channel
         }))
       }
     })
@@ -204,7 +204,7 @@ const PostBuilderModal = ({ onClose }) => {
     if (Object.keys(cleanedSelections).length !== Object.keys(selectedMediaByChannel).length) {
       setSelectedMediaByChannel(cleanedSelections)
     }
-  }, [selectedChannels, media])
+  }, [selectedChannels])
 
   const handleCaptionChange = (e) => {
     setCaption(e.target.value)

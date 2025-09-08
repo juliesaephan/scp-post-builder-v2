@@ -33,19 +33,6 @@ const ChannelMediaGrid = ({
     }
   }
 
-  const handleToggleMedia = (mediaId) => {
-    // Toggle selection of this media for this channel
-    const isCurrentlySelected = selectedMedia.some(item => item.id === mediaId)
-    
-    if (isCurrentlySelected) {
-      handleRemoveMedia(mediaId)
-    } else {
-      const mediaItem = masterMedia.find(item => item.id === mediaId)
-      if (mediaItem && onMediaAdd) {
-        onMediaAdd(channelId, [mediaItem])
-      }
-    }
-  }
 
   return (
     <div style={{
@@ -55,60 +42,54 @@ const ChannelMediaGrid = ({
       overflowX: 'auto',
       paddingBottom: '4px',
       scrollbarWidth: 'thin',
-      minHeight: '70px'
+      minHeight: '70px',
+      width: '100%',
+      minWidth: 0 // Prevents flex expansion
     }}>
-      {/* Show all master media, highlight selected ones */}
-      {masterMedia.map((item) => {
-        const isSelected = selectedMedia.some(selected => selected.id === item.id)
-        
-        return (
-          <MediaThumbnail
-            key={item.id}
-            media={item}
-            size={60}
-            onDelete={isSelected ? handleRemoveMedia : null}
-            onClick={handleToggleMedia}
-            isSelected={isSelected}
-            showDelete={isSelected}
-          />
-        )
-      })}
+      {/* Show only selected media for this channel */}
+      {selectedMedia.map((item) => (
+        <MediaThumbnail
+          key={item.id}
+          media={item}
+          size={60}
+          onDelete={handleRemoveMedia}
+          showDelete={true}
+        />
+      ))}
       
       {/* Add More Button */}
-      {masterMedia.length < maxMedia && (
-        <button
-          onClick={handleAddMedia}
-          style={{
-            width: 60,
-            height: 60,
-            border: '2px dashed #007bff',
-            borderRadius: '8px',
-            backgroundColor: '#f8f9fb',
-            color: '#007bff',
-            cursor: 'pointer',
-            fontSize: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#007bff'
-            e.target.style.color = 'white'
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = '#f8f9fb'
-            e.target.style.color = '#007bff'
-          }}
-          title={`Add media to channel (${masterMedia.length}/${maxMedia})`}
-        >
-          +
-        </button>
-      )}
+      <button
+        onClick={handleAddMedia}
+        style={{
+          width: 60,
+          height: 60,
+          border: '2px dashed #007bff',
+          borderRadius: '8px',
+          backgroundColor: '#f8f9fb',
+          color: '#007bff',
+          cursor: 'pointer',
+          fontSize: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          transition: 'all 0.2s'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = '#007bff'
+          e.target.style.color = 'white'
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = '#f8f9fb'
+          e.target.style.color = '#007bff'
+        }}
+        title="Add media to this channel"
+      >
+        +
+      </button>
       
-      {/* Empty state when no master media */}
-      {masterMedia.length === 0 && (
+      {/* Empty state when no media selected for this channel */}
+      {selectedMedia.length === 0 && (
         <div
           onClick={handleAddMedia}
           style={{
@@ -125,7 +106,7 @@ const ChannelMediaGrid = ({
             cursor: 'pointer'
           }}
         >
-          Click + to add media
+          Click + to add media to this channel
         </div>
       )}
     </div>

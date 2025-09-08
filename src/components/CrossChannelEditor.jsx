@@ -78,7 +78,7 @@ const CrossChannelEditor = ({
                     fontSize: '12px',
                     color: '#6c757d'
                   }}>
-                    {selectedMediaForChannel.length} of {masterMedia.length} media selected
+                    {selectedMediaForChannel.length} media
                   </div>
                 </div>
 
@@ -89,46 +89,24 @@ const CrossChannelEditor = ({
                     masterMedia={masterMedia}
                     selectedMedia={selectedMediaForChannel}
                     onMediaAdd={(channelId, mediaItems) => {
-                      // Handle adding media through temp changes
+                      // Handle adding media ONLY to the specific channel
                       const updatedSelections = { ...channelMediaSelections }
-                      updatedSelections[channelId] = [...(updatedSelections[channelId] || []), ...mediaItems]
-                      
-                      // Also add to master media if not present
-                      const existingIds = new Set(masterMedia.map(item => item.id))
-                      const newMasterMedia = [...masterMedia]
-                      
-                      mediaItems.forEach(item => {
-                        if (!existingIds.has(item.id) && newMasterMedia.length < 20) {
-                          newMasterMedia.push(item)
-                          existingIds.add(item.id)
-                        }
-                      })
+                      updatedSelections[channelId] = [...(updatedSelections[channelId] || []), ...mediaItems.filter(item => 
+                        !(updatedSelections[channelId] || []).some(existing => existing.id === item.id)
+                      )]
                       
                       setTempChanges(prev => ({
                         ...prev,
-                        media: newMasterMedia,
                         selectedMediaByChannel: updatedSelections
                       }))
                     }}
                     onMediaRemove={(channelId, mediaId) => {
-                      // Handle removing media through temp changes
+                      // Handle removing media ONLY from the specific channel
                       const updatedSelections = { ...channelMediaSelections }
                       updatedSelections[channelId] = (updatedSelections[channelId] || []).filter(item => item.id !== mediaId)
                       
-                      // Check if media is used by other channels
-                      const isUsedElsewhere = Object.entries(updatedSelections).some(([otherChannelId, channelMedia]) => {
-                        if (otherChannelId === channelId) return false
-                        return channelMedia.some(item => item.id === mediaId)
-                      })
-                      
-                      // Remove from master if not used elsewhere
-                      const newMasterMedia = isUsedElsewhere 
-                        ? masterMedia 
-                        : masterMedia.filter(item => item.id !== mediaId)
-                      
                       setTempChanges(prev => ({
                         ...prev,
-                        media: newMasterMedia,
                         selectedMediaByChannel: updatedSelections
                       }))
                     }}

@@ -123,7 +123,9 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
         gap: '8px',
         overflowX: 'auto',
         paddingBottom: '4px',
-        scrollbarWidth: 'thin'
+        scrollbarWidth: 'thin',
+        width: '100%',
+        minWidth: 0 // Prevents flex items from forcing container expansion
       }}>
         {media.map((item, index) => (
           <MediaThumbnail
