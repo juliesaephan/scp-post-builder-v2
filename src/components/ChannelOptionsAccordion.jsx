@@ -131,24 +131,18 @@ const ChannelOptionsAccordion = ({
   onOptionChange,
   disabled = true 
 }) => {
-  // DEBUG: Check what's happening with platform options
-  console.log('ChannelOptionsAccordion DEBUG:')
-  console.log('platform:', platform)
-  console.log('platform.options:', platform?.options)
-  console.log('platform.options?.length:', platform?.options?.length)
-  
   if (!platform.options || platform.options.length === 0) {
-    console.log('RETURNING NULL - no options found')
     return null
   }
 
   return (
     <div style={{
-      border: '1px solid #e1e5e9',
+      border: '3px solid #ff0000', // TEMP: Make it very visible
       borderRadius: '8px',
-      backgroundColor: 'white',
+      backgroundColor: '#ffebee', // TEMP: Light red background
       marginBottom: '16px',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      minHeight: '60px' // TEMP: Ensure it takes up space
     }}>
       {/* Accordion Header */}
       <div 
