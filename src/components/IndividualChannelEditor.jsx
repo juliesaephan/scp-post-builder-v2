@@ -14,22 +14,37 @@ const IndividualChannelEditor = ({
   
   const handleMediaChange = (newMedia) => {
     // Mark channel as customized for media ONLY and update temp changes
-    setTempChanges(prev => ({
-      ...prev,
-      channelMedia: newMedia,
-      media: newMedia, // Also update master media (bidirectional sync)
-      selectedMediaByChannel: {
-        ...prev.selectedMediaByChannel,
-        [editingChannelId]: newMedia
-      },
-      customizedChannels: {
-        ...prev.customizedChannels,
-        [editingChannelId]: { 
-          ...prev.customizedChannels?.[editingChannelId], 
-          media: true 
+    setTempChanges(prev => {
+      const currentMasterMedia = prev.media || []
+      
+      // BIDIRECTIONAL SYNC: Add to master media if not present (like CrossChannelEditor)
+      const existingIds = new Set(currentMasterMedia.map(item => item.id))
+      const newMasterMedia = [...currentMasterMedia]
+      
+      newMedia.forEach(item => {
+        if (!existingIds.has(item.id) && newMasterMedia.length < 20) {
+          newMasterMedia.push(item)
+          existingIds.add(item.id)
+        }
+      })
+      
+      return {
+        ...prev,
+        channelMedia: newMedia,
+        media: newMasterMedia, // Additive master media update (FIXED!)
+        selectedMediaByChannel: {
+          ...prev.selectedMediaByChannel,
+          [editingChannelId]: newMedia
+        },
+        customizedChannels: {
+          ...prev.customizedChannels,
+          [editingChannelId]: { 
+            ...prev.customizedChannels?.[editingChannelId], 
+            media: true 
+          }
         }
       }
-    }))
+    })
   }
 
   const handleCaptionChange = (e) => {
@@ -51,6 +66,7 @@ const IndividualChannelEditor = ({
       }
     }))
   }
+
 
   const handleDateChange = (field, value) => {
     // Mark channel as customized for scheduling ONLY

@@ -190,13 +190,29 @@ const PostBuilderModal = ({ onClose }) => {
     // Mark channel as customized
     setCustomizedChannels(prev => ({ ...prev, [channelId]: true }))
     
-    // Remove ONLY from channel selection (not from master)
-    setSelectedMediaByChannel(prev => ({
-      ...prev,
-      [channelId]: (prev[channelId] || []).filter(item => item.id !== mediaId)
-    }))
+    // Remove from channel selection
+    const updatedSelections = {
+      ...selectedMediaByChannel,
+      [channelId]: (selectedMediaByChannel[channelId] || []).filter(item => item.id !== mediaId)
+    }
+    setSelectedMediaByChannel(updatedSelections)
     
-    // Note: We do NOT remove from master media - it stays in main view
+    // SMART CLEANUP: Check if media exists in any other channel
+    const mediaExistsElsewhere = Object.entries(updatedSelections).some(([otherChannelId, otherChannelMedia]) => {
+      if (otherChannelId === channelId) return false // Skip the channel we just removed from
+      return otherChannelMedia.some(item => item.id === mediaId)
+    })
+    
+    // Also check if non-customized channels would inherit this media from master
+    const nonCustomizedChannelsExist = selectedChannels.some(channel => 
+      !customizedChannels[channel.id] && channel.id !== channelId
+    )
+    
+    // If media doesn't exist in any customized channel AND there are no non-customized channels,
+    // remove from master media as well
+    if (!mediaExistsElsewhere && !nonCustomizedChannelsExist) {
+      setMedia(prev => prev.filter(item => item.id !== mediaId))
+    }
   }
 
   // Initialize channel media selections with master inheritance
@@ -307,6 +323,7 @@ const PostBuilderModal = ({ onClose }) => {
     if (tempChanges.media !== undefined) setMedia(tempChanges.media)
     if (tempChanges.selectedMediaByChannel !== undefined) setSelectedMediaByChannel(tempChanges.selectedMediaByChannel)
     if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
+    
     
     // Apply individual channel caption if changed
     if (tempChanges.channelCaption !== undefined && tempChanges.channelCaption !== caption) {
