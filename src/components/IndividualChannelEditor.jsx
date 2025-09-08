@@ -16,24 +16,55 @@ const IndividualChannelEditor = ({
     // Mark channel as customized for media ONLY and update temp changes
     setTempChanges(prev => {
       const currentMasterMedia = prev.media || []
+      const currentSelectedMediaByChannel = prev.selectedMediaByChannel || {}
       
-      // BIDIRECTIONAL SYNC: Add to master media if not present (like CrossChannelEditor)
+      // BIDIRECTIONAL SYNC: Add to master media if not present
       const existingIds = new Set(currentMasterMedia.map(item => item.id))
-      const newMasterMedia = [...currentMasterMedia]
+      let updatedMasterMedia = [...currentMasterMedia]
       
       newMedia.forEach(item => {
-        if (!existingIds.has(item.id) && newMasterMedia.length < 20) {
-          newMasterMedia.push(item)
+        if (!existingIds.has(item.id) && updatedMasterMedia.length < 20) {
+          updatedMasterMedia.push(item)
           existingIds.add(item.id)
+        }
+      })
+      
+      // SMART CLEANUP: Check for deleted media that should be removed from master
+      const newMediaIds = new Set(newMedia.map(item => item.id))
+      const deletedFromThisChannel = currentMasterMedia.filter(item => 
+        (prev.channelMedia || []).some(oldItem => oldItem.id === item.id) && 
+        !newMediaIds.has(item.id)
+      )
+      
+      // For each deleted media, check if it exists in any other channel
+      deletedFromThisChannel.forEach(deletedItem => {
+        const mediaExistsInOtherChannels = Object.entries(currentSelectedMediaByChannel).some(([otherChannelId, otherChannelMedia]) => {
+          if (otherChannelId === editingChannelId) return false // Skip current channel
+          return otherChannelMedia.some(item => item.id === deletedItem.id)
+        })
+        
+        // Check if non-customized channels would inherit this media
+        const updatedCustomizations = {
+          ...prev.customizedChannels,
+          [editingChannelId]: { 
+            ...prev.customizedChannels?.[editingChannelId], 
+            media: true 
+          }
+        }
+        
+        // Note: We can't access selectedChannels here, so we'll be conservative
+        // and only remove if we're sure it doesn't exist anywhere else
+        if (!mediaExistsInOtherChannels) {
+          updatedMasterMedia = updatedMasterMedia.filter(item => item.id !== deletedItem.id)
         }
       })
       
       return {
         ...prev,
         channelMedia: newMedia,
-        media: newMasterMedia, // Additive master media update (FIXED!)
+        media: updatedMasterMedia,
         selectedMediaByChannel: {
-          ...prev.selectedMediaByChannel,
+          ...currentSelectedMediaByChannel,
           [editingChannelId]: newMedia
         },
         customizedChannels: {

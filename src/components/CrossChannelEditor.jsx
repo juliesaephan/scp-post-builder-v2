@@ -121,17 +121,34 @@ const CrossChannelEditor = ({
                       }))
                     }}
                     onMediaRemove={(channelId, mediaId) => {
-                      // Mark channel as customized and remove media ONLY from the specific channel
+                      // Mark channel as customized and remove media from the specific channel
                       const updatedCustomizations = { ...channelCustomizations, [channelId]: true }
                       const updatedSelections = { ...channelMediaSelections }
                       updatedSelections[channelId] = (updatedSelections[channelId] || []).filter(item => item.id !== mediaId)
                       
+                      // SMART CLEANUP: Check if media still exists in any other channel
+                      const mediaExistsInOtherChannels = Object.entries(updatedSelections).some(([otherChannelId, otherChannelMedia]) => {
+                        if (otherChannelId === channelId) return false // Skip the channel we just removed from
+                        return otherChannelMedia.some(item => item.id === mediaId)
+                      })
+                      
+                      // Also check if non-customized channels would inherit this media from master
+                      const nonCustomizedChannelsExist = selectedChannels.some(channel => 
+                        !updatedCustomizations[channel.id] && channel.id !== channelId
+                      )
+                      
+                      // If media doesn't exist in any channel AND no non-customized channels exist, remove from master
+                      let updatedMasterMedia = masterMedia
+                      if (!mediaExistsInOtherChannels && !nonCustomizedChannelsExist) {
+                        updatedMasterMedia = masterMedia.filter(item => item.id !== mediaId)
+                      }
+                      
                       setTempChanges(prev => ({
                         ...prev,
+                        media: updatedMasterMedia,
                         selectedMediaByChannel: updatedSelections,
                         customizedChannels: updatedCustomizations
                       }))
-                      // Note: We do NOT remove from master media - it stays in main view
                     }}
                     maxMedia={20}
                   />

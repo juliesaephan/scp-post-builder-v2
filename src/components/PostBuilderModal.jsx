@@ -133,21 +133,25 @@ const PostBuilderModal = ({ onClose }) => {
     setIndividualChannelMode(true)
     setActiveTab('media') // Start with media tab
     
-    // Initialize temp changes for individual channel editing
+    // Preserve existing temp changes and only add missing individual channel data
     const channelMedia = selectedMediaByChannel[channelId] || []
     const isChannelCustomized = customizedChannels[channelId]
     
-    setTempChanges({
-      caption: caption,
-      media: media,
-      selectedMediaByChannel: selectedMediaByChannel,
-      customizedChannels: customizedChannels,
+    setTempChanges(prev => ({
+      // Keep existing temp changes if any
+      caption: prev.caption !== undefined ? prev.caption : caption,
+      media: prev.media !== undefined ? prev.media : media,
+      selectedMediaByChannel: prev.selectedMediaByChannel !== undefined ? prev.selectedMediaByChannel : selectedMediaByChannel,
+      customizedChannels: prev.customizedChannels !== undefined ? prev.customizedChannels : customizedChannels,
+      channelCaptions: prev.channelCaptions !== undefined ? prev.channelCaptions : channelCaptions,
+      captionsLinked: prev.captionsLinked !== undefined ? prev.captionsLinked : captionsLinked,
+      // Individual channel specific data
       editingChannelId: channelId,
-      // Channel-specific data
-      channelMedia: isChannelCustomized ? channelMedia : media, // Show inherited or custom media
-      channelCaption: caption, // Start with master caption
+      channelCaption: prev.channelCaptions?.[channelId] || channelCaptions[channelId] || caption,
+      channelMedia: isChannelCustomized ? channelMedia : [...(prev.media || media)], // Show inherited or customized media
+      channelScheduling: prev.channelScheduling || {},
       individualMode: true
-    })
+    }))
   }
 
   // Smart media management functions
@@ -259,31 +263,33 @@ const PostBuilderModal = ({ onClose }) => {
     }
   }, [selectedChannels, media, customizedChannels])
 
-  // Initialize channel captions with main caption inheritance
+  // Initialize channel captions with main caption inheritance (ONLY for truly new channels)
   useEffect(() => {
+    let needsUpdate = false
+    const newChannelCaptions = { ...channelCaptions }
+    
     selectedChannels.forEach(channel => {
-      // Initialize channel captions if not already set
-      if (!channelCaptions[channel.id] && captionsLinked) {
-        setChannelCaptions(prev => ({
-          ...prev,
-          [channel.id]: caption // Inherit main caption
-        }))
+      // ONLY initialize captions for truly NEW channels that don't exist yet
+      // Don't overwrite existing disconnected captions
+      if (!channelCaptions.hasOwnProperty(channel.id)) {
+        newChannelCaptions[channel.id] = caption
+        needsUpdate = true
       }
     })
 
     // Clean up captions for removed channels
     const activeChannelIds = new Set(selectedChannels.map(ch => ch.id))
-    const cleanedCaptions = {}
-    Object.entries(channelCaptions).forEach(([channelId, channelCaption]) => {
-      if (activeChannelIds.has(channelId)) {
-        cleanedCaptions[channelId] = channelCaption
+    Object.keys(channelCaptions).forEach(channelId => {
+      if (!activeChannelIds.has(channelId)) {
+        delete newChannelCaptions[channelId]
+        needsUpdate = true
       }
     })
     
-    if (Object.keys(cleanedCaptions).length !== Object.keys(channelCaptions).length) {
-      setChannelCaptions(cleanedCaptions)
+    if (needsUpdate) {
+      setChannelCaptions(newChannelCaptions)
     }
-  }, [selectedChannels, caption, channelCaptions, captionsLinked])
+  }, [selectedChannels]) // Remove caption and captionsLinked dependencies that cause overwrites
 
   const handleCaptionChange = (e) => {
     const newCaption = e.target.value
@@ -303,21 +309,28 @@ const PostBuilderModal = ({ onClose }) => {
     setCrossChannelMode(true)
     setActiveTab('media')
     
-    // Initialize individual channel captions with current shared caption
-    const channelCaptions = {}
-    selectedChannels.forEach(channel => {
-      channelCaptions[channel.id] = caption
-    })
-    
-    // Initialize temp changes with current state
-    setTempChanges({
-      caption: caption,
-      media: media,
-      selectedMediaByChannel: selectedMediaByChannel,
-      customizedChannels: customizedChannels,
-      channels: selectedChannels,
-      channelCaptions: channelCaptions,
-      captionsLinked: true // Start with captions linked
+    // Preserve existing temp changes and only add missing cross-channel data
+    setTempChanges(prev => {
+      // Use existing channel captions from temp changes, or initialize with current state
+      const currentChannelCaptions = prev.channelCaptions || channelCaptions
+      const fallbackChannelCaptions = {}
+      
+      // Only initialize captions for channels that don't have them yet
+      selectedChannels.forEach(channel => {
+        fallbackChannelCaptions[channel.id] = currentChannelCaptions[channel.id] || caption
+      })
+      
+      return {
+        // Keep existing temp changes if any
+        caption: prev.caption !== undefined ? prev.caption : caption,
+        media: prev.media !== undefined ? prev.media : media,
+        selectedMediaByChannel: prev.selectedMediaByChannel !== undefined ? prev.selectedMediaByChannel : selectedMediaByChannel,
+        customizedChannels: prev.customizedChannels !== undefined ? prev.customizedChannels : customizedChannels,
+        channelCaptions: prev.channelCaptions !== undefined ? prev.channelCaptions : fallbackChannelCaptions,
+        captionsLinked: prev.captionsLinked !== undefined ? prev.captionsLinked : captionsLinked,
+        // Cross-channel specific data
+        channels: selectedChannels,
+      }
     })
   }
 
