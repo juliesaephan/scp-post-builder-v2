@@ -38,6 +38,11 @@ const PostBuilderModal = ({ onClose }) => {
   // Channel scheduling state
   const [channelScheduling, setChannelScheduling] = useState({}) // Store per-channel scheduling: { channelId: { date, time, type } }
   
+  // Save state
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
   
@@ -498,8 +503,81 @@ const PostBuilderModal = ({ onClose }) => {
     setTempChanges({})
   }
 
+  const handleSavePost = async () => {
+    // Clear previous errors/success
+    setSaveError(null)
+    setSaveSuccess(false)
+    
+    // Validation
+    if (selectedChannels.length === 0) {
+      setSaveError('Please select at least one channel before saving.')
+      return
+    }
+    
+    if (!caption.trim() && !media.length) {
+      setSaveError('Please add either a caption or media before saving.')
+      return
+    }
+    
+    setIsSaving(true)
+    
+    try {
+      // Collect all post data
+      const postData = {
+        id: Date.now().toString(), // Generate unique ID
+        caption,
+        media: media.map(item => ({
+          id: item.id,
+          url: item.url,
+          type: item.type,
+          name: item.name
+        })),
+        channels: selectedChannels.map(channel => ({
+          id: channel.id,
+          postType: channel.postType,
+          caption: channelCaptions[channel.id] || caption,
+          media: selectedMediaByChannel[channel.id] || media,
+          options: channelOptions[channel.id] || {},
+          scheduling: channelScheduling[channel.id] || {}
+        })),
+        captionsLinked,
+        createdAt: new Date().toISOString(),
+        status: 'draft'
+      }
+      
+      // In a real app, this would be an API call
+      // For now, just simulate save operation
+      console.log('Saving post:', postData)
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Simulate success
+      setSaveSuccess(true)
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => {
+        setSaveSuccess(false)
+      }, 3000)
+      
+    } catch (error) {
+      setSaveError('Failed to save post. Please try again.')
+      console.error('Save error:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   return (
     <>
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+      
       {/* Overlay */}
       <div 
         style={{
@@ -870,6 +948,21 @@ const PostBuilderModal = ({ onClose }) => {
                   )}
                 </div>
 
+                {/* Error/Success Messages */}
+                {(saveError || saveSuccess) && (
+                  <div style={{
+                    padding: '12px 20px',
+                    backgroundColor: saveError ? '#f8d7da' : '#d4edda',
+                    borderTop: '1px solid #e1e5e9',
+                    color: saveError ? '#721c24' : '#155724',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>
+                    {saveError && `❌ ${saveError}`}
+                    {saveSuccess && '✅ Post saved successfully!'}
+                  </div>
+                )}
+
                 {/* Sticky Footer - Only show in normal mode */}
                 {!individualChannelMode && (
                   <div style={{
@@ -910,16 +1003,31 @@ const PostBuilderModal = ({ onClose }) => {
                       📅 {getSchedulingButtonText()}
                     </button>
 
-                    <button style={{
-                      padding: '10px 20px',
-                      backgroundColor: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '500'
-                    }}>
-                      Save Post
+                    <button 
+                      onClick={handleSavePost}
+                      disabled={isSaving}
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: isSaving ? '#6c757d' : '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: isSaving ? 'not-allowed' : 'pointer',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      {isSaving && <div style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid #ffffff',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }} />}
+                      {isSaving ? 'Saving...' : 'Save Post'}
                     </button>
                   </div>
                 </div>
