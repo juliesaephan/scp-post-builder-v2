@@ -3,6 +3,7 @@ import ChannelBadge from './ChannelBadge'
 import ChannelMenu from './ChannelMenu'
 import PreviewCarousel from './PreviewCarousel'
 import CrossChannelEditor from './CrossChannelEditor'
+import IndividualChannelEditor from './IndividualChannelEditor'
 import MediaManager from './MediaManager'
 import { getRandomMediaItems } from '../data/mockMedia'
 
@@ -17,6 +18,8 @@ const PostBuilderModal = ({ onClose }) => {
   const [selectedMediaByChannel, setSelectedMediaByChannel] = useState({}) // Channel-specific media selections
   const [customizedChannels, setCustomizedChannels] = useState({}) // Track which channels have been customized
   const [crossChannelMode, setCrossChannelMode] = useState(false)
+  const [individualChannelMode, setIndividualChannelMode] = useState(false) // Individual channel editing mode
+  const [editingChannelId, setEditingChannelId] = useState(null) // Which channel is being edited individually
   const [activeTab, setActiveTab] = useState('media') // 'media', 'caption', 'date'
   const [tempChanges, setTempChanges] = useState({}) // Store temporary changes before update
   const modalRef = useRef(null)
@@ -120,8 +123,25 @@ const PostBuilderModal = ({ onClose }) => {
   }
 
   const handleChannelEdit = (channelId) => {
-    // TODO: Implement individual channel editing
-    console.log('Edit channel:', channelId)
+    setEditingChannelId(channelId)
+    setIndividualChannelMode(true)
+    setActiveTab('media') // Start with media tab
+    
+    // Initialize temp changes for individual channel editing
+    const channelMedia = selectedMediaByChannel[channelId] || []
+    const isChannelCustomized = customizedChannels[channelId]
+    
+    setTempChanges({
+      caption: caption,
+      media: media,
+      selectedMediaByChannel: selectedMediaByChannel,
+      customizedChannels: customizedChannels,
+      editingChannelId: channelId,
+      // Channel-specific data
+      channelMedia: isChannelCustomized ? channelMedia : media, // Show inherited or custom media
+      channelCaption: caption, // Start with master caption
+      individualMode: true
+    })
   }
 
   // Smart media management functions
@@ -248,6 +268,12 @@ const PostBuilderModal = ({ onClose }) => {
     setTempChanges({})
   }
 
+  const handleCancelIndividualChannel = () => {
+    setIndividualChannelMode(false)
+    setEditingChannelId(null)
+    setTempChanges({})
+  }
+
   const handleUpdateCrossChannel = () => {
     // Apply temp changes to actual state
     if (tempChanges.media !== undefined) setMedia(tempChanges.media)
@@ -273,6 +299,22 @@ const PostBuilderModal = ({ onClose }) => {
     }
     
     setCrossChannelMode(false)
+    setTempChanges({})
+  }
+
+  const handleUpdateIndividualChannel = () => {
+    // Apply temp changes to actual state for individual channel
+    if (tempChanges.media !== undefined) setMedia(tempChanges.media)
+    if (tempChanges.selectedMediaByChannel !== undefined) setSelectedMediaByChannel(tempChanges.selectedMediaByChannel)
+    if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
+    
+    // Apply individual channel caption if changed
+    if (tempChanges.channelCaption !== undefined && tempChanges.channelCaption !== caption) {
+      setCaption(tempChanges.channelCaption)
+    }
+    
+    setIndividualChannelMode(false)
+    setEditingChannelId(null)
     setTempChanges({})
   }
 
@@ -415,7 +457,7 @@ const PostBuilderModal = ({ onClose }) => {
             position: 'relative'
           }}>
             {crossChannelMode ? (
-              /* Cross-Channel Editing Mode */
+              // Cross-Channel Editing Mode
               <CrossChannelEditor
                 selectedChannels={selectedChannels}
                 activeTab={activeTab}
@@ -427,8 +469,17 @@ const PostBuilderModal = ({ onClose }) => {
                 onChannelMediaAdd={handleChannelMediaAdd}
                 onChannelMediaRemove={handleChannelMediaRemove}
               />
+            ) : individualChannelMode ? (
+              // Individual Channel Editing Mode
+              <IndividualChannelEditor
+                editingChannelId={editingChannelId}
+                tempChanges={tempChanges}
+                setTempChanges={setTempChanges}
+                onCancel={handleCancelIndividualChannel}
+                onUpdate={handleUpdateIndividualChannel}
+              />
             ) : (
-              /* Normal Post Creation Mode */
+              // Normal Post Creation Mode
               <>
                 <div style={{ padding: '20px', flex: 1 }}>
                   {/* Media Uploader + Caption Editor */}
@@ -596,13 +647,14 @@ const PostBuilderModal = ({ onClose }) => {
                 </div>
 
                 {/* Sticky Footer - Only show in normal mode */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '16px 20px',
-                  borderTop: '1px solid #e1e5e9'
-                }}>
+                {!individualChannelMode && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px 20px',
+                    borderTop: '1px solid #e1e5e9'
+                  }}>
                   <button style={{
                     background: 'none',
                     border: 'none',
@@ -642,6 +694,7 @@ const PostBuilderModal = ({ onClose }) => {
                     </button>
                   </div>
                 </div>
+                )}
               </>
             )}
           </div>
@@ -656,6 +709,9 @@ const PostBuilderModal = ({ onClose }) => {
                 selectedChannels={selectedChannels}
                 caption={caption}
                 media={media}
+                individualChannelMode={individualChannelMode}
+                editingChannelId={editingChannelId}
+                tempChanges={tempChanges}
               />
             </div>
           )}
