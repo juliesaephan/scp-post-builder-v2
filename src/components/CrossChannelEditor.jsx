@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getPlatformById } from '../data/platforms'
 import { getRandomMediaItems } from '../data/mockMedia'
+import ChannelMediaGrid from './ChannelMediaGrid'
 
 const CrossChannelEditor = ({ 
   selectedChannels, 
@@ -9,10 +10,15 @@ const CrossChannelEditor = ({
   tempChanges, 
   setTempChanges,
   onCancel, 
-  onUpdate 
+  onUpdate,
+  onChannelMediaAdd,
+  onChannelMediaRemove
 }) => {
   
   const renderMediaView = () => {
+    const masterMedia = tempChanges.media || []
+    const channelMediaSelections = tempChanges.selectedMediaByChannel || {}
+
     return (
       <div style={{
         flex: 1,
@@ -32,105 +38,102 @@ const CrossChannelEditor = ({
           flexDirection: 'column',
           gap: '16px'
         }}>
-          {selectedChannels.map((channel, index) => {
+          {selectedChannels.map((channel) => {
             const platform = getPlatformById(channel.id)
+            const selectedMediaForChannel = channelMediaSelections[channel.id] || []
+            
             return (
               <div key={channel.id} style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '16px',
                 border: '1px solid #e1e5e9',
                 borderRadius: '8px',
-                backgroundColor: 'white'
+                backgroundColor: 'white',
+                overflow: 'hidden'
               }}>
-                {/* Platform Info */}
+                {/* Channel Header */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  minWidth: '150px',
-                  marginRight: '20px'
+                  padding: '12px 16px',
+                  backgroundColor: '#f8f9fa',
+                  borderBottom: '1px solid #e1e5e9'
                 }}>
                   <div style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '24px',
+                    height: '24px',
                     borderRadius: '4px',
                     backgroundColor: platform?.color || '#ccc',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginRight: '12px',
-                    fontSize: '16px'
+                    marginRight: '8px',
+                    fontSize: '12px'
                   }}>
                     {platform?.icon}
                   </div>
-                  <div>
-                    <div style={{ fontWeight: '500', fontSize: '14px' }}>
-                      {platform?.name}
-                    </div>
-                    {channel.postType && (
-                      <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                        {channel.postType}
-                      </div>
-                    )}
+                  <span style={{ fontWeight: '500', fontSize: '14px' }}>
+                    {platform?.name} {channel.postType && `• ${channel.postType}`}
+                  </span>
+                  <div style={{ 
+                    marginLeft: 'auto',
+                    fontSize: '12px',
+                    color: '#6c757d'
+                  }}>
+                    {selectedMediaForChannel.length} of {masterMedia.length} media selected
                   </div>
                 </div>
 
-                {/* Media Content */}
-                <div style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <div 
-                    onClick={() => {
-                      // Simulate media selection with random mock media items
-                      const randomMedia = getRandomMediaItems(Math.floor(Math.random() * 3) + 1)
+                {/* Media Grid */}
+                <div style={{ padding: '16px' }}>
+                  <ChannelMediaGrid
+                    channelId={channel.id}
+                    masterMedia={masterMedia}
+                    selectedMedia={selectedMediaForChannel}
+                    onMediaAdd={(channelId, mediaItems) => {
+                      // Handle adding media through temp changes
+                      const updatedSelections = { ...channelMediaSelections }
+                      updatedSelections[channelId] = [...(updatedSelections[channelId] || []), ...mediaItems]
+                      
+                      // Also add to master media if not present
+                      const existingIds = new Set(masterMedia.map(item => item.id))
+                      const newMasterMedia = [...masterMedia]
+                      
+                      mediaItems.forEach(item => {
+                        if (!existingIds.has(item.id) && newMasterMedia.length < 20) {
+                          newMasterMedia.push(item)
+                          existingIds.add(item.id)
+                        }
+                      })
+                      
                       setTempChanges(prev => ({
                         ...prev,
-                        media: randomMedia
+                        media: newMasterMedia,
+                        selectedMediaByChannel: updatedSelections
                       }))
                     }}
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      border: '2px dashed #dee2e6',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#f8f9fa',
-                      cursor: 'pointer',
-                      fontSize: '32px',
-                      backgroundImage: tempChanges.media?.length > 0 && tempChanges.media[0].thumbnail ? 
-                        `url(${tempChanges.media[0].thumbnail})` : 'none',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      color: tempChanges.media?.length > 0 && tempChanges.media[0].thumbnail ? 
-                        'transparent' : 'inherit'
+                    onMediaRemove={(channelId, mediaId) => {
+                      // Handle removing media through temp changes
+                      const updatedSelections = { ...channelMediaSelections }
+                      updatedSelections[channelId] = (updatedSelections[channelId] || []).filter(item => item.id !== mediaId)
+                      
+                      // Check if media is used by other channels
+                      const isUsedElsewhere = Object.entries(updatedSelections).some(([otherChannelId, channelMedia]) => {
+                        if (otherChannelId === channelId) return false
+                        return channelMedia.some(item => item.id === mediaId)
+                      })
+                      
+                      // Remove from master if not used elsewhere
+                      const newMasterMedia = isUsedElsewhere 
+                        ? masterMedia 
+                        : masterMedia.filter(item => item.id !== mediaId)
+                      
+                      setTempChanges(prev => ({
+                        ...prev,
+                        media: newMasterMedia,
+                        selectedMediaByChannel: updatedSelections
+                      }))
                     }}
-                  >
-                    {tempChanges.media?.length > 0 && !tempChanges.media[0].thumbnail ? '📷' : 
-                     tempChanges.media?.length === 0 ? '+' : ''}
-                  </div>
-                  
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', marginBottom: '4px' }}>
-                      {tempChanges.media?.length > 0 
-                        ? `${tempChanges.media.length} file(s) selected`
-                        : 'No media'
-                      }
-                    </div>
-                    {tempChanges.media?.length > 0 && (
-                      <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '4px' }}>
-                        {tempChanges.media[0].name}
-                        {tempChanges.media.length > 1 && ` + ${tempChanges.media.length - 1} more`}
-                      </div>
-                    )}
-                    <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                      Click to add or change media
-                    </div>
-                  </div>
+                    maxMedia={20}
+                  />
                 </div>
               </div>
             )

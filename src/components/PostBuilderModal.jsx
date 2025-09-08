@@ -3,6 +3,7 @@ import ChannelBadge from './ChannelBadge'
 import ChannelMenu from './ChannelMenu'
 import PreviewCarousel from './PreviewCarousel'
 import CrossChannelEditor from './CrossChannelEditor'
+import MediaManager from './MediaManager'
 import { getRandomMediaItems } from '../data/mockMedia'
 
 const PostBuilderModal = ({ onClose }) => {
@@ -12,7 +13,8 @@ const PostBuilderModal = ({ onClose }) => {
   const [selectedChannels, setSelectedChannels] = useState([])
   const [showChannelMenu, setShowChannelMenu] = useState(false)
   const [caption, setCaption] = useState('')
-  const [media, setMedia] = useState([])
+  const [media, setMedia] = useState([]) // Master media library
+  const [selectedMediaByChannel, setSelectedMediaByChannel] = useState({}) // Channel-specific media selections
   const [crossChannelMode, setCrossChannelMode] = useState(false)
   const [activeTab, setActiveTab] = useState('media') // 'media', 'caption', 'date'
   const [tempChanges, setTempChanges] = useState({}) // Store temporary changes before update
@@ -121,11 +123,88 @@ const PostBuilderModal = ({ onClose }) => {
     console.log('Edit channel:', channelId)
   }
 
-  const handleMediaUpload = () => {
-    // Simulate media upload with random mock media items
-    const randomMedia = getRandomMediaItems(Math.floor(Math.random() * 3) + 1) // 1-3 items
-    setMedia(randomMedia)
+  // Smart media management functions
+  const handleMasterMediaChange = (newMediaArray) => {
+    setMedia(newMediaArray)
+    
+    // Update all channel selections to remove deleted media
+    const newMediaIds = new Set(newMediaArray.map(item => item.id))
+    const updatedChannelSelections = {}
+    
+    Object.entries(selectedMediaByChannel).forEach(([channelId, channelMedia]) => {
+      updatedChannelSelections[channelId] = channelMedia.filter(item => newMediaIds.has(item.id))
+    })
+    
+    setSelectedMediaByChannel(updatedChannelSelections)
   }
+
+  const handleChannelMediaAdd = (channelId, mediaItems) => {
+    // Add media to master library if not already present
+    const existingIds = new Set(media.map(item => item.id))
+    const newMasterMedia = [...media]
+    
+    mediaItems.forEach(item => {
+      if (!existingIds.has(item.id) && newMasterMedia.length < 20) {
+        newMasterMedia.push(item)
+        existingIds.add(item.id)
+      }
+    })
+    
+    // Update master media
+    setMedia(newMasterMedia)
+    
+    // Add to channel selection
+    setSelectedMediaByChannel(prev => ({
+      ...prev,
+      [channelId]: [...(prev[channelId] || []), ...mediaItems.filter(item => 
+        !(prev[channelId] || []).some(existing => existing.id === item.id)
+      )]
+    }))
+  }
+
+  const handleChannelMediaRemove = (channelId, mediaId) => {
+    // Remove from channel selection
+    setSelectedMediaByChannel(prev => ({
+      ...prev,
+      [channelId]: (prev[channelId] || []).filter(item => item.id !== mediaId)
+    }))
+    
+    // Check if this media is used by any other channel
+    const isUsedElsewhere = Object.entries(selectedMediaByChannel).some(([otherChannelId, channelMedia]) => {
+      if (otherChannelId === channelId) return false
+      return channelMedia.some(item => item.id === mediaId)
+    })
+    
+    // If not used anywhere else, remove from master media
+    if (!isUsedElsewhere) {
+      setMedia(prev => prev.filter(item => item.id !== mediaId))
+    }
+  }
+
+  // Initialize channel media selections when channels are added
+  useEffect(() => {
+    selectedChannels.forEach(channel => {
+      if (!selectedMediaByChannel[channel.id]) {
+        setSelectedMediaByChannel(prev => ({
+          ...prev,
+          [channel.id]: [...media] // Start with all master media selected
+        }))
+      }
+    })
+    
+    // Clean up selections for removed channels
+    const activeChannelIds = new Set(selectedChannels.map(ch => ch.id))
+    const cleanedSelections = {}
+    Object.entries(selectedMediaByChannel).forEach(([channelId, channelMedia]) => {
+      if (activeChannelIds.has(channelId)) {
+        cleanedSelections[channelId] = channelMedia
+      }
+    })
+    
+    if (Object.keys(cleanedSelections).length !== Object.keys(selectedMediaByChannel).length) {
+      setSelectedMediaByChannel(cleanedSelections)
+    }
+  }, [selectedChannels, media])
 
   const handleCaptionChange = (e) => {
     setCaption(e.target.value)
@@ -145,6 +224,7 @@ const PostBuilderModal = ({ onClose }) => {
     setTempChanges({
       caption: caption,
       media: media,
+      selectedMediaByChannel: selectedMediaByChannel,
       channels: selectedChannels,
       channelCaptions: channelCaptions,
       captionsLinked: true // Start with captions linked
@@ -159,6 +239,7 @@ const PostBuilderModal = ({ onClose }) => {
   const handleUpdateCrossChannel = () => {
     // Apply temp changes to actual state
     if (tempChanges.media !== undefined) setMedia(tempChanges.media)
+    if (tempChanges.selectedMediaByChannel !== undefined) setSelectedMediaByChannel(tempChanges.selectedMediaByChannel)
     if (tempChanges.channels !== undefined) setSelectedChannels(tempChanges.channels)
     
     // Handle captions - if they're linked, use any channel's caption as the master
@@ -330,6 +411,8 @@ const PostBuilderModal = ({ onClose }) => {
                 setTempChanges={setTempChanges}
                 onCancel={handleCancelCrossChannel}
                 onUpdate={handleUpdateCrossChannel}
+                onChannelMediaAdd={handleChannelMediaAdd}
+                onChannelMediaRemove={handleChannelMediaRemove}
               />
             ) : (
               /* Normal Post Creation Mode */
@@ -341,29 +424,12 @@ const PostBuilderModal = ({ onClose }) => {
                     gap: '16px',
                     marginBottom: '20px'
                   }}>
-                    {/* Media Uploader */}
-                    <div 
-                      onClick={handleMediaUpload}
-                      style={{
-                        flex: 1,
-                        border: '2px dashed #dee2e6',
-                        borderRadius: '8px',
-                        padding: '40px 20px',
-                        textAlign: 'center',
-                        backgroundColor: '#f8f9fa',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <div style={{ fontSize: '48px', marginBottom: '12px' }}>
-                        {media.length > 0 ? '📷' : '📁'}
-                      </div>
-                      <div style={{ fontWeight: '500', marginBottom: '4px' }}>
-                        {media.length > 0 ? `${media.length} file(s) selected` : 'Upload Media'}
-                      </div>
-                      <div style={{ fontSize: '14px', color: '#6c757d' }}>
-                        {media.length > 0 ? 'Click to change files' : 'Drag & drop or click to upload'}
-                      </div>
-                    </div>
+                    {/* Media Manager */}
+                    <MediaManager
+                      media={media}
+                      onMediaChange={handleMasterMediaChange}
+                      maxMedia={20}
+                    />
 
                     {/* Caption Editor */}
                     <div style={{
