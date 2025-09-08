@@ -311,13 +311,15 @@ const PostBuilderModal = ({ onClose }) => {
     
     // Preserve existing temp changes and only add missing cross-channel data
     setTempChanges(prev => {
-      // Use existing channel captions from temp changes, or initialize with current state
-      const currentChannelCaptions = prev.channelCaptions || channelCaptions
-      const fallbackChannelCaptions = {}
+      // Build complete channel captions preserving individual edits
+      const completeChannelCaptions = {}
       
-      // Only initialize captions for channels that don't have them yet
       selectedChannels.forEach(channel => {
-        fallbackChannelCaptions[channel.id] = currentChannelCaptions[channel.id] || caption
+        // Priority order: 1) Individual edits from temp changes, 2) Current channel state, 3) Main caption
+        completeChannelCaptions[channel.id] = 
+          prev.channelCaptions?.[channel.id] ||  // Preserve individual edits first
+          channelCaptions[channel.id] ||         // Then current channel state
+          caption                                // Finally main caption as fallback
       })
       
       return {
@@ -326,7 +328,7 @@ const PostBuilderModal = ({ onClose }) => {
         media: prev.media !== undefined ? prev.media : media,
         selectedMediaByChannel: prev.selectedMediaByChannel !== undefined ? prev.selectedMediaByChannel : selectedMediaByChannel,
         customizedChannels: prev.customizedChannels !== undefined ? prev.customizedChannels : customizedChannels,
-        channelCaptions: prev.channelCaptions !== undefined ? prev.channelCaptions : fallbackChannelCaptions,
+        channelCaptions: completeChannelCaptions, // Always use complete set that preserves individual edits
         captionsLinked: prev.captionsLinked !== undefined ? prev.captionsLinked : captionsLinked,
         // Cross-channel specific data
         channels: selectedChannels,
