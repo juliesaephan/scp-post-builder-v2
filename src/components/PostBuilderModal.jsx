@@ -558,7 +558,12 @@ const PostBuilderModal = ({ onClose }) => {
             ) : (
               // Normal Post Creation Mode
               <>
-                <div style={{ padding: '20px', flex: 1 }}>
+                <div style={{ 
+                  flex: 1, 
+                  overflow: 'auto',
+                  padding: '20px',
+                  paddingBottom: '10px'
+                }}>
                   {/* Media Uploader + Caption Editor */}
                   <div style={{
                     display: 'flex',
@@ -738,7 +743,9 @@ const PostBuilderModal = ({ onClose }) => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '16px 20px',
-                    borderTop: '1px solid #e1e5e9'
+                    borderTop: '1px solid #e1e5e9',
+                    backgroundColor: 'white',
+                    flexShrink: 0
                   }}>
                   <button style={{
                     background: 'none',
