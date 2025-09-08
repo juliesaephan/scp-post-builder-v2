@@ -7,6 +7,8 @@ const IndividualChannelEditor = ({
   editingChannelId,
   tempChanges, 
   setTempChanges,
+  channelScheduling,
+  onChannelSchedulingChange,
   onCancel, 
   onUpdate 
 }) => {
@@ -103,24 +105,8 @@ const IndividualChannelEditor = ({
 
 
   const handleDateChange = (field, value) => {
-    // Mark channel as customized for scheduling ONLY
-    setTempChanges(prev => ({
-      ...prev,
-      channelScheduling: {
-        ...prev.channelScheduling,
-        [editingChannelId]: {
-          ...prev.channelScheduling?.[editingChannelId],
-          [field]: value
-        }
-      },
-      customizedChannels: {
-        ...prev.customizedChannels,
-        [editingChannelId]: { 
-          ...prev.customizedChannels?.[editingChannelId], 
-          scheduling: true 
-        }
-      }
-    }))
+    // Use direct channel scheduling change handler
+    onChannelSchedulingChange(editingChannelId, field, value)
   }
 
   // Channel options handlers
@@ -218,7 +204,8 @@ const IndividualChannelEditor = ({
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        gap: '20px'
+        gap: '20px',
+        overflow: 'auto'
       }}>
         {/* Media Section */}
         <div style={{
@@ -290,7 +277,7 @@ const IndividualChannelEditor = ({
           
           <input
             type="date"
-            value={tempChanges.channelScheduling?.[editingChannelId]?.date || ''}
+            value={channelScheduling[editingChannelId]?.date || ''}
             onChange={(e) => handleDateChange('date', e.target.value)}
             style={{
               padding: '8px',
@@ -302,7 +289,7 @@ const IndividualChannelEditor = ({
           
           <input
             type="time"
-            value={tempChanges.channelScheduling?.[editingChannelId]?.time || '11:30'}
+            value={channelScheduling[editingChannelId]?.time || '11:30'}
             onChange={(e) => handleDateChange('time', e.target.value)}
             style={{
               padding: '8px',
@@ -313,7 +300,7 @@ const IndividualChannelEditor = ({
           />
 
           <select
-            value={tempChanges.channelScheduling?.[editingChannelId]?.type || 'auto'}
+            value={channelScheduling[editingChannelId]?.type || 'auto'}
             onChange={(e) => handleDateChange('type', e.target.value)}
             style={{
               padding: '8px',

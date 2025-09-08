@@ -35,6 +35,9 @@ const PostBuilderModal = ({ onClose }) => {
   const [expandedAccordions, setExpandedAccordions] = useState({}) // Track which accordions are expanded
   const [channelOptions, setChannelOptions] = useState({}) // Store channel option values
   
+  // Channel scheduling state
+  const [channelScheduling, setChannelScheduling] = useState({}) // Store per-channel scheduling: { channelId: { date, time, type } }
+  
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
   
@@ -160,6 +163,68 @@ const PostBuilderModal = ({ onClose }) => {
       [channelId]: {
         ...prev[channelId],
         [optionId]: value
+      }
+    }))
+  }
+
+  // Date scheduling helpers and handlers
+  const formatDateForDisplay = (date, time) => {
+    if (!date || !time) return null
+    const dateObj = new Date(`${date}T${time}`)
+    return dateObj.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric', 
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    })
+  }
+
+  const getSchedulingButtonText = () => {
+    const scheduledChannels = selectedChannels
+      .map(channel => ({
+        ...channel,
+        scheduling: channelScheduling[channel.id]
+      }))
+      .filter(channel => channel.scheduling?.date && channel.scheduling?.time)
+
+    if (scheduledChannels.length === 0) {
+      return 'Select Date'
+    }
+
+    // Check if all scheduled channels have the same date and time
+    const firstScheduling = scheduledChannels[0].scheduling
+    const allSame = scheduledChannels.every(channel => 
+      channel.scheduling.date === firstScheduling.date && 
+      channel.scheduling.time === firstScheduling.time
+    )
+
+    if (allSame) {
+      return formatDateForDisplay(firstScheduling.date, firstScheduling.time)
+    } else {
+      // Find earliest date/time
+      const earliest = scheduledChannels.reduce((earliest, channel) => {
+        const channelDateTime = new Date(`${channel.scheduling.date}T${channel.scheduling.time}`)
+        const earliestDateTime = new Date(`${earliest.date}T${earliest.time}`)
+        return channelDateTime < earliestDateTime ? channel.scheduling : earliest
+      }, scheduledChannels[0].scheduling)
+
+      return `Earliest at ${formatDateForDisplay(earliest.date, earliest.time)}`
+    }
+  }
+
+  const handleDateButtonClick = () => {
+    setCrossChannelMode(true)
+    setActiveTab('date')
+  }
+
+  const handleChannelSchedulingChange = (channelId, field, value) => {
+    setChannelScheduling(prev => ({
+      ...prev,
+      [channelId]: {
+        ...prev[channelId],
+        [field]: value
       }
     }))
   }
@@ -577,6 +642,8 @@ const PostBuilderModal = ({ onClose }) => {
                 setActiveTab={setActiveTab}
                 tempChanges={tempChanges}
                 setTempChanges={setTempChanges}
+                channelScheduling={channelScheduling}
+                onChannelSchedulingChange={handleChannelSchedulingChange}
                 onCancel={handleCancelCrossChannel}
                 onUpdate={handleUpdateCrossChannel}
                 onChannelMediaAdd={handleChannelMediaAdd}
@@ -588,6 +655,8 @@ const PostBuilderModal = ({ onClose }) => {
                 editingChannelId={editingChannelId}
                 tempChanges={tempChanges}
                 setTempChanges={setTempChanges}
+                channelScheduling={channelScheduling}
+                onChannelSchedulingChange={handleChannelSchedulingChange}
                 onCancel={handleCancelIndividualChannel}
                 onUpdate={handleUpdateIndividualChannel}
               />
@@ -825,15 +894,18 @@ const PostBuilderModal = ({ onClose }) => {
                     alignItems: 'center',
                     gap: '12px'
                   }}>
-                    <button style={{
-                      padding: '8px 12px',
-                      backgroundColor: '#f8f9fa',
-                      border: '1px solid #dee2e6',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '14px'
-                    }}>
-                      📅 Select Date
+                    <button 
+                      onClick={handleDateButtonClick}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#f8f9fa',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      📅 {getSchedulingButtonText()}
                     </button>
 
                     <button style={{

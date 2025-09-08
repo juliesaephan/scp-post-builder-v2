@@ -9,6 +9,8 @@ const CrossChannelEditor = ({
   setActiveTab, 
   tempChanges, 
   setTempChanges,
+  channelScheduling,
+  onChannelSchedulingChange,
   onCancel, 
   onUpdate,
   onChannelMediaAdd,
@@ -371,6 +373,8 @@ const CrossChannelEditor = ({
                 }}>
                   <input
                     type="date"
+                    value={channelScheduling[channel.id]?.date || ''}
+                    onChange={(e) => onChannelSchedulingChange(channel.id, 'date', e.target.value)}
                     style={{
                       padding: '8px',
                       border: '1px solid #dee2e6',
@@ -381,6 +385,8 @@ const CrossChannelEditor = ({
                   
                   <input
                     type="time"
+                    value={channelScheduling[channel.id]?.time || '11:30'}
+                    onChange={(e) => onChannelSchedulingChange(channel.id, 'time', e.target.value)}
                     style={{
                       padding: '8px',
                       border: '1px solid #dee2e6',
@@ -390,6 +396,8 @@ const CrossChannelEditor = ({
                   />
 
                   <select
+                    value={channelScheduling[channel.id]?.type || 'auto'}
+                    onChange={(e) => onChannelSchedulingChange(channel.id, 'type', e.target.value)}
                     style={{
                       padding: '8px',
                       border: '1px solid #dee2e6',
