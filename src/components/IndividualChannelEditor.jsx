@@ -255,7 +255,7 @@ const IndividualChannelEditor = ({
         {platform && (
           <ChannelOptionsAccordion
             platform={platform}
-            isExpanded={accordionExpanded}
+            isExpanded={true} // Always expanded in individual editing
             onToggle={handleAccordionToggle}
             optionValues={channelOptions}
             onOptionChange={handleChannelOptionChange}
