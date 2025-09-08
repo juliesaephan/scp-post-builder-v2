@@ -6,6 +6,7 @@ import CrossChannelEditor from './CrossChannelEditor'
 import IndividualChannelEditor from './IndividualChannelEditor'
 import MediaManager from './MediaManager'
 import CaptionCounterGroup from './CaptionCounterGroup'
+import ChannelOptionsAccordion from './ChannelOptionsAccordion'
 import { getRandomMediaItems } from '../data/mockMedia'
 
 const PostBuilderModal = ({ onClose }) => {
@@ -28,6 +29,11 @@ const PostBuilderModal = ({ onClose }) => {
   const [editingChannelId, setEditingChannelId] = useState(null) // Which channel is being edited individually
   const [activeTab, setActiveTab] = useState('media') // 'media', 'caption', 'date'
   const [tempChanges, setTempChanges] = useState({}) // Store temporary changes before update
+  
+  // Channel options accordion state
+  const [expandedAccordions, setExpandedAccordions] = useState({}) // Track which accordions are expanded
+  const [channelOptions, setChannelOptions] = useState({}) // Store channel option values
+  
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
   
@@ -126,6 +132,35 @@ const PostBuilderModal = ({ onClose }) => {
 
   const handleChannelRemove = (channelId) => {
     setSelectedChannels(prev => prev.filter(channel => channel.id !== channelId))
+    // Clean up accordion state for removed channel
+    setExpandedAccordions(prev => {
+      const updated = { ...prev }
+      delete updated[channelId]
+      return updated
+    })
+    setChannelOptions(prev => {
+      const updated = { ...prev }
+      delete updated[channelId]
+      return updated
+    })
+  }
+
+  // Channel options accordion handlers
+  const handleAccordionToggle = (channelId) => {
+    setExpandedAccordions(prev => ({
+      ...prev,
+      [channelId]: !prev[channelId]
+    }))
+  }
+
+  const handleChannelOptionChange = (channelId, optionId, value) => {
+    setChannelOptions(prev => ({
+      ...prev,
+      [channelId]: {
+        ...prev[channelId],
+        [optionId]: value
+      }
+    }))
   }
 
   const handleChannelEdit = (channelId) => {
@@ -734,6 +769,33 @@ const PostBuilderModal = ({ onClose }) => {
                       />
                     )}
                   </div>
+
+                  {/* Channel Options Accordions - Show in order channels were selected */}
+                  {selectedChannels.length > 0 && (
+                    <div style={{ marginBottom: '20px' }}>
+                      {selectedChannels
+                        .filter(channel => {
+                          const platform = getPlatformById(channel.id)
+                          return platform?.options && platform.options.length > 0
+                        })
+                        .map(channel => {
+                          const platform = getPlatformById(channel.id)
+                          return (
+                            <ChannelOptionsAccordion
+                              key={channel.id}
+                              platform={platform}
+                              isExpanded={expandedAccordions[channel.id] || false}
+                              onToggle={() => handleAccordionToggle(channel.id)}
+                              optionValues={channelOptions[channel.id] || {}}
+                              onOptionChange={(optionId, value) => 
+                                handleChannelOptionChange(channel.id, optionId, value)
+                              }
+                              disabled={true}
+                            />
+                          )
+                        })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Sticky Footer - Only show in normal mode */}

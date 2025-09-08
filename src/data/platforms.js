@@ -6,14 +6,38 @@ export const platforms = {
       account: "Bestie's Bakes", 
       color: '#E4405F', 
       types: ['Post', 'Reel', 'Story'],
-      icon: '📷'
+      icon: '📷',
+      options: [
+        {
+          id: 'firstComment',
+          label: 'First Comment',
+          type: 'text',
+          placeholder: 'Add a first comment...',
+          icon: '💬'
+        },
+        {
+          id: 'usersCollaborators', 
+          label: 'Users & Collaborators',
+          type: 'users',
+          placeholder: 'Tag users and collaborators...',
+          icon: '👥'
+        }
+      ]
     },
     { 
       id: 'tiktok', 
       name: 'TikTok', 
       account: "Bestie's Bakes", 
       color: '#000000',
-      icon: '🎵'
+      icon: '🎵',
+      options: [
+        {
+          id: 'creatorStore',
+          label: 'Feature on your Creator Store',
+          type: 'toggle',
+          icon: '🛍️'
+        }
+      ]
     },
     { 
       id: 'facebook', 
@@ -37,7 +61,30 @@ export const platforms = {
       name: 'YouTube', 
       color: '#FF0000', 
       types: ['Video', 'Shorts'],
-      icon: '📺'
+      icon: '📺',
+      options: [
+        {
+          id: 'notifySubscribers',
+          label: 'Notify Subscribers',
+          type: 'toggle',
+          icon: '🔔'
+        },
+        {
+          id: 'visibility',
+          label: 'Visibility',
+          type: 'dropdown',
+          options: ['Public', 'Unlisted', 'Private'],
+          defaultValue: 'Public',
+          icon: '👁️'
+        },
+        {
+          id: 'song',
+          label: 'Song',
+          type: 'text',
+          placeholder: 'Add background music...',
+          icon: '🎵'
+        }
+      ]
     },
     { 
       id: 'linkedin', 
@@ -50,7 +97,24 @@ export const platforms = {
       name: 'Pinterest', 
       color: '#BD081C', 
       types: ['Pin', 'Video Pin', 'Image Pin'],
-      icon: '📌'
+      icon: '📌',
+      options: [
+        {
+          id: 'addLink',
+          label: 'Add a Link',
+          type: 'url',
+          placeholder: 'https://example.com',
+          icon: '🔗'
+        },
+        {
+          id: 'chooseBoard',
+          label: 'Choose a Board',
+          type: 'dropdown',
+          options: ['Baking Tips', 'Recipes', 'Behind the Scenes', 'Seasonal'],
+          placeholder: 'Select a board...',
+          icon: '📋'
+        }
+      ]
     },
     { 
       id: 'x', 

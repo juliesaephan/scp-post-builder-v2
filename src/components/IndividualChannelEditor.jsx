@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getPlatformById } from '../data/platforms'
 import MediaManager from './MediaManager'
+import ChannelOptionsAccordion from './ChannelOptionsAccordion'
 
 const IndividualChannelEditor = ({ 
   editingChannelId,
@@ -9,6 +10,8 @@ const IndividualChannelEditor = ({
   onCancel, 
   onUpdate 
 }) => {
+  const [accordionExpanded, setAccordionExpanded] = useState(false)
+  const [channelOptions, setChannelOptions] = useState({})
   
   const platform = getPlatformById(editingChannelId)
   
@@ -117,6 +120,18 @@ const IndividualChannelEditor = ({
           scheduling: true 
         }
       }
+    }))
+  }
+
+  // Channel options handlers
+  const handleAccordionToggle = () => {
+    setAccordionExpanded(prev => !prev)
+  }
+
+  const handleChannelOptionChange = (optionId, value) => {
+    setChannelOptions(prev => ({
+      ...prev,
+      [optionId]: value
     }))
   }
 
@@ -249,8 +264,17 @@ const IndividualChannelEditor = ({
           </div>
         </div>
 
-        {/* Future: Platform Options */}
-        {/* This will be expanded later with platform-specific options */}
+        {/* Channel-Specific Options */}
+        {platform?.options && platform.options.length > 0 && (
+          <ChannelOptionsAccordion
+            platform={platform}
+            isExpanded={accordionExpanded}
+            onToggle={handleAccordionToggle}
+            optionValues={channelOptions}
+            onOptionChange={handleChannelOptionChange}
+            disabled={true}
+          />
+        )}
         
         {/* Date/Scheduling Section */}
         <div style={{
