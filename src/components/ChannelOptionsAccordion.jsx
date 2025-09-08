@@ -131,7 +131,14 @@ const ChannelOptionsAccordion = ({
   onOptionChange,
   disabled = true 
 }) => {
+  // DEBUG: Check what's happening with platform options
+  console.log('ChannelOptionsAccordion DEBUG:')
+  console.log('platform:', platform)
+  console.log('platform.options:', platform?.options)
+  console.log('platform.options?.length:', platform?.options?.length)
+  
   if (!platform.options || platform.options.length === 0) {
+    console.log('RETURNING NULL - no options found')
     return null
   }
 

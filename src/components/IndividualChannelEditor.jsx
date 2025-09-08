@@ -17,12 +17,6 @@ const IndividualChannelEditor = ({
   
   const platform = getPlatformById(editingChannelId)
   
-  // DEBUG: Log platform data to understand the issue
-  console.log('IndividualChannelEditor DEBUG:')
-  console.log('editingChannelId:', editingChannelId)
-  console.log('platform:', platform)
-  console.log('platform?.options:', platform?.options)
-  
   const handleMediaChange = (newMedia) => {
     // Mark channel as customized for media ONLY and update temp changes
     setTempChanges(prev => {
@@ -267,19 +261,6 @@ const IndividualChannelEditor = ({
             onOptionChange={handleChannelOptionChange}
             disabled={true}
           />
-        )}
-        
-        {/* DEBUG: Force show for platforms that should have options */}
-        {!platform && editingChannelId && (
-          <div style={{ 
-            padding: '16px', 
-            backgroundColor: '#ffebee', 
-            border: '1px solid #f44336',
-            borderRadius: '8px',
-            margin: '16px 0'
-          }}>
-            <strong>DEBUG:</strong> Platform not found for editingChannelId: {editingChannelId}
-          </div>
         )}
         
         {/* Date/Scheduling Section */}
