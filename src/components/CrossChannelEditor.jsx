@@ -18,6 +18,7 @@ const CrossChannelEditor = ({
   const renderMediaView = () => {
     const masterMedia = tempChanges.media || []
     const channelMediaSelections = tempChanges.selectedMediaByChannel || {}
+    const channelCustomizations = tempChanges.customizedChannels || {}
 
     return (
       <div style={{
@@ -40,7 +41,10 @@ const CrossChannelEditor = ({
         }}>
           {selectedChannels.map((channel) => {
             const platform = getPlatformById(channel.id)
-            const selectedMediaForChannel = channelMediaSelections[channel.id] || []
+            const isCustomized = channelCustomizations[channel.id]
+            const selectedMediaForChannel = isCustomized 
+              ? (channelMediaSelections[channel.id] || [])
+              : masterMedia // Show master media if not customized
             
             return (
               <div key={channel.id} style={{
@@ -78,7 +82,7 @@ const CrossChannelEditor = ({
                     fontSize: '12px',
                     color: '#6c757d'
                   }}>
-                    {selectedMediaForChannel.length} media
+                    {selectedMediaForChannel.length} media {isCustomized ? '' : '(inherited)'}
                   </div>
                 </div>
 
@@ -89,26 +93,45 @@ const CrossChannelEditor = ({
                     masterMedia={masterMedia}
                     selectedMedia={selectedMediaForChannel}
                     onMediaAdd={(channelId, mediaItems) => {
-                      // Handle adding media ONLY to the specific channel
+                      // Mark channel as customized and add media to both channel and master
+                      const updatedCustomizations = { ...channelCustomizations, [channelId]: true }
                       const updatedSelections = { ...channelMediaSelections }
+                      
+                      // Add to channel selection
                       updatedSelections[channelId] = [...(updatedSelections[channelId] || []), ...mediaItems.filter(item => 
                         !(updatedSelections[channelId] || []).some(existing => existing.id === item.id)
                       )]
                       
+                      // BIDIRECTIONAL SYNC: Add to master media if not present
+                      const existingIds = new Set(masterMedia.map(item => item.id))
+                      const newMasterMedia = [...masterMedia]
+                      
+                      mediaItems.forEach(item => {
+                        if (!existingIds.has(item.id) && newMasterMedia.length < 20) {
+                          newMasterMedia.push(item)
+                          existingIds.add(item.id)
+                        }
+                      })
+                      
                       setTempChanges(prev => ({
                         ...prev,
-                        selectedMediaByChannel: updatedSelections
+                        media: newMasterMedia,
+                        selectedMediaByChannel: updatedSelections,
+                        customizedChannels: updatedCustomizations
                       }))
                     }}
                     onMediaRemove={(channelId, mediaId) => {
-                      // Handle removing media ONLY from the specific channel
+                      // Mark channel as customized and remove media ONLY from the specific channel
+                      const updatedCustomizations = { ...channelCustomizations, [channelId]: true }
                       const updatedSelections = { ...channelMediaSelections }
                       updatedSelections[channelId] = (updatedSelections[channelId] || []).filter(item => item.id !== mediaId)
                       
                       setTempChanges(prev => ({
                         ...prev,
-                        selectedMediaByChannel: updatedSelections
+                        selectedMediaByChannel: updatedSelections,
+                        customizedChannels: updatedCustomizations
                       }))
+                      // Note: We do NOT remove from master media - it stays in main view
                     }}
                     maxMedia={20}
                   />

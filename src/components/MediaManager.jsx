@@ -4,6 +4,12 @@ import { getRandomMediaItems } from '../data/mockMedia'
 
 const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
   const [selectedPreview, setSelectedPreview] = useState(0)
+  const [carouselStart, setCarouselStart] = useState(0)
+  
+  // Carousel configuration
+  const maxVisibleThumbnails = 4 // Maximum thumbnails visible at once
+  const thumbnailSize = 60
+  const gap = 8
   
   const handleAddMedia = () => {
     // Add 1-3 random media items, respecting max limit
@@ -40,6 +46,25 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
       setSelectedPreview(index)
     }
   }
+
+  // Carousel navigation functions
+  const canScrollLeft = carouselStart > 0
+  const canScrollRight = carouselStart + maxVisibleThumbnails < media.length
+
+  const handleCarouselLeft = () => {
+    if (canScrollLeft) {
+      setCarouselStart(Math.max(0, carouselStart - 1))
+    }
+  }
+
+  const handleCarouselRight = () => {
+    if (canScrollRight) {
+      setCarouselStart(Math.min(media.length - maxVisibleThumbnails, carouselStart + 1))
+    }
+  }
+
+  // Get visible thumbnails for current carousel window
+  const visibleThumbnails = media.slice(carouselStart, carouselStart + maxVisibleThumbnails)
 
   // Empty state
   if (media.length === 0) {
@@ -117,29 +142,88 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
         </div>
       </div>
 
-      {/* Thumbnail Carousel */}
+      {/* Windowed Thumbnail Carousel */}
       <div style={{
         display: 'flex',
-        gap: '8px',
-        overflowX: 'auto',
-        paddingBottom: '4px',
-        scrollbarWidth: 'thin',
+        alignItems: 'center',
         width: '100%',
-        minWidth: 0 // Prevents flex items from forcing container expansion
+        position: 'relative'
       }}>
-        {media.map((item, index) => (
-          <MediaThumbnail
-            key={item.id}
-            media={item}
-            size={60}
-            onDelete={handleDeleteMedia}
-            onClick={handleThumbnailClick}
-            isSelected={index === selectedPreview}
-            showDelete={true}
-          />
-        ))}
-        
-        {/* Add More Button */}
+        {/* Left Arrow */}
+        {canScrollLeft && (
+          <button
+            onClick={handleCarouselLeft}
+            style={{
+              position: 'absolute',
+              left: '-8px',
+              zIndex: 2,
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ‹
+          </button>
+        )}
+
+        {/* Carousel Window - Fixed Width Container */}
+        <div style={{
+          width: `${maxVisibleThumbnails * (thumbnailSize + gap) - gap}px`, // Fixed width calculation
+          overflow: 'hidden', // Critical: prevents expansion
+          display: 'flex',
+          gap: `${gap}px`,
+          paddingBottom: '4px'
+        }}>
+          {visibleThumbnails.map((item) => {
+            const originalIndex = media.findIndex(mediaItem => mediaItem.id === item.id)
+            return (
+              <MediaThumbnail
+                key={item.id}
+                media={item}
+                size={thumbnailSize}
+                onDelete={handleDeleteMedia}
+                onClick={handleThumbnailClick}
+                isSelected={originalIndex === selectedPreview}
+                showDelete={true}
+              />
+            )
+          })}
+        </div>
+
+        {/* Right Arrow */}
+        {canScrollRight && (
+          <button
+            onClick={handleCarouselRight}
+            style={{
+              position: 'absolute',
+              right: '68px', // Position before add button
+              zIndex: 2,
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ›
+          </button>
+        )}
+
+        {/* Add More Button - Outside Carousel */}
         {media.length < maxMedia && (
           <button
             onClick={handleAddMedia}
@@ -155,7 +239,7 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              flexShrink: 0,
+              marginLeft: '12px',
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {

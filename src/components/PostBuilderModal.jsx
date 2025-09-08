@@ -15,6 +15,7 @@ const PostBuilderModal = ({ onClose }) => {
   const [caption, setCaption] = useState('')
   const [media, setMedia] = useState([]) // Master media library
   const [selectedMediaByChannel, setSelectedMediaByChannel] = useState({}) // Channel-specific media selections
+  const [customizedChannels, setCustomizedChannels] = useState({}) // Track which channels have been customized
   const [crossChannelMode, setCrossChannelMode] = useState(false)
   const [activeTab, setActiveTab] = useState('media') // 'media', 'caption', 'date'
   const [tempChanges, setTempChanges] = useState({}) // Store temporary changes before update
@@ -139,7 +140,10 @@ const PostBuilderModal = ({ onClose }) => {
   }
 
   const handleChannelMediaAdd = (channelId, mediaItems) => {
-    // Add media to master library if not already present
+    // Mark channel as customized
+    setCustomizedChannels(prev => ({ ...prev, [channelId]: true }))
+    
+    // Add media to master library if not already present (BIDIRECTIONAL SYNC)
     const existingIds = new Set(media.map(item => item.id))
     const newMasterMedia = [...media]
     
@@ -150,7 +154,7 @@ const PostBuilderModal = ({ onClose }) => {
       }
     })
     
-    // Update master media
+    // Update master media (syncs to main view)
     setMedia(newMasterMedia)
     
     // Add to channel selection
@@ -163,31 +167,26 @@ const PostBuilderModal = ({ onClose }) => {
   }
 
   const handleChannelMediaRemove = (channelId, mediaId) => {
-    // Remove from channel selection
+    // Mark channel as customized
+    setCustomizedChannels(prev => ({ ...prev, [channelId]: true }))
+    
+    // Remove ONLY from channel selection (not from master)
     setSelectedMediaByChannel(prev => ({
       ...prev,
       [channelId]: (prev[channelId] || []).filter(item => item.id !== mediaId)
     }))
     
-    // Check if this media is used by any other channel
-    const isUsedElsewhere = Object.entries(selectedMediaByChannel).some(([otherChannelId, channelMedia]) => {
-      if (otherChannelId === channelId) return false
-      return channelMedia.some(item => item.id === mediaId)
-    })
-    
-    // If not used anywhere else, remove from master media
-    if (!isUsedElsewhere) {
-      setMedia(prev => prev.filter(item => item.id !== mediaId))
-    }
+    // Note: We do NOT remove from master media - it stays in main view
   }
 
-  // Initialize empty channel media selections when channels are added
+  // Initialize channel media selections with master inheritance
   useEffect(() => {
     selectedChannels.forEach(channel => {
       if (!selectedMediaByChannel[channel.id]) {
+        // New channels inherit master media UNLESS they are customized
         setSelectedMediaByChannel(prev => ({
           ...prev,
-          [channel.id]: [] // Start with empty selection for each channel
+          [channel.id]: customizedChannels[channel.id] ? [] : [...media]
         }))
       }
     })
@@ -195,16 +194,28 @@ const PostBuilderModal = ({ onClose }) => {
     // Clean up selections for removed channels
     const activeChannelIds = new Set(selectedChannels.map(ch => ch.id))
     const cleanedSelections = {}
+    const cleanedCustomizations = {}
+    
     Object.entries(selectedMediaByChannel).forEach(([channelId, channelMedia]) => {
       if (activeChannelIds.has(channelId)) {
         cleanedSelections[channelId] = channelMedia
       }
     })
     
+    Object.entries(customizedChannels).forEach(([channelId, isCustomized]) => {
+      if (activeChannelIds.has(channelId)) {
+        cleanedCustomizations[channelId] = isCustomized
+      }
+    })
+    
     if (Object.keys(cleanedSelections).length !== Object.keys(selectedMediaByChannel).length) {
       setSelectedMediaByChannel(cleanedSelections)
     }
-  }, [selectedChannels])
+    
+    if (Object.keys(cleanedCustomizations).length !== Object.keys(customizedChannels).length) {
+      setCustomizedChannels(cleanedCustomizations)
+    }
+  }, [selectedChannels, media, customizedChannels])
 
   const handleCaptionChange = (e) => {
     setCaption(e.target.value)
@@ -225,6 +236,7 @@ const PostBuilderModal = ({ onClose }) => {
       caption: caption,
       media: media,
       selectedMediaByChannel: selectedMediaByChannel,
+      customizedChannels: customizedChannels,
       channels: selectedChannels,
       channelCaptions: channelCaptions,
       captionsLinked: true // Start with captions linked
@@ -240,6 +252,7 @@ const PostBuilderModal = ({ onClose }) => {
     // Apply temp changes to actual state
     if (tempChanges.media !== undefined) setMedia(tempChanges.media)
     if (tempChanges.selectedMediaByChannel !== undefined) setSelectedMediaByChannel(tempChanges.selectedMediaByChannel)
+    if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
     if (tempChanges.channels !== undefined) setSelectedChannels(tempChanges.channels)
     
     // Handle captions - if they're linked, use any channel's caption as the master
