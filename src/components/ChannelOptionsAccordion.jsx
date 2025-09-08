@@ -135,6 +135,10 @@ const ChannelOptionsAccordion = ({
     return null
   }
 
+  // DEBUG: Check expansion state
+  console.log('Accordion isExpanded:', isExpanded)
+  console.log('Platform options count:', platform.options.length)
+
   return (
     <div style={{
       border: '3px solid #ff0000', // TEMP: Make it very visible
@@ -195,8 +199,13 @@ const ChannelOptionsAccordion = ({
       {/* Accordion Content */}
       {isExpanded && (
         <div style={{
-          padding: '16px'
+          padding: '16px',
+          backgroundColor: '#fff3cd', // TEMP: Yellow background to see content area
+          border: '2px solid #856404' // TEMP: Dark border for content
         }}>
+          <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#856404' }}>
+            DEBUG: Content area - {platform.options.length} options
+          </div>
           {platform.options.map(option => (
             <ChannelOptionField
               key={option.id}
