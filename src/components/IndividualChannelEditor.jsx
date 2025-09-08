@@ -10,10 +10,11 @@ const IndividualChannelEditor = ({
   channelScheduling,
   onChannelSchedulingChange,
   onCancel, 
-  onUpdate 
+  onUpdate,
+  channelOptions,
+  onChannelOptionChange
 }) => {
   const [accordionExpanded, setAccordionExpanded] = useState(true) // Expanded by default in individual editing
-  const [channelOptions, setChannelOptions] = useState({})
   
   const platform = getPlatformById(editingChannelId)
   
@@ -109,17 +110,6 @@ const IndividualChannelEditor = ({
     onChannelSchedulingChange(editingChannelId, field, value)
   }
 
-  // Channel options handlers
-  const handleAccordionToggle = () => {
-    setAccordionExpanded(prev => !prev)
-  }
-
-  const handleChannelOptionChange = (optionId, value) => {
-    setChannelOptions(prev => ({
-      ...prev,
-      [optionId]: value
-    }))
-  }
 
   return (
     <div style={{
@@ -256,10 +246,10 @@ const IndividualChannelEditor = ({
           <ChannelOptionsAccordion
             platform={platform}
             isExpanded={true} // Always expanded in individual editing
-            onToggle={handleAccordionToggle}
+            onToggle={() => {}} // No-op since always expanded
             optionValues={channelOptions}
-            onOptionChange={handleChannelOptionChange}
-            disabled={true}
+            onOptionChange={onChannelOptionChange}
+            disabled={false} // Enable editing in individual mode
           />
         )}
         

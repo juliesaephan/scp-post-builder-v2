@@ -8,6 +8,7 @@ import MediaManager from './MediaManager'
 import CaptionCounterGroup from './CaptionCounterGroup'
 import ChannelOptionsAccordion from './ChannelOptionsAccordion'
 import SavePostMenu from './SavePostMenu'
+import ConfirmationDialog from './ConfirmationDialog'
 import { getRandomMediaItems } from '../data/mockMedia'
 import { getPlatformById } from '../data/platforms'
 
@@ -18,6 +19,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const [selectedChannels, setSelectedChannels] = useState([])
   const [showChannelMenu, setShowChannelMenu] = useState(false)
   const [showSavePostMenu, setShowSavePostMenu] = useState(false)
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false)
   const [caption, setCaption] = useState('')
   const [media, setMedia] = useState([]) // Master media library
   const [selectedMediaByChannel, setSelectedMediaByChannel] = useState({}) // Channel-specific media selections
@@ -510,6 +512,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     setTempChanges({})
   }
 
+  const hasUnsavedChanges = () => {
+    return caption.trim() || media.length > 0
+  }
+
   const validatePost = () => {
     if (selectedChannels.length === 0) {
       return 'Please select at least one channel before saving.'
@@ -643,6 +649,28 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     }
   }
 
+  const handleCloseRequest = () => {
+    if (hasUnsavedChanges()) {
+      setShowConfirmationDialog(true)
+    } else {
+      onClose()
+    }
+  }
+
+  const handleConfirmSaveAsDraft = async () => {
+    setShowConfirmationDialog(false)
+    await handleSaveAsDraft()
+  }
+
+  const handleConfirmDiscardChanges = () => {
+    setShowConfirmationDialog(false)
+    onClose()
+  }
+
+  const handleConfirmCancel = () => {
+    setShowConfirmationDialog(false)
+  }
+
   return (
     <>
       {/* CSS Animations */}
@@ -666,7 +694,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         }}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
-            onClose()
+            handleCloseRequest()
           }
         }}
       />
@@ -760,7 +788,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
             </button>
             
             <button 
-              onClick={onClose}
+              onClick={handleCloseRequest}
               style={{
                 background: 'none',
                 border: 'none',
@@ -814,6 +842,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                 onChannelSchedulingChange={handleChannelSchedulingChange}
                 onCancel={handleCancelIndividualChannel}
                 onUpdate={handleUpdateIndividualChannel}
+                channelOptions={channelOptions[editingChannelId] || {}}
+                onChannelOptionChange={(optionId, value) => 
+                  handleChannelOptionChange(editingChannelId, optionId, value)
+                }
               />
             ) : (
               // Normal Post Creation Mode
@@ -1048,13 +1080,16 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     backgroundColor: 'white',
                     flexShrink: 0
                   }}>
-                  <button style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '18px',
-                    color: '#dc3545'
-                  }}>
+                  <button 
+                    onClick={handleCloseRequest}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      color: '#dc3545'
+                    }}
+                  >
                     🗑️
                   </button>
 
@@ -1152,6 +1187,16 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmationDialog && (
+        <ConfirmationDialog
+          onSaveAsDraft={handleConfirmSaveAsDraft}
+          onDiscardChanges={handleConfirmDiscardChanges}
+          onCancel={handleConfirmCancel}
+          isLoading={isSaving}
+        />
+      )}
     </>
   )
 }

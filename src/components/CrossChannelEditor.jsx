@@ -95,31 +95,20 @@ const CrossChannelEditor = ({
                     masterMedia={masterMedia}
                     selectedMedia={selectedMediaForChannel}
                     onMediaAdd={(channelId, mediaItems) => {
-                      // Mark channel as customized and add media to both channel and master
+                      // Mark channel as customized and add media ONLY to this channel
                       const updatedCustomizations = { ...channelCustomizations, [channelId]: true }
                       const updatedSelections = { ...channelMediaSelections }
                       
-                      // Add to channel selection
+                      // Add to ONLY this channel's selection - do NOT add to master or other channels
                       updatedSelections[channelId] = [...(updatedSelections[channelId] || []), ...mediaItems.filter(item => 
                         !(updatedSelections[channelId] || []).some(existing => existing.id === item.id)
                       )]
                       
-                      // BIDIRECTIONAL SYNC: Add to master media if not present
-                      const existingIds = new Set(masterMedia.map(item => item.id))
-                      const newMasterMedia = [...masterMedia]
-                      
-                      mediaItems.forEach(item => {
-                        if (!existingIds.has(item.id) && newMasterMedia.length < 20) {
-                          newMasterMedia.push(item)
-                          existingIds.add(item.id)
-                        }
-                      })
-                      
                       setTempChanges(prev => ({
                         ...prev,
-                        media: newMasterMedia,
                         selectedMediaByChannel: updatedSelections,
                         customizedChannels: updatedCustomizations
+                        // Explicitly NOT updating master media - let channels be independent
                       }))
                     }}
                     onMediaRemove={(channelId, mediaId) => {
