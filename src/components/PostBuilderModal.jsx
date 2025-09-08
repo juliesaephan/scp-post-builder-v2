@@ -8,6 +8,7 @@ import MediaManager from './MediaManager'
 import CaptionCounterGroup from './CaptionCounterGroup'
 import ChannelOptionsAccordion from './ChannelOptionsAccordion'
 import { getRandomMediaItems } from '../data/mockMedia'
+import { getPlatformById } from '../data/platforms'
 
 const PostBuilderModal = ({ onClose }) => {
   const [showPreview, setShowPreview] = useState(true)
