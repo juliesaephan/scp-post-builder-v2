@@ -7,15 +7,17 @@ import IndividualChannelEditor from './IndividualChannelEditor'
 import MediaManager from './MediaManager'
 import CaptionCounterGroup from './CaptionCounterGroup'
 import ChannelOptionsAccordion from './ChannelOptionsAccordion'
+import SavePostMenu from './SavePostMenu'
 import { getRandomMediaItems } from '../data/mockMedia'
 import { getPlatformById } from '../data/platforms'
 
-const PostBuilderModal = ({ onClose }) => {
+const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const [showPreview, setShowPreview] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [selectedChannels, setSelectedChannels] = useState([])
   const [showChannelMenu, setShowChannelMenu] = useState(false)
+  const [showSavePostMenu, setShowSavePostMenu] = useState(false)
   const [caption, setCaption] = useState('')
   const [media, setMedia] = useState([]) // Master media library
   const [selectedMediaByChannel, setSelectedMediaByChannel] = useState({}) // Channel-specific media selections
@@ -45,6 +47,7 @@ const PostBuilderModal = ({ onClose }) => {
   
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
+  const saveButtonRef = useRef(null)
   
   const modalWidth = showPreview ? 1120 : 720
   const modalHeight = 550
@@ -186,13 +189,17 @@ const PostBuilderModal = ({ onClose }) => {
     })
   }
 
-  const getSchedulingButtonText = () => {
-    const scheduledChannels = selectedChannels
+  const getScheduledChannels = () => {
+    return selectedChannels
       .map(channel => ({
         ...channel,
         scheduling: channelScheduling[channel.id]
       }))
       .filter(channel => channel.scheduling?.date) // Only require date, time defaults to 11:30
+  }
+
+  const getSchedulingButtonText = () => {
+    const scheduledChannels = getScheduledChannels()
 
     if (scheduledChannels.length === 0) {
       return 'Select Date'
@@ -503,66 +510,134 @@ const PostBuilderModal = ({ onClose }) => {
     setTempChanges({})
   }
 
-  const handleSavePost = async () => {
-    // Clear previous errors/success
-    setSaveError(null)
-    setSaveSuccess(false)
-    
-    // Validation
+  const validatePost = () => {
     if (selectedChannels.length === 0) {
-      setSaveError('Please select at least one channel before saving.')
-      return
+      return 'Please select at least one channel before saving.'
     }
     
     if (!caption.trim() && !media.length) {
-      setSaveError('Please add either a caption or media before saving.')
+      return 'Please add either a caption or media before saving.'
+    }
+    
+    return null
+  }
+
+  const collectPostData = (status) => {
+    return {
+      id: Date.now().toString(), // Generate unique ID
+      caption,
+      media: media.map(item => ({
+        id: item.id,
+        url: item.url,
+        type: item.type,
+        name: item.name
+      })),
+      channels: selectedChannels.map(channel => ({
+        id: channel.id,
+        postType: channel.postType,
+        caption: channelCaptions[channel.id] || caption,
+        media: selectedMediaByChannel[channel.id] || media,
+        options: channelOptions[channel.id] || {},
+        scheduling: channelScheduling[channel.id] || {}
+      })),
+      captionsLinked,
+      createdAt: new Date().toISOString(),
+      status
+    }
+  }
+
+  const handleSaveAsDraft = async () => {
+    const validationError = validatePost()
+    if (validationError) {
+      setSaveError(validationError)
       return
     }
     
     setIsSaving(true)
+    setShowSavePostMenu(false)
     
     try {
-      // Collect all post data
-      const postData = {
-        id: Date.now().toString(), // Generate unique ID
-        caption,
-        media: media.map(item => ({
-          id: item.id,
-          url: item.url,
-          type: item.type,
-          name: item.name
-        })),
-        channels: selectedChannels.map(channel => ({
-          id: channel.id,
-          postType: channel.postType,
-          caption: channelCaptions[channel.id] || caption,
-          media: selectedMediaByChannel[channel.id] || media,
-          options: channelOptions[channel.id] || {},
-          scheduling: channelScheduling[channel.id] || {}
-        })),
-        captionsLinked,
-        createdAt: new Date().toISOString(),
-        status: 'draft'
-      }
-      
-      // In a real app, this would be an API call
-      // For now, just simulate save operation
-      console.log('Saving post:', postData)
+      const postData = collectPostData('draft')
+      console.log('Saving as draft:', postData)
       
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Simulate success
-      setSaveSuccess(true)
-      
-      // Auto-hide success message after 3 seconds
-      setTimeout(() => {
-        setSaveSuccess(false)
-      }, 3000)
+      // Close modal and show success toast
+      onClose()
+      onPostSaved?.('draft')
       
     } catch (error) {
-      setSaveError('Failed to save post. Please try again.')
+      setSaveError('Failed to save draft. Please try again.')
       console.error('Save error:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleSchedule = async () => {
+    const validationError = validatePost()
+    if (validationError) {
+      setSaveError(validationError)
+      return
+    }
+
+    // Check if any channels have scheduling dates
+    const scheduledChannels = selectedChannels.filter(channel => 
+      channelScheduling[channel.id]?.date
+    )
+
+    if (scheduledChannels.length === 0) {
+      setSaveError('Please select a date for at least one channel before scheduling.')
+      return
+    }
+    
+    setIsSaving(true)
+    setShowSavePostMenu(false)
+    
+    try {
+      const postData = collectPostData('scheduled')
+      console.log('Scheduling post:', postData)
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Close modal and show success toast
+      onClose()
+      onPostSaved?.('scheduled')
+      
+    } catch (error) {
+      setSaveError('Failed to schedule post. Please try again.')
+      console.error('Schedule error:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handlePostNow = async () => {
+    const validationError = validatePost()
+    if (validationError) {
+      setSaveError(validationError)
+      return
+    }
+    
+    setIsSaving(true)
+    setShowSavePostMenu(false)
+    
+    try {
+      const postData = collectPostData('published')
+      console.log('Publishing post now:', postData)
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Close modal and show success toast
+      onClose()
+      onPostSaved?.('published')
+      
+    } catch (error) {
+      setSaveError('Failed to publish post. Please try again.')
+      console.error('Publish error:', error)
     } finally {
       setIsSaving(false)
     }
@@ -948,18 +1023,17 @@ const PostBuilderModal = ({ onClose }) => {
                   )}
                 </div>
 
-                {/* Error/Success Messages */}
-                {(saveError || saveSuccess) && (
+                {/* Error Messages - Only show errors, success will be toast */}
+                {saveError && (
                   <div style={{
                     padding: '12px 20px',
-                    backgroundColor: saveError ? '#f8d7da' : '#d4edda',
+                    backgroundColor: '#f8d7da',
                     borderTop: '1px solid #e1e5e9',
-                    color: saveError ? '#721c24' : '#155724',
+                    color: '#721c24',
                     fontSize: '14px',
                     fontWeight: '500'
                   }}>
-                    {saveError && `❌ ${saveError}`}
-                    {saveSuccess && '✅ Post saved successfully!'}
+                    ❌ {saveError}
                   </div>
                 )}
 
@@ -1004,7 +1078,8 @@ const PostBuilderModal = ({ onClose }) => {
                     </button>
 
                     <button 
-                      onClick={handleSavePost}
+                      ref={saveButtonRef}
+                      onClick={() => setShowSavePostMenu(!showSavePostMenu)}
                       disabled={isSaving}
                       style={{
                         padding: '10px 20px',
@@ -1028,8 +1103,31 @@ const PostBuilderModal = ({ onClose }) => {
                         animation: 'spin 1s linear infinite'
                       }} />}
                       {isSaving ? 'Saving...' : 'Save Post'}
+                      {!isSaving && (
+                        <span style={{
+                          fontSize: '12px',
+                          transform: showSavePostMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s'
+                        }}>
+                          ▼
+                        </span>
+                      )}
                     </button>
                   </div>
+
+                  {/* Save Post Menu */}
+                  {showSavePostMenu && (
+                    <SavePostMenu
+                      onSaveAsDraft={handleSaveAsDraft}
+                      onSchedule={handleSchedule}
+                      onPostNow={handlePostNow}
+                      onClose={() => setShowSavePostMenu(false)}
+                      buttonRef={saveButtonRef}
+                      schedulingButtonText={getSchedulingButtonText()}
+                      hasScheduledChannels={getScheduledChannels().length > 0}
+                      isLoading={isSaving}
+                    />
+                  )}
                 </div>
                 )}
               </>

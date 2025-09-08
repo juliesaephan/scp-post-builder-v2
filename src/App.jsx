@@ -1,9 +1,29 @@
 import { useState } from 'react'
 import './App.css'
 import PostBuilderModal from './components/PostBuilderModal'
+import Toast from './components/Toast'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [toasts, setToasts] = useState([])
+
+  const addToast = (message, type = 'success') => {
+    const id = Date.now()
+    setToasts(prev => [...prev, { id, message, type }])
+  }
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
+
+  const handlePostSaved = (status) => {
+    const messages = {
+      draft: 'Post saved as draft successfully!',
+      scheduled: 'Post scheduled successfully!',
+      published: 'Post published successfully!'
+    }
+    addToast(messages[status] || messages.draft, 'success')
+  }
 
   return (
     <div style={{ 
@@ -31,8 +51,35 @@ function App() {
       </button>
 
       {isModalOpen && (
-        <PostBuilderModal onClose={() => setIsModalOpen(false)} />
+        <PostBuilderModal 
+          onClose={() => setIsModalOpen(false)} 
+          onPostSaved={handlePostSaved}
+        />
       )}
+
+      {/* Toast Container */}
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        zIndex: 10000
+      }}>
+        {toasts.map((toast, index) => (
+          <div
+            key={toast.id}
+            style={{
+              marginBottom: '10px',
+              transform: `translateY(${index * 60}px)`
+            }}
+          >
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              onClose={() => removeToast(toast.id)}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
