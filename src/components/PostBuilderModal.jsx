@@ -187,7 +187,7 @@ const PostBuilderModal = ({ onClose }) => {
         ...channel,
         scheduling: channelScheduling[channel.id]
       }))
-      .filter(channel => channel.scheduling?.date && channel.scheduling?.time)
+      .filter(channel => channel.scheduling?.date) // Only require date, time defaults to 11:30
 
     if (scheduledChannels.length === 0) {
       return 'Select Date'
@@ -197,20 +197,22 @@ const PostBuilderModal = ({ onClose }) => {
     const firstScheduling = scheduledChannels[0].scheduling
     const allSame = scheduledChannels.every(channel => 
       channel.scheduling.date === firstScheduling.date && 
-      channel.scheduling.time === firstScheduling.time
+      (channel.scheduling.time || '11:30') === (firstScheduling.time || '11:30')
     )
 
     if (allSame) {
-      return formatDateForDisplay(firstScheduling.date, firstScheduling.time)
+      return formatDateForDisplay(firstScheduling.date, firstScheduling.time || '11:30')
     } else {
       // Find earliest date/time
       const earliest = scheduledChannels.reduce((earliest, channel) => {
-        const channelDateTime = new Date(`${channel.scheduling.date}T${channel.scheduling.time}`)
-        const earliestDateTime = new Date(`${earliest.date}T${earliest.time}`)
+        const channelTime = channel.scheduling.time || '11:30'
+        const earliestTime = earliest.time || '11:30'
+        const channelDateTime = new Date(`${channel.scheduling.date}T${channelTime}`)
+        const earliestDateTime = new Date(`${earliest.date}T${earliestTime}`)
         return channelDateTime < earliestDateTime ? channel.scheduling : earliest
       }, scheduledChannels[0].scheduling)
 
-      return `Earliest at ${formatDateForDisplay(earliest.date, earliest.time)}`
+      return `Earliest at ${formatDateForDisplay(earliest.date, earliest.time || '11:30')}`
     }
   }
 

@@ -12,7 +12,7 @@ const IndividualChannelEditor = ({
   onCancel, 
   onUpdate 
 }) => {
-  const [accordionExpanded, setAccordionExpanded] = useState(false)
+  const [accordionExpanded, setAccordionExpanded] = useState(true) // Expanded by default in individual editing
   const [channelOptions, setChannelOptions] = useState({})
   
   const platform = getPlatformById(editingChannelId)
@@ -252,7 +252,7 @@ const IndividualChannelEditor = ({
         </div>
 
         {/* Channel-Specific Options */}
-        {platform?.options && platform.options.length > 0 && (
+        {platform && (
           <ChannelOptionsAccordion
             platform={platform}
             isExpanded={accordionExpanded}
