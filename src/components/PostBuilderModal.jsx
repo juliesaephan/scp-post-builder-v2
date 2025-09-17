@@ -27,7 +27,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   
   // Caption relationship state
   const [channelCaptions, setChannelCaptions] = useState({}) // Individual channel captions
-  const [captionsLinked, setCaptionsLinked] = useState(true) // Whether captions are connected to main
   
   const [crossChannelMode, setCrossChannelMode] = useState(false)
   const [individualChannelMode, setIndividualChannelMode] = useState(false) // Individual channel editing mode
@@ -35,6 +34,13 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const [activeTab, setActiveTab] = useState('media') // 'media', 'caption', 'date'
   const [tempChanges, setTempChanges] = useState({}) // Store temporary changes before update
   
+  // Channel separation state
+  const [channelsSeparated, setChannelsSeparated] = useState(false) // Global state for channel separation
+  
+  // Apply to All button state
+  const [showApplyButton, setShowApplyButton] = useState(false)
+  const [captionApplied, setCaptionApplied] = useState(false)
+
   // Channel options accordion state
   const [expandedAccordions, setExpandedAccordions] = useState({}) // Track which accordions are expanded
   const [channelOptions, setChannelOptions] = useState({}) // Store channel option values
@@ -261,7 +267,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       selectedMediaByChannel: prev.selectedMediaByChannel !== undefined ? prev.selectedMediaByChannel : selectedMediaByChannel,
       customizedChannels: prev.customizedChannels !== undefined ? prev.customizedChannels : customizedChannels,
       channelCaptions: prev.channelCaptions !== undefined ? prev.channelCaptions : channelCaptions,
-      captionsLinked: prev.captionsLinked !== undefined ? prev.captionsLinked : captionsLinked,
       // Individual channel specific data
       editingChannelId: channelId,
       channelCaption: prev.channelCaptions?.[channelId] || channelCaptions[channelId] || caption,
@@ -380,16 +385,16 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     }
   }, [selectedChannels, media, customizedChannels])
 
-  // Initialize channel captions with main caption inheritance (ONLY for truly new channels)
+  // Initialize channel captions (ONLY for truly new channels)
   useEffect(() => {
     let needsUpdate = false
     const newChannelCaptions = { ...channelCaptions }
     
     selectedChannels.forEach(channel => {
       // ONLY initialize captions for truly NEW channels that don't exist yet
-      // Don't overwrite existing disconnected captions
       if (!channelCaptions.hasOwnProperty(channel.id)) {
-        newChannelCaptions[channel.id] = caption
+        // If channels are separated, start with empty caption; if connected, inherit main caption
+        newChannelCaptions[channel.id] = channelsSeparated ? '' : caption
         needsUpdate = true
       }
     })
@@ -406,51 +411,34 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     if (needsUpdate) {
       setChannelCaptions(newChannelCaptions)
     }
-  }, [selectedChannels]) // Remove caption and captionsLinked dependencies that cause overwrites
+  }, [selectedChannels, channelsSeparated, caption]) // Include channelsSeparated and caption for new channel initialization
 
   const handleCaptionChange = (e) => {
     const newCaption = e.target.value
     setCaption(newCaption)
-    
-    // Update connected channel captions
-    if (captionsLinked) {
-      const updatedChannelCaptions = {}
-      selectedChannels.forEach(channel => {
-        updatedChannelCaptions[channel.id] = newCaption
-      })
-      setChannelCaptions(updatedChannelCaptions)
-    }
+    // Channel captions are now always independent - no auto-sync
   }
 
   const handleCustomizeClick = () => {
-    setCrossChannelMode(true)
-    setActiveTab('media')
-    
-    // Preserve existing temp changes and only add missing cross-channel data
-    setTempChanges(prev => {
-      // Build complete channel captions preserving individual edits
-      const completeChannelCaptions = {}
-      
-      selectedChannels.forEach(channel => {
-        // Priority order: 1) Individual edits from temp changes, 2) Current channel state, 3) Main caption
-        completeChannelCaptions[channel.id] = 
-          prev.channelCaptions?.[channel.id] ||  // Preserve individual edits first
-          channelCaptions[channel.id] ||         // Then current channel state
-          caption                                // Finally main caption as fallback
-      })
-      
-      return {
-        // Keep existing temp changes if any
-        caption: prev.caption !== undefined ? prev.caption : caption,
-        media: prev.media !== undefined ? prev.media : media,
-        selectedMediaByChannel: prev.selectedMediaByChannel !== undefined ? prev.selectedMediaByChannel : selectedMediaByChannel,
-        customizedChannels: prev.customizedChannels !== undefined ? prev.customizedChannels : customizedChannels,
-        channelCaptions: completeChannelCaptions, // Always use complete set that preserves individual edits
-        captionsLinked: prev.captionsLinked !== undefined ? prev.captionsLinked : captionsLinked,
-        // Cross-channel specific data
-        channels: selectedChannels,
-      }
+    setChannelsSeparated(!channelsSeparated)
+  }
+
+  const handleApplyToAll = () => {
+    // Copy main caption to all selected channels
+    const updatedChannelCaptions = {}
+    selectedChannels.forEach(channel => {
+      updatedChannelCaptions[channel.id] = caption
     })
+    setChannelCaptions(updatedChannelCaptions)
+    
+    // Show feedback and hide button
+    setCaptionApplied(true)
+    setShowApplyButton(false)
+    
+    // Reset feedback after 2 seconds
+    setTimeout(() => {
+      setCaptionApplied(false)
+    }, 2000)
   }
 
   const handleCancelCrossChannel = () => {
@@ -471,20 +459,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
     if (tempChanges.channels !== undefined) setSelectedChannels(tempChanges.channels)
     
-    // Handle captions - Apply channel captions and linking status (DO NOT update main caption)
+    // Handle captions - Apply channel captions (always independent)
     if (tempChanges.channelCaptions !== undefined) {
       setChannelCaptions(tempChanges.channelCaptions)
-    }
-    if (tempChanges.captionsLinked !== undefined) {
-      setCaptionsLinked(tempChanges.captionsLinked)
-      
-      // If captions are being re-linked, update main caption from "Apply to All"
-      if (tempChanges.captionsLinked && tempChanges.channelCaptions) {
-        const firstChannelId = Object.keys(tempChanges.channelCaptions)[0]
-        if (firstChannelId) {
-          setCaption(tempChanges.channelCaptions[firstChannelId] || '')
-        }
-      }
     }
     
     setCrossChannelMode(false)
@@ -497,14 +474,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     if (tempChanges.selectedMediaByChannel !== undefined) setSelectedMediaByChannel(tempChanges.selectedMediaByChannel)
     if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
     
-    // Apply individual channel captions (DO NOT update main caption)
+    // Apply individual channel captions (always independent)
     if (tempChanges.channelCaptions !== undefined) {
       setChannelCaptions(tempChanges.channelCaptions)
-    }
-    
-    // Mark captions as disconnected if individual channel was edited
-    if (tempChanges.channelCaptions !== undefined) {
-      setCaptionsLinked(false)
     }
     
     setIndividualChannelMode(false)
@@ -546,7 +518,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         options: channelOptions[channel.id] || {},
         scheduling: channelScheduling[channel.id] || {}
       })),
-      captionsLinked,
       createdAt: new Date().toISOString(),
       status
     }
@@ -875,28 +846,62 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       display: 'flex',
                       flexDirection: 'column'
                     }}>
-                      <textarea 
-                        placeholder="Write your caption..."
-                        value={caption}
-                        onChange={handleCaptionChange}
-                        style={{
-                          flex: 1,
-                          padding: '12px',
-                          border: '1px solid #dee2e6',
-                          borderRadius: '8px',
-                          resize: 'none',
-                          fontFamily: 'inherit',
-                          fontSize: '14px',
-                          minHeight: '120px'
-                        }}
-                      />
+                      <div style={{
+                        position: 'relative',
+                        flex: 1
+                      }}>
+                        <textarea 
+                          placeholder="Write your caption..."
+                          value={caption}
+                          onChange={handleCaptionChange}
+                          onFocus={() => setShowApplyButton(caption.trim() && selectedChannels.length > 0)}
+                          onBlur={() => setTimeout(() => setShowApplyButton(false), 150)} // Delay to allow button click
+                          onMouseEnter={() => setShowApplyButton(caption.trim() && selectedChannels.length > 0)}
+                          onMouseLeave={() => setShowApplyButton(false)}
+                          style={{
+                            width: '100%',
+                            height: '120px',
+                            padding: '12px',
+                            paddingBottom: '40px', // Make room for button
+                            border: '1px solid #dee2e6',
+                            borderRadius: '8px',
+                            resize: 'none',
+                            fontFamily: 'inherit',
+                            fontSize: '14px'
+                          }}
+                        />
+                        
+                        {/* Apply to All Button */}
+                        {(showApplyButton || captionApplied) && (
+                          <button
+                            onClick={handleApplyToAll}
+                            disabled={captionApplied}
+                            style={{
+                              position: 'absolute',
+                              bottom: '8px',
+                              right: '8px',
+                              padding: '4px 8px',
+                              fontSize: '12px',
+                              backgroundColor: captionApplied ? '#28a745' : '#007bff',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: captionApplied ? 'default' : 'pointer',
+                              opacity: showApplyButton || captionApplied ? 1 : 0,
+                              transition: 'opacity 0.2s ease-in-out',
+                              zIndex: 10
+                            }}
+                          >
+                            {captionApplied ? '✓ Applied!' : 'Apply to All'}
+                          </button>
+                        )}
+                      </div>
                       
                       {/* Caption Character Counters */}
                       <CaptionCounterGroup 
                         selectedChannels={selectedChannels}
                         caption={caption}
                         channelCaptions={channelCaptions}
-                        captionsLinked={captionsLinked}
                       />
                     </div>
                   </div>
@@ -980,8 +985,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             style={{
                               height: '36px',
                               padding: '8px 16px',
-                              backgroundColor: '#f8f9fa',
-                              color: '#495057',
+                              backgroundColor: channelsSeparated ? '#007bff' : '#f8f9fa',
+                              color: channelsSeparated ? 'white' : '#495057',
                               border: '1px solid #dee2e6',
                               borderRadius: '6px 0 0 6px',
                               cursor: 'pointer',
@@ -989,7 +994,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               borderRight: 'none'
                             }}
                           >
-                            Customize
+                            {channelsSeparated ? 'Separated' : 'Customize'}
                           </button>
                           
                           <button 

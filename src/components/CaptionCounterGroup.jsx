@@ -3,16 +3,12 @@ import { getPlatformById } from '../data/platforms'
 const CaptionCounterGroup = ({ 
   selectedChannels, 
   caption, 
-  channelCaptions, 
-  captionsLinked 
+  channelCaptions
 }) => {
   if (selectedChannels.length === 0) return null
 
-  // Group channels by their caption content
+  // Group channels by their caption content (all captions are independent)
   const getChannelCaption = (channelId) => {
-    if (captionsLinked) {
-      return caption
-    }
     return channelCaptions[channelId] || caption
   }
 
@@ -20,13 +16,12 @@ const CaptionCounterGroup = ({
   const captionGroups = {}
   selectedChannels.forEach(channel => {
     const channelCaption = getChannelCaption(channel.id)
-    const key = captionsLinked ? 'connected' : channelCaption
+    const key = channelCaption
     
     if (!captionGroups[key]) {
       captionGroups[key] = {
         caption: channelCaption,
-        channels: [],
-        isConnected: captionsLinked
+        channels: []
       }
     }
     captionGroups[key].channels.push(channel)
@@ -47,8 +42,8 @@ const CaptionCounterGroup = ({
           alignItems: 'center',
           gap: '8px',
           padding: '6px 12px',
-          backgroundColor: group.isConnected ? '#f0f8ff' : '#f8f9fa',
-          border: group.isConnected ? '1px solid #cce7ff' : '1px solid #e1e5e9',
+          backgroundColor: '#f8f9fa',
+          border: '1px solid #e1e5e9',
           borderRadius: '20px',
           fontSize: '12px'
         }}>
@@ -78,15 +73,6 @@ const CaptionCounterGroup = ({
             {group.caption.length}/280
           </span>
           
-          {/* Connection Status */}
-          {group.isConnected && (
-            <span style={{
-              color: '#007bff',
-              fontSize: '11px'
-            }}>
-              linked
-            </span>
-          )}
         </div>
       ))}
     </div>

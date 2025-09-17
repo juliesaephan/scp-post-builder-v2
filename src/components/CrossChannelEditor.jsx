@@ -159,8 +159,7 @@ const CrossChannelEditor = ({
         channelCaptions: {
           ...prev.channelCaptions,
           [channelId]: value
-        },
-        captionsLinked: false // Editing makes captions separate
+        }
       }))
     }
 
@@ -174,8 +173,7 @@ const CrossChannelEditor = ({
       
       setTempChanges(prev => ({
         ...prev,
-        channelCaptions: newChannelCaptions,
-        captionsLinked: true // Apply to All reconnects to master
+        channelCaptions: newChannelCaptions
       }))
     }
 
