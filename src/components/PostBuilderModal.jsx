@@ -38,10 +38,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Channel separation state
   const [channelsSeparated, setChannelsSeparated] = useState(false) // Global state for channel separation
 
-  // Apply to All button state
-  const [showApplyButton, setShowApplyButton] = useState(false)
-  const [captionApplied, setCaptionApplied] = useState(false)
-  const [isTypingInCaptions, setIsTypingInCaptions] = useState(false)
+  // Individual channel Apply to All button state
+  const [activeChannelId, setActiveChannelId] = useState(null) // Which channel is being typed in
+  const [hoveredChannelId, setHoveredChannelId] = useState(null) // Which channel is being hovered
+  const [appliedChannelId, setAppliedChannelId] = useState(null) // Which channel just applied (for feedback)
 
   // Channel options accordion state
   const [expandedAccordions, setExpandedAccordions] = useState({}) // Track which accordions are expanded
@@ -437,26 +437,23 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     setChannelsSeparated(!channelsSeparated)
   }
 
-  const handleApplyToAll = () => {
-    // Find the first non-empty caption from any channel
-    const firstNonEmptyCaption = selectedChannels
-      .map(channel => channelCaptions[channel.id] || '')
-      .find(caption => caption.trim()) || ''
+  const handleApplyToAll = (sourceChannelId) => {
+    // Get the caption from the source channel
+    const sourceCaption = channelCaptions[sourceChannelId] || ''
 
     // Apply it to all channels
     const updatedChannelCaptions = {}
     selectedChannels.forEach(channel => {
-      updatedChannelCaptions[channel.id] = firstNonEmptyCaption
+      updatedChannelCaptions[channel.id] = sourceCaption
     })
     setChannelCaptions(updatedChannelCaptions)
 
-    // Show feedback and hide button
-    setCaptionApplied(true)
-    setShowApplyButton(false)
+    // Show feedback for this specific channel
+    setAppliedChannelId(sourceChannelId)
 
     // Reset feedback after 2 seconds
     setTimeout(() => {
-      setCaptionApplied(false)
+      setAppliedChannelId(null)
     }, 2000)
   }
 
@@ -865,53 +862,17 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       display: 'flex',
                       flexDirection: 'column'
                     }}>
-                      {/* Caption Container with Apply to All */}
+                      {/* Caption Container */}
                       <div
                         style={{
                           position: 'relative',
-                          height: '240px', // Match MediaManager total height
+                          height: '280px', // Increased height for individual Apply to All buttons
                           border: '1px solid #dee2e6',
                           borderRadius: '8px',
                           overflow: 'hidden',
                           backgroundColor: '#fff'
                         }}
-                        onMouseEnter={() => {
-                          if (selectedChannels.length > 1) {
-                            const hasContent = selectedChannels.some(channel =>
-                              (channelCaptions[channel.id] || '').trim()
-                            )
-                            setShowApplyButton(hasContent)
-                          }
-                        }}
-                        onMouseLeave={() => setShowApplyButton(false)}
                       >
-                        {/* Apply to All Button - Inside Container */}
-                        {selectedChannels.length > 1 && (showApplyButton || captionApplied || isTypingInCaptions) && (
-                          <button
-                            onClick={handleApplyToAll}
-                            disabled={captionApplied}
-                            style={{
-                              position: 'absolute',
-                              top: '8px',
-                              right: '8px',
-                              padding: '6px 12px',
-                              fontSize: '11px',
-                              backgroundColor: captionApplied ? '#28a745' : '#007bff',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '5px',
-                              cursor: captionApplied ? 'default' : 'pointer',
-                              zIndex: 20,
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                              opacity: (showApplyButton || captionApplied || isTypingInCaptions) ? 1 : 0,
-                              transition: 'opacity 0.2s ease-in-out',
-                              backdropFilter: 'blur(2px)'
-                            }}
-                            onMouseEnter={(e) => e.stopPropagation()}
-                          >
-                            {captionApplied ? '✓ Applied!' : 'Apply to All'}
-                          </button>
-                        )}
 
                         {selectedChannels.length === 0 ? (
                           /* Single Caption Field - Before Channel Selection */
@@ -920,14 +881,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               placeholder="Write your caption..."
                               value={caption}
                               onChange={handleCaptionChange}
-                              onFocus={() => {
-                                if (selectedChannels.length > 1) {
-                                  setIsTypingInCaptions(true)
-                                }
-                              }}
-                              onBlur={() => {
-                                setTimeout(() => setIsTypingInCaptions(false), 200)
-                              }}
                               style={{
                                 width: '100%',
                                 height: '100%',
@@ -971,6 +924,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                   style={{
                                     marginBottom: isLastChannel ? '0' : '16px'
                                   }}
+                                  onMouseEnter={() => setHoveredChannelId(channel.id)}
+                                  onMouseLeave={() => setHoveredChannelId(null)}
                                 >
                                   {/* Channel Label */}
                                   <div style={{
@@ -994,29 +949,21 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                     )}
                                   </div>
 
-                                  {/* Channel Caption Field with Integrated Counter */}
+                                  {/* Channel Caption Field with Integrated Counter and Apply Button */}
                                   <div style={{ position: 'relative' }}>
                                     <textarea
                                       placeholder={`Write caption for ${platform?.name}...`}
                                       value={channelCaption}
                                       onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
-                                      onFocus={() => {
-                                        setIsTypingInCaptions(true)
-                                        // Also show apply button if there's content
-                                        if (selectedChannels.length > 1) {
-                                          const hasContent = selectedChannels.some(ch =>
-                                            (channelCaptions[ch.id] || '').trim()
-                                          )
-                                          setShowApplyButton(hasContent)
-                                        }
-                                      }}
+                                      onFocus={() => setActiveChannelId(channel.id)}
                                       onBlur={() => {
-                                        setTimeout(() => setIsTypingInCaptions(false), 200)
+                                        setTimeout(() => setActiveChannelId(null), 200)
                                       }}
                                       style={{
                                         width: '100%',
                                         height: '70px',
                                         padding: '8px',
+                                        paddingTop: '28px', // Space for Apply to All button
                                         paddingBottom: '24px', // Space for character counter
                                         border: '1px solid #e1e5e9',
                                         borderRadius: '6px',
@@ -1027,6 +974,34 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                         backgroundColor: '#fff'
                                       }}
                                     />
+
+                                    {/* Individual Apply to All Button */}
+                                    {selectedChannels.length > 1 &&
+                                     (activeChannelId === channel.id || hoveredChannelId === channel.id) &&
+                                     channelCaption.trim() && (
+                                      <button
+                                        onClick={() => handleApplyToAll(channel.id)}
+                                        disabled={appliedChannelId === channel.id}
+                                        style={{
+                                          position: 'absolute',
+                                          top: '6px',
+                                          right: '6px',
+                                          padding: '4px 8px',
+                                          fontSize: '10px',
+                                          backgroundColor: appliedChannelId === channel.id ? '#28a745' : '#007bff',
+                                          color: 'white',
+                                          border: 'none',
+                                          borderRadius: '4px',
+                                          cursor: appliedChannelId === channel.id ? 'default' : 'pointer',
+                                          zIndex: 10,
+                                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                          transition: 'all 0.2s ease-in-out'
+                                        }}
+                                      >
+                                        {appliedChannelId === channel.id ? '✓ Applied!' : 'Apply to All'}
+                                      </button>
+                                    )}
+
                                     {/* Individual Character Counter */}
                                     <div style={{
                                       position: 'absolute',
