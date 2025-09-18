@@ -41,6 +41,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Apply to All button state
   const [showApplyButton, setShowApplyButton] = useState(false)
   const [captionApplied, setCaptionApplied] = useState(false)
+  const [isTypingInCaptions, setIsTypingInCaptions] = useState(false)
 
   // Channel options accordion state
   const [expandedAccordions, setExpandedAccordions] = useState({}) // Track which accordions are expanded
@@ -868,7 +869,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       <div
                         style={{
                           position: 'relative',
-                          height: '160px', // Increased to accommodate counters
+                          height: '240px', // Match MediaManager total height
                           border: '1px solid #dee2e6',
                           borderRadius: '8px',
                           overflow: 'hidden',
@@ -884,25 +885,29 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         }}
                         onMouseLeave={() => setShowApplyButton(false)}
                       >
-                        {/* Apply to All Button */}
-                        {(showApplyButton || captionApplied) && (
+                        {/* Apply to All Button - Inside Container */}
+                        {selectedChannels.length > 1 && (showApplyButton || captionApplied || isTypingInCaptions) && (
                           <button
                             onClick={handleApplyToAll}
                             disabled={captionApplied}
                             style={{
                               position: 'absolute',
-                              top: '-40px',
-                              right: '0',
+                              top: '8px',
+                              right: '8px',
                               padding: '6px 12px',
-                              fontSize: '12px',
+                              fontSize: '11px',
                               backgroundColor: captionApplied ? '#28a745' : '#007bff',
                               color: 'white',
                               border: 'none',
-                              borderRadius: '6px',
+                              borderRadius: '5px',
                               cursor: captionApplied ? 'default' : 'pointer',
-                              zIndex: 10,
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                              zIndex: 20,
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                              opacity: (showApplyButton || captionApplied || isTypingInCaptions) ? 1 : 0,
+                              transition: 'opacity 0.2s ease-in-out',
+                              backdropFilter: 'blur(2px)'
                             }}
+                            onMouseEnter={(e) => e.stopPropagation()}
                           >
                             {captionApplied ? '✓ Applied!' : 'Apply to All'}
                           </button>
@@ -915,6 +920,14 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               placeholder="Write your caption..."
                               value={caption}
                               onChange={handleCaptionChange}
+                              onFocus={() => {
+                                if (selectedChannels.length > 1) {
+                                  setIsTypingInCaptions(true)
+                                }
+                              }}
+                              onBlur={() => {
+                                setTimeout(() => setIsTypingInCaptions(false), 200)
+                              }}
                               style={{
                                 width: '100%',
                                 height: '100%',
@@ -987,6 +1000,19 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                       placeholder={`Write caption for ${platform?.name}...`}
                                       value={channelCaption}
                                       onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
+                                      onFocus={() => {
+                                        setIsTypingInCaptions(true)
+                                        // Also show apply button if there's content
+                                        if (selectedChannels.length > 1) {
+                                          const hasContent = selectedChannels.some(ch =>
+                                            (channelCaptions[ch.id] || '').trim()
+                                          )
+                                          setShowApplyButton(hasContent)
+                                        }
+                                      }}
+                                      onBlur={() => {
+                                        setTimeout(() => setIsTypingInCaptions(false), 200)
+                                      }}
                                       style={{
                                         width: '100%',
                                         height: '70px',
