@@ -123,19 +123,28 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
       if (existingIndex >= 0) {
         // Remove channel - clean up its caption
+        const updatedChannels = prev.filter((_, index) => index !== existingIndex)
+
         setChannelCaptions(prevCaptions => {
           const updated = { ...prevCaptions }
           delete updated[channelId]
           return updated
         })
-        return prev.filter((_, index) => index !== existingIndex)
+
+        // If removing the last channel, reset caption adoption state
+        if (updatedChannels.length === 0) {
+          setHasEditedCaptions(false)
+          setInitialCaption('')
+        }
+
+        return updatedChannels
       } else {
         // Add channel - handle caption adoption logic
         const isFirstChannel = prev.length === 0
         const templateCaption = isFirstChannel ? caption.trim() : initialCaption
 
         if (isFirstChannel && caption.trim()) {
-          // First channel with pre-written caption - save as template and adopt
+          // First channel with pre-written caption - always update template and adopt
           setInitialCaption(caption.trim())
           setChannelCaptions(prevCaptions => ({
             ...prevCaptions,
@@ -350,6 +359,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       updatedChannelCaptions[channel.id] = sourceCaption
     })
     setChannelCaptions(updatedChannelCaptions)
+
+    // Mark captions as edited to stop template adoption for future channels
+    setHasEditedCaptions(true)
 
     // Show feedback for this specific channel
     setAppliedChannelId(sourceChannelId)
