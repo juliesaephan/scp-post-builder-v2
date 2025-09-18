@@ -2,8 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import ChannelBadge from './ChannelBadge'
 import ChannelMenu from './ChannelMenu'
 import PreviewCarousel from './PreviewCarousel'
-import CrossChannelEditor from './CrossChannelEditor'
-import IndividualChannelEditor from './IndividualChannelEditor'
 import MediaManager from './MediaManager'
 import CaptionCounterGroup from './CaptionCounterGroup'
 import ChannelOptionsAccordion from './ChannelOptionsAccordion'
@@ -29,11 +27,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const [hasEditedCaptions, setHasEditedCaptions] = useState(false) // Track if user has edited any channel captions after selection
   const [initialCaption, setInitialCaption] = useState('') // Store the initial caption for template adoption
   
-  const [crossChannelMode, setCrossChannelMode] = useState(false)
-  const [individualChannelMode, setIndividualChannelMode] = useState(false) // Individual channel editing mode
-  const [editingChannelId, setEditingChannelId] = useState(null) // Which channel is being edited individually
-  const [activeTab, setActiveTab] = useState('media') // 'media', 'caption', 'date'
-  const [tempChanges, setTempChanges] = useState({}) // Store temporary changes before update
   
   // Channel separation state
   const [channelsSeparated, setChannelsSeparated] = useState(false) // Global state for channel separation
@@ -53,6 +46,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Save state
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
+
+  // Date scheduling interface
+  const [showDateScheduling, setShowDateScheduling] = useState(false)
   
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
@@ -266,45 +262,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     }
   }
 
-  const handleDateButtonClick = () => {
-    setCrossChannelMode(true)
-    setActiveTab('date')
-  }
 
-  const handleChannelSchedulingChange = (channelId, field, value) => {
-    setChannelScheduling(prev => ({
-      ...prev,
-      [channelId]: {
-        ...prev[channelId],
-        [field]: value
-      }
-    }))
-  }
-
-  const handleChannelEdit = (channelId) => {
-    setEditingChannelId(channelId)
-    setIndividualChannelMode(true)
-    setActiveTab('media') // Start with media tab
-    
-    // Preserve existing temp changes and only add missing individual channel data
-    const channelMedia = selectedMediaByChannel[channelId] || []
-    const isChannelCustomized = customizedChannels[channelId]
-    
-    setTempChanges(prev => ({
-      // Keep existing temp changes if any
-      caption: prev.caption !== undefined ? prev.caption : caption,
-      media: prev.media !== undefined ? prev.media : media,
-      selectedMediaByChannel: prev.selectedMediaByChannel !== undefined ? prev.selectedMediaByChannel : selectedMediaByChannel,
-      customizedChannels: prev.customizedChannels !== undefined ? prev.customizedChannels : customizedChannels,
-      channelCaptions: prev.channelCaptions !== undefined ? prev.channelCaptions : channelCaptions,
-      // Individual channel specific data
-      editingChannelId: channelId,
-      channelCaption: prev.channelCaptions?.[channelId] || channelCaptions[channelId] || caption,
-      channelMedia: isChannelCustomized ? channelMedia : [...(prev.media || media)], // Show inherited or customized media
-      channelScheduling: prev.channelScheduling || {},
-      individualMode: true
-    }))
-  }
 
   // Smart media management functions
   const handleMasterMediaChange = (newMediaArray) => {
@@ -321,61 +279,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     setSelectedMediaByChannel(updatedChannelSelections)
   }
 
-  const handleChannelMediaAdd = (channelId, mediaItems) => {
-    // Mark channel as customized
-    setCustomizedChannels(prev => ({ ...prev, [channelId]: true }))
-    
-    // Add media to master library if not already present (BIDIRECTIONAL SYNC)
-    const existingIds = new Set(media.map(item => item.id))
-    const newMasterMedia = [...media]
-    
-    mediaItems.forEach(item => {
-      if (!existingIds.has(item.id) && newMasterMedia.length < 20) {
-        newMasterMedia.push(item)
-        existingIds.add(item.id)
-      }
-    })
-    
-    // Update master media (syncs to main view)
-    setMedia(newMasterMedia)
-    
-    // Add to channel selection
-    setSelectedMediaByChannel(prev => ({
-      ...prev,
-      [channelId]: [...(prev[channelId] || []), ...mediaItems.filter(item => 
-        !(prev[channelId] || []).some(existing => existing.id === item.id)
-      )]
-    }))
-  }
-
-  const handleChannelMediaRemove = (channelId, mediaId) => {
-    // Mark channel as customized
-    setCustomizedChannels(prev => ({ ...prev, [channelId]: true }))
-    
-    // Remove from channel selection
-    const updatedSelections = {
-      ...selectedMediaByChannel,
-      [channelId]: (selectedMediaByChannel[channelId] || []).filter(item => item.id !== mediaId)
-    }
-    setSelectedMediaByChannel(updatedSelections)
-    
-    // SMART CLEANUP: Check if media exists in any other channel
-    const mediaExistsElsewhere = Object.entries(updatedSelections).some(([otherChannelId, otherChannelMedia]) => {
-      if (otherChannelId === channelId) return false // Skip the channel we just removed from
-      return otherChannelMedia.some(item => item.id === mediaId)
-    })
-    
-    // Also check if non-customized channels would inherit this media from master
-    const nonCustomizedChannelsExist = selectedChannels.some(channel => 
-      !customizedChannels[channel.id] && channel.id !== channelId
-    )
-    
-    // If media doesn't exist in any customized channel AND there are no non-customized channels,
-    // remove from master media as well
-    if (!mediaExistsElsewhere && !nonCustomizedChannelsExist) {
-      setMedia(prev => prev.filter(item => item.id !== mediaId))
-    }
-  }
 
   // Initialize channel media selections with master inheritance
   useEffect(() => {
@@ -457,48 +360,16 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     }, 2000)
   }
 
-  const handleCancelCrossChannel = () => {
-    setCrossChannelMode(false)
-    setTempChanges({})
+  const handleChannelSchedulingChange = (channelId, field, value) => {
+    setChannelScheduling(prev => ({
+      ...prev,
+      [channelId]: {
+        ...prev[channelId],
+        [field]: value
+      }
+    }))
   }
 
-  const handleCancelIndividualChannel = () => {
-    setIndividualChannelMode(false)
-    setEditingChannelId(null)
-    setTempChanges({})
-  }
-
-  const handleUpdateCrossChannel = () => {
-    // Apply temp changes to actual state
-    if (tempChanges.media !== undefined) setMedia(tempChanges.media)
-    if (tempChanges.selectedMediaByChannel !== undefined) setSelectedMediaByChannel(tempChanges.selectedMediaByChannel)
-    if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
-    if (tempChanges.channels !== undefined) setSelectedChannels(tempChanges.channels)
-    
-    // Handle captions - Apply channel captions (always independent)
-    if (tempChanges.channelCaptions !== undefined) {
-      setChannelCaptions(tempChanges.channelCaptions)
-    }
-    
-    setCrossChannelMode(false)
-    setTempChanges({})
-  }
-
-  const handleUpdateIndividualChannel = () => {
-    // Apply temp changes to actual state for individual channel
-    if (tempChanges.media !== undefined) setMedia(tempChanges.media)
-    if (tempChanges.selectedMediaByChannel !== undefined) setSelectedMediaByChannel(tempChanges.selectedMediaByChannel)
-    if (tempChanges.customizedChannels !== undefined) setCustomizedChannels(tempChanges.customizedChannels)
-    
-    // Apply individual channel captions (always independent)
-    if (tempChanges.channelCaptions !== undefined) {
-      setChannelCaptions(tempChanges.channelCaptions)
-    }
-    
-    setIndividualChannelMode(false)
-    setEditingChannelId(null)
-    setTempChanges({})
-  }
 
   const hasUnsavedChanges = () => {
     return caption.trim() || media.length > 0
@@ -804,233 +675,414 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
             flexDirection: 'column',
             position: 'relative'
           }}>
-            {crossChannelMode ? (
-              // Cross-Channel Editing Mode
-              <CrossChannelEditor
-                selectedChannels={selectedChannels}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                tempChanges={tempChanges}
-                setTempChanges={setTempChanges}
-                channelScheduling={channelScheduling}
-                onChannelSchedulingChange={handleChannelSchedulingChange}
-                onCancel={handleCancelCrossChannel}
-                onUpdate={handleUpdateCrossChannel}
-                onChannelMediaAdd={handleChannelMediaAdd}
-                onChannelMediaRemove={handleChannelMediaRemove}
-              />
-            ) : individualChannelMode ? (
-              // Individual Channel Editing Mode
-              <IndividualChannelEditor
-                editingChannelId={editingChannelId}
-                tempChanges={tempChanges}
-                setTempChanges={setTempChanges}
-                channelScheduling={channelScheduling}
-                onChannelSchedulingChange={handleChannelSchedulingChange}
-                onCancel={handleCancelIndividualChannel}
-                onUpdate={handleUpdateIndividualChannel}
-                channelOptions={channelOptions[editingChannelId] || {}}
-                onChannelOptionChange={(optionId, value) => 
-                  handleChannelOptionChange(editingChannelId, optionId, value)
-                }
-              />
-            ) : (
-              // Normal Post Creation Mode
-              <>
+            {/* Post Creation Mode */}
                 <div style={{ 
                   flex: 1, 
                   overflow: 'auto',
                   padding: '20px',
                   paddingBottom: '10px'
                 }}>
-                  {/* Media Uploader + Caption Editor */}
+                  {/* Post Content Header */}
                   <div style={{
                     display: 'flex',
-                    gap: '16px',
-                    marginBottom: '20px'
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '16px',
+                    paddingBottom: '8px',
+                    borderBottom: '1px solid #e1e5e9'
                   }}>
-                    {/* Media Manager */}
-                    <MediaManager
-                      media={media}
-                      onMediaChange={handleMasterMediaChange}
-                      maxMedia={20}
-                    />
-
-                    {/* Caption Editor - Rebuilt with Integrated Counters */}
-                    <div style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column'
+                    <h3 style={{
+                      margin: 0,
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      color: '#495057'
                     }}>
-                      {/* Caption Container */}
-                      <div
+                      Post Content
+                    </h3>
+
+                    {selectedChannels.length > 1 && (
+                      <button
+                        onClick={handleCustomizeClick}
                         style={{
-                          position: 'relative',
-                          height: '280px', // Increased height for individual Apply to All buttons
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          backgroundColor: channelsSeparated ? '#007bff' : '#f8f9fa',
+                          color: channelsSeparated ? 'white' : '#495057',
                           border: '1px solid #dee2e6',
-                          borderRadius: '8px',
-                          overflow: 'hidden',
-                          backgroundColor: '#fff'
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontWeight: '500'
                         }}
                       >
+                        {channelsSeparated ? 'Unified View' : 'Customize Channels'}
+                      </button>
+                    )}
+                  </div>
 
-                        {selectedChannels.length === 0 ? (
-                          /* Single Caption Field - Before Channel Selection */
-                          <div style={{ position: 'relative', height: '100%' }}>
-                            <textarea
-                              placeholder="Write your caption..."
-                              value={caption}
-                              onChange={handleCaptionChange}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                padding: '12px',
-                                paddingBottom: '40px', // Space for character counter
-                                border: 'none',
-                                resize: 'none',
-                                fontFamily: 'inherit',
-                                fontSize: '14px',
-                                outline: 'none',
-                                backgroundColor: 'transparent'
-                              }}
-                            />
-                            {/* Single Caption Character Counter */}
-                            <div style={{
-                              position: 'absolute',
-                              bottom: '8px',
-                              right: '12px',
-                              fontSize: '11px',
-                              color: caption.length > 280 ? '#dc3545' : '#6c757d',
-                              fontWeight: '500'
-                            }}>
-                              {caption.length}/280
+                  {/* Conditional Rendering: Unified vs Customized View */}
+                  {!channelsSeparated ? (
+                    /* UNIFIED VIEW - Media Uploader + Caption Editor */
+                    <div style={{
+                      display: 'flex',
+                      gap: '16px',
+                      marginBottom: '20px'
+                    }}>
+                      {/* Media Manager */}
+                      <MediaManager
+                        media={media}
+                        onMediaChange={handleMasterMediaChange}
+                        maxMedia={20}
+                      />
+
+                      {/* Caption Editor - Rebuilt with Integrated Counters */}
+                      <div style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}>
+                        {/* Caption Container */}
+                        <div
+                          style={{
+                            position: 'relative',
+                            height: '280px', // Increased height for individual Apply to All buttons
+                            border: '1px solid #dee2e6',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            backgroundColor: '#fff'
+                          }}
+                        >
+
+                          {selectedChannels.length === 0 ? (
+                            /* Single Caption Field - Before Channel Selection */
+                            <div style={{ position: 'relative', height: '100%' }}>
+                              <textarea
+                                placeholder="Write your caption..."
+                                value={caption}
+                                onChange={handleCaptionChange}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  padding: '12px',
+                                  paddingBottom: '40px', // Space for character counter
+                                  border: 'none',
+                                  resize: 'none',
+                                  fontFamily: 'inherit',
+                                  fontSize: '14px',
+                                  outline: 'none',
+                                  backgroundColor: 'transparent'
+                                }}
+                              />
+                              {/* Single Caption Character Counter */}
+                              <div style={{
+                                position: 'absolute',
+                                bottom: '8px',
+                                right: '12px',
+                                fontSize: '11px',
+                                color: caption.length > 280 ? '#dc3545' : '#6c757d',
+                                fontWeight: '500'
+                              }}>
+                                {caption.length}/280
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          /* Individual Channel Caption Fields - After Channel Selection */
-                          <div style={{
-                            height: '100%',
-                            overflowY: 'auto',
-                            padding: '12px'
-                          }}>
-                            {selectedChannels.map((channel, index) => {
-                              const platform = getPlatformById(channel.id)
-                              const isLastChannel = index === selectedChannels.length - 1
-                              const channelCaption = channelCaptions[channel.id] || ''
+                          ) : (
+                            /* Individual Channel Caption Fields - After Channel Selection */
+                            <div style={{
+                              height: '100%',
+                              overflowY: 'auto',
+                              padding: '12px'
+                            }}>
+                              {selectedChannels.map((channel, index) => {
+                                const platform = getPlatformById(channel.id)
+                                const isLastChannel = index === selectedChannels.length - 1
+                                const channelCaption = channelCaptions[channel.id] || ''
 
-                              return (
-                                <div
-                                  key={channel.id}
-                                  style={{
-                                    marginBottom: isLastChannel ? '0' : '16px'
-                                  }}
-                                  onMouseEnter={() => setHoveredChannelId(channel.id)}
-                                  onMouseLeave={() => setHoveredChannelId(null)}
-                                >
-                                  {/* Channel Label */}
-                                  <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    marginBottom: '6px',
-                                    fontSize: '12px',
-                                    fontWeight: '600',
-                                    color: '#495057'
-                                  }}>
-                                    <span style={{ fontSize: '14px' }}>{platform?.icon}</span>
-                                    <span>{platform?.name}</span>
-                                    {channel.postType && (
-                                      <span style={{
-                                        color: '#6c757d',
-                                        fontWeight: '400'
-                                      }}>
-                                        • {channel.postType}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {/* Channel Caption Field with Integrated Counter and Apply Button */}
-                                  <div style={{ position: 'relative' }}>
-                                    <textarea
-                                      placeholder={`Write caption for ${platform?.name}...`}
-                                      value={channelCaption}
-                                      onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
-                                      onFocus={() => setActiveChannelId(channel.id)}
-                                      onBlur={() => {
-                                        setTimeout(() => setActiveChannelId(null), 200)
-                                      }}
-                                      style={{
-                                        width: '100%',
-                                        height: '70px',
-                                        padding: '8px',
-                                        paddingTop: '28px', // Space for Apply to All button
-                                        paddingBottom: '24px', // Space for character counter
-                                        border: '1px solid #e1e5e9',
-                                        borderRadius: '6px',
-                                        resize: 'none',
-                                        fontFamily: 'inherit',
-                                        fontSize: '13px',
-                                        outline: 'none',
-                                        backgroundColor: '#fff'
-                                      }}
-                                    />
-
-                                    {/* Individual Apply to All Button */}
-                                    {selectedChannels.length > 1 &&
-                                     (activeChannelId === channel.id || hoveredChannelId === channel.id) &&
-                                     channelCaption.trim() && (
-                                      <button
-                                        onClick={() => handleApplyToAll(channel.id)}
-                                        disabled={appliedChannelId === channel.id}
-                                        style={{
-                                          position: 'absolute',
-                                          top: '6px',
-                                          right: '6px',
-                                          padding: '4px 8px',
-                                          fontSize: '10px',
-                                          backgroundColor: appliedChannelId === channel.id ? '#28a745' : '#007bff',
-                                          color: 'white',
-                                          border: 'none',
-                                          borderRadius: '4px',
-                                          cursor: appliedChannelId === channel.id ? 'default' : 'pointer',
-                                          zIndex: 10,
-                                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                                          transition: 'all 0.2s ease-in-out'
-                                        }}
-                                      >
-                                        {appliedChannelId === channel.id ? '✓ Applied!' : 'Apply to All'}
-                                      </button>
-                                    )}
-
-                                    {/* Individual Character Counter */}
+                                return (
+                                  <div
+                                    key={channel.id}
+                                    style={{
+                                      marginBottom: isLastChannel ? '0' : '16px'
+                                    }}
+                                    onMouseEnter={() => setHoveredChannelId(channel.id)}
+                                    onMouseLeave={() => setHoveredChannelId(null)}
+                                  >
+                                    {/* Channel Label */}
                                     <div style={{
-                                      position: 'absolute',
-                                      bottom: '4px',
-                                      right: '8px',
-                                      fontSize: '10px',
-                                      color: channelCaption.length > 280 ? '#dc3545' : '#6c757d',
-                                      fontWeight: '500'
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      marginBottom: '6px',
+                                      fontSize: '12px',
+                                      fontWeight: '600',
+                                      color: '#495057'
                                     }}>
-                                      {channelCaption.length}/280
+                                      <span style={{ fontSize: '14px' }}>{platform?.icon}</span>
+                                      <span>{platform?.name}</span>
+                                      {channel.postType && (
+                                        <span style={{
+                                          color: '#6c757d',
+                                          fontWeight: '400'
+                                        }}>
+                                          • {channel.postType}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Channel Caption Field with Integrated Counter and Apply Button */}
+                                    <div style={{ position: 'relative' }}>
+                                      <textarea
+                                        placeholder={`Write caption for ${platform?.name}...`}
+                                        value={channelCaption}
+                                        onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
+                                        onFocus={() => setActiveChannelId(channel.id)}
+                                        onBlur={() => {
+                                          setTimeout(() => setActiveChannelId(null), 200)
+                                        }}
+                                        style={{
+                                          width: '100%',
+                                          height: '70px',
+                                          padding: '8px',
+                                          paddingTop: '28px', // Space for Apply to All button
+                                          paddingBottom: '24px', // Space for character counter
+                                          border: '1px solid #e1e5e9',
+                                          borderRadius: '6px',
+                                          resize: 'none',
+                                          fontFamily: 'inherit',
+                                          fontSize: '13px',
+                                          outline: 'none',
+                                          backgroundColor: '#fff'
+                                        }}
+                                      />
+
+                                      {/* Individual Apply to All Button */}
+                                      {selectedChannels.length > 1 &&
+                                       (activeChannelId === channel.id || hoveredChannelId === channel.id) &&
+                                       channelCaption.trim() && (
+                                        <button
+                                          onClick={() => handleApplyToAll(channel.id)}
+                                          disabled={appliedChannelId === channel.id}
+                                          style={{
+                                            position: 'absolute',
+                                            top: '6px',
+                                            right: '6px',
+                                            padding: '4px 8px',
+                                            fontSize: '10px',
+                                            backgroundColor: appliedChannelId === channel.id ? '#28a745' : '#007bff',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            cursor: appliedChannelId === channel.id ? 'default' : 'pointer',
+                                            zIndex: 10,
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                            transition: 'all 0.2s ease-in-out'
+                                          }}
+                                        >
+                                          {appliedChannelId === channel.id ? '✓ Applied!' : 'Apply to All'}
+                                        </button>
+                                      )}
+
+                                      {/* Individual Character Counter */}
+                                      <div style={{
+                                        position: 'absolute',
+                                        bottom: '4px',
+                                        right: '8px',
+                                        fontSize: '10px',
+                                        color: channelCaption.length > 280 ? '#dc3545' : '#6c757d',
+                                        fontWeight: '500'
+                                      }}>
+                                        {channelCaption.length}/280
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              )
-                            })}
-                          </div>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Only show CaptionCounterGroup in single caption mode */}
+                        {selectedChannels.length === 0 && (
+                          <CaptionCounterGroup
+                            selectedChannels={selectedChannels}
+                            caption={caption}
+                            channelCaptions={channelCaptions}
+                          />
                         )}
                       </div>
-
-                      {/* Only show CaptionCounterGroup in single caption mode */}
-                      {selectedChannels.length === 0 && (
-                        <CaptionCounterGroup
-                          selectedChannels={selectedChannels}
-                          caption={caption}
-                          channelCaptions={channelCaptions}
-                        />
-                      )}
                     </div>
-                  </div>
+                  ) : (
+                    /* CUSTOMIZED VIEW - Individual Channel Sections */
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '20px',
+                      marginBottom: '20px'
+                    }}>
+                      {selectedChannels.map((channel) => {
+                        const platform = getPlatformById(channel.id)
+                        const channelCaption = channelCaptions[channel.id] || ''
+                        const channelMedia = selectedMediaByChannel[channel.id] || []
+
+                        return (
+                          <div
+                            key={channel.id}
+                            style={{
+                              border: '2px solid #e1e5e9',
+                              borderRadius: '12px',
+                              padding: '16px',
+                              backgroundColor: '#fff'
+                            }}
+                          >
+                            {/* Channel Header */}
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              marginBottom: '16px',
+                              paddingBottom: '12px',
+                              borderBottom: '1px solid #e1e5e9'
+                            }}>
+                              <div style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '8px',
+                                backgroundColor: platform?.color || '#ccc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '16px'
+                              }}>
+                                {platform?.icon}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: '600', fontSize: '16px', color: '#495057' }}>
+                                  {platform?.name}
+                                </div>
+                                {channel.postType && (
+                                  <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                                    {channel.postType}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Media and Caption Section */}
+                            <div style={{
+                              display: 'flex',
+                              gap: '16px'
+                            }}>
+                              {/* Channel Media Manager */}
+                              <div style={{ flex: 1 }}>
+                                <h4 style={{
+                                  margin: '0 0 12px 0',
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  color: '#495057'
+                                }}>
+                                  Media
+                                </h4>
+                                <div style={{
+                                  border: '1px solid #dee2e6',
+                                  borderRadius: '8px',
+                                  padding: '12px',
+                                  minHeight: '120px',
+                                  backgroundColor: '#f8f9fa'
+                                }}>
+                                  <div style={{
+                                    fontSize: '12px',
+                                    color: '#6c757d',
+                                    textAlign: 'center',
+                                    padding: '20px'
+                                  }}>
+                                    {channelMedia.length} media items selected
+                                    <br />
+                                    <small>Individual media management coming soon</small>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Channel Caption */}
+                              <div style={{ flex: 1 }}>
+                                <h4 style={{
+                                  margin: '0 0 12px 0',
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  color: '#495057'
+                                }}>
+                                  Caption
+                                </h4>
+                                <div style={{ position: 'relative' }}>
+                                  <textarea
+                                    placeholder={`Write caption for ${platform?.name}...`}
+                                    value={channelCaption}
+                                    onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
+                                    onFocus={() => setActiveChannelId(channel.id)}
+                                    onBlur={() => {
+                                      setTimeout(() => setActiveChannelId(null), 200)
+                                    }}
+                                    onMouseEnter={() => setHoveredChannelId(channel.id)}
+                                    onMouseLeave={() => setHoveredChannelId(null)}
+                                    style={{
+                                      width: '100%',
+                                      height: '120px',
+                                      padding: '12px',
+                                      paddingTop: '32px', // Space for Apply to All button
+                                      paddingBottom: '24px', // Space for character counter
+                                      border: '1px solid #dee2e6',
+                                      borderRadius: '8px',
+                                      resize: 'none',
+                                      fontFamily: 'inherit',
+                                      fontSize: '14px',
+                                      outline: 'none',
+                                      backgroundColor: '#fff'
+                                    }}
+                                  />
+
+                                  {/* Individual Apply to All Button */}
+                                  {selectedChannels.length > 1 &&
+                                   (activeChannelId === channel.id || hoveredChannelId === channel.id) &&
+                                   channelCaption.trim() && (
+                                    <button
+                                      onClick={() => handleApplyToAll(channel.id)}
+                                      disabled={appliedChannelId === channel.id}
+                                      style={{
+                                        position: 'absolute',
+                                        top: '8px',
+                                        right: '8px',
+                                        padding: '6px 10px',
+                                        fontSize: '11px',
+                                        backgroundColor: appliedChannelId === channel.id ? '#28a745' : '#007bff',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: appliedChannelId === channel.id ? 'default' : 'pointer',
+                                        zIndex: 10,
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                        transition: 'all 0.2s ease-in-out'
+                                      }}
+                                    >
+                                      {appliedChannelId === channel.id ? '✓ Applied!' : 'Apply to All'}
+                                    </button>
+                                  )}
+
+                                  {/* Individual Character Counter */}
+                                  <div style={{
+                                    position: 'absolute',
+                                    bottom: '6px',
+                                    right: '12px',
+                                    fontSize: '11px',
+                                    color: channelCaption.length > 280 ? '#dc3545' : '#6c757d',
+                                    fontWeight: '500'
+                                  }}>
+                                    {channelCaption.length}/280
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
 
                   {/* Social Channel Selector */}
                   <div style={{
@@ -1093,7 +1145,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               key={channel.id}
                               channelId={channel.id}
                               postType={channel.postType}
-                              onEdit={handleChannelEdit}
                               onRemove={handleChannelRemove}
                             />
                           ))}
@@ -1103,27 +1154,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '0',
                           justifyContent: 'flex-end'
                         }}>
-                          <button 
-                            onClick={handleCustomizeClick}
-                            style={{
-                              height: '36px',
-                              padding: '8px 16px',
-                              backgroundColor: channelsSeparated ? '#007bff' : '#f8f9fa',
-                              color: channelsSeparated ? 'white' : '#495057',
-                              border: '1px solid #dee2e6',
-                              borderRadius: '6px 0 0 6px',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                              borderRight: 'none'
-                            }}
-                          >
-                            {channelsSeparated ? 'Separated' : 'Customize'}
-                          </button>
-                          
-                          <button 
+                          <button
                             ref={addButtonRef}
                             onClick={() => setShowChannelMenu(!showChannelMenu)}
                             style={{
@@ -1132,7 +1165,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               backgroundColor: '#007bff',
                               color: 'white',
                               border: 'none',
-                              borderRadius: '0 6px 6px 0',
+                              borderRadius: '6px',
                               cursor: 'pointer',
                               fontSize: '18px',
                               display: 'flex',
@@ -1200,9 +1233,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                   </div>
                 )}
 
-                {/* Sticky Footer - Only show in normal mode */}
-                {!individualChannelMode && (
-                  <div style={{
+                {/* Sticky Footer */}
+                <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -1229,11 +1261,11 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     alignItems: 'center',
                     gap: '12px'
                   }}>
-                    <button 
-                      onClick={handleDateButtonClick}
+                    <button
+                      onClick={() => setShowDateScheduling(!showDateScheduling)}
                       style={{
                         padding: '8px 12px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: showDateScheduling ? '#e9ecef' : '#f8f9fa',
                         border: '1px solid #dee2e6',
                         borderRadius: '6px',
                         cursor: 'pointer',
@@ -1294,10 +1326,157 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       isLoading={isSaving}
                     />
                   )}
+
+                  {/* Date Scheduling Interface */}
+                  {showDateScheduling && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '70px',
+                      right: '20px',
+                      left: '20px',
+                      backgroundColor: 'white',
+                      border: '1px solid #dee2e6',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                      zIndex: 1000,
+                      maxHeight: '300px',
+                      overflowY: 'auto'
+                    }}>
+                      <div style={{
+                        padding: '16px',
+                        borderBottom: '1px solid #e1e5e9',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#495057'
+                      }}>
+                        Schedule Posts by Channel
+                      </div>
+
+                      <div style={{ padding: '16px' }}>
+                        {selectedChannels.length === 0 ? (
+                          <div style={{
+                            textAlign: 'center',
+                            color: '#6c757d',
+                            fontSize: '14px',
+                            padding: '20px'
+                          }}>
+                            Select channels to schedule posts
+                          </div>
+                        ) : (
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                          }}>
+                            {selectedChannels.map((channel) => {
+                              const platform = getPlatformById(channel.id)
+                              const isConnected = platform?.account
+
+                              return (
+                                <div key={channel.id} style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '12px',
+                                  padding: '12px',
+                                  border: '1px solid #e1e5e9',
+                                  borderRadius: '6px',
+                                  backgroundColor: '#f8f9fa'
+                                }}>
+                                  {/* Platform Info */}
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    minWidth: '120px'
+                                  }}>
+                                    <div style={{
+                                      width: '24px',
+                                      height: '24px',
+                                      borderRadius: '4px',
+                                      backgroundColor: platform?.color || '#ccc',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      marginRight: '8px',
+                                      fontSize: '12px'
+                                    }}>
+                                      {platform?.icon}
+                                    </div>
+                                    <div>
+                                      <div style={{ fontWeight: '500', fontSize: '13px' }}>
+                                        {platform?.name}
+                                      </div>
+                                      {channel.postType && (
+                                        <div style={{ fontSize: '11px', color: '#6c757d' }}>
+                                          {channel.postType}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Date/Time Controls */}
+                                  <div style={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                  }}>
+                                    <input
+                                      type="date"
+                                      value={channelScheduling[channel.id]?.date || ''}
+                                      onChange={(e) => handleChannelSchedulingChange(channel.id, 'date', e.target.value)}
+                                      style={{
+                                        padding: '6px',
+                                        border: '1px solid #dee2e6',
+                                        borderRadius: '4px',
+                                        fontSize: '12px',
+                                        flex: 1
+                                      }}
+                                    />
+
+                                    <input
+                                      type="time"
+                                      value={channelScheduling[channel.id]?.time || '11:30'}
+                                      onChange={(e) => handleChannelSchedulingChange(channel.id, 'time', e.target.value)}
+                                      style={{
+                                        padding: '6px',
+                                        border: '1px solid #dee2e6',
+                                        borderRadius: '4px',
+                                        fontSize: '12px',
+                                        width: '80px'
+                                      }}
+                                    />
+
+                                    <select
+                                      value={channelScheduling[channel.id]?.type || 'auto'}
+                                      onChange={(e) => handleChannelSchedulingChange(channel.id, 'type', e.target.value)}
+                                      style={{
+                                        padding: '6px',
+                                        border: '1px solid #dee2e6',
+                                        borderRadius: '4px',
+                                        fontSize: '12px',
+                                        width: '100px'
+                                      }}
+                                    >
+                                      {isConnected ? (
+                                        <>
+                                          <option value="auto">Auto-post</option>
+                                          <option value="reminder">Reminder</option>
+                                        </>
+                                      ) : (
+                                        <option value="reminder">Reminder only</option>
+                                      )}
+                                    </select>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                )}
-              </>
-            )}
+                </div>
           </div>
 
           {/* Right Panel - Preview Carousel */}
@@ -1310,9 +1489,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                 selectedChannels={selectedChannels}
                 caption={caption}
                 media={media}
-                individualChannelMode={individualChannelMode}
-                editingChannelId={editingChannelId}
-                tempChanges={tempChanges}
               />
             </div>
           )}
