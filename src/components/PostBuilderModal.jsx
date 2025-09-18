@@ -9,7 +9,6 @@ import CaptionCounterGroup from './CaptionCounterGroup'
 import ChannelOptionsAccordion from './ChannelOptionsAccordion'
 import SavePostMenu from './SavePostMenu'
 import ConfirmationDialog from './ConfirmationDialog'
-import { getRandomMediaItems } from '../data/mockMedia'
 import { getPlatformById } from '../data/platforms'
 
 const PostBuilderModal = ({ onClose, onPostSaved }) => {
@@ -24,9 +23,11 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const [media, setMedia] = useState([]) // Master media library
   const [selectedMediaByChannel, setSelectedMediaByChannel] = useState({}) // Channel-specific media selections
   const [customizedChannels, setCustomizedChannels] = useState({}) // Track which channels have been customized
-  
+
   // Caption relationship state
   const [channelCaptions, setChannelCaptions] = useState({}) // Individual channel captions
+  const [hasEditedCaptions, setHasEditedCaptions] = useState(false) // Track if user has edited any channel captions after selection
+  const [initialCaption, setInitialCaption] = useState('') // Store the initial caption for template adoption
   
   const [crossChannelMode, setCrossChannelMode] = useState(false)
   const [individualChannelMode, setIndividualChannelMode] = useState(false) // Individual channel editing mode
@@ -36,10 +37,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   
   // Channel separation state
   const [channelsSeparated, setChannelsSeparated] = useState(false) // Global state for channel separation
-  
-  // Apply to All button state
-  const [showApplyButton, setShowApplyButton] = useState(false)
-  const [captionApplied, setCaptionApplied] = useState(false)
 
   // Channel options accordion state
   const [expandedAccordions, setExpandedAccordions] = useState({}) // Track which accordions are expanded
@@ -51,7 +48,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Save state
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
-  const [saveSuccess, setSaveSuccess] = useState(false)
   
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
@@ -123,12 +119,41 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const handleChannelToggle = (channelId, postType) => {
     setSelectedChannels(prev => {
       const existingIndex = prev.findIndex(channel => channel.id === channelId)
-      
+
       if (existingIndex >= 0) {
-        // Remove channel
+        // Remove channel - clean up its caption
+        setChannelCaptions(prevCaptions => {
+          const updated = { ...prevCaptions }
+          delete updated[channelId]
+          return updated
+        })
         return prev.filter((_, index) => index !== existingIndex)
       } else {
-        // Add channel
+        // Add channel - handle caption adoption logic
+        const isFirstChannel = prev.length === 0
+        const templateCaption = isFirstChannel ? caption.trim() : initialCaption
+
+        if (isFirstChannel && caption.trim()) {
+          // First channel with pre-written caption - save as template and adopt
+          setInitialCaption(caption.trim())
+          setChannelCaptions(prevCaptions => ({
+            ...prevCaptions,
+            [channelId]: caption.trim()
+          }))
+        } else if (!isFirstChannel && templateCaption && !hasEditedCaptions) {
+          // Additional channels before any editing - adopt template
+          setChannelCaptions(prevCaptions => ({
+            ...prevCaptions,
+            [channelId]: templateCaption
+          }))
+        } else {
+          // New channel after editing or no template - start blank
+          setChannelCaptions(prevCaptions => ({
+            ...prevCaptions,
+            [channelId]: ''
+          }))
+        }
+
         return [...prev, { id: channelId, postType }]
       }
     })
@@ -351,10 +376,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   useEffect(() => {
     selectedChannels.forEach(channel => {
       if (!selectedMediaByChannel[channel.id]) {
-        // New channels inherit master media UNLESS they are customized
+        // New channels inherit master media UNLESS they are customized OR channels are separated
         setSelectedMediaByChannel(prev => ({
           ...prev,
-          [channel.id]: customizedChannels[channel.id] ? [] : [...media]
+          [channel.id]: (customizedChannels[channel.id] || channelsSeparated) ? [] : [...media]
         }))
       }
     })
@@ -383,35 +408,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     if (Object.keys(cleanedCustomizations).length !== Object.keys(customizedChannels).length) {
       setCustomizedChannels(cleanedCustomizations)
     }
-  }, [selectedChannels, media, customizedChannels])
+  }, [selectedChannels, media, customizedChannels, channelsSeparated])
 
-  // Initialize channel captions (ONLY for truly new channels)
-  useEffect(() => {
-    let needsUpdate = false
-    const newChannelCaptions = { ...channelCaptions }
-    
-    selectedChannels.forEach(channel => {
-      // ONLY initialize captions for truly NEW channels that don't exist yet
-      if (!channelCaptions.hasOwnProperty(channel.id)) {
-        // If channels are separated, start with empty caption; if connected, inherit main caption
-        newChannelCaptions[channel.id] = channelsSeparated ? '' : caption
-        needsUpdate = true
-      }
-    })
-
-    // Clean up captions for removed channels
-    const activeChannelIds = new Set(selectedChannels.map(ch => ch.id))
-    Object.keys(channelCaptions).forEach(channelId => {
-      if (!activeChannelIds.has(channelId)) {
-        delete newChannelCaptions[channelId]
-        needsUpdate = true
-      }
-    })
-    
-    if (needsUpdate) {
-      setChannelCaptions(newChannelCaptions)
-    }
-  }, [selectedChannels, channelsSeparated, caption]) // Include channelsSeparated and caption for new channel initialization
 
   const handleCaptionChange = (e) => {
     const newCaption = e.target.value
@@ -419,26 +417,19 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     // Channel captions are now always independent - no auto-sync
   }
 
-  const handleCustomizeClick = () => {
-    setChannelsSeparated(!channelsSeparated)
+  const handleChannelCaptionChange = (channelId, newCaption) => {
+    setChannelCaptions(prev => ({
+      ...prev,
+      [channelId]: newCaption
+    }))
+    // Mark that captions have been edited after channel selection
+    if (selectedChannels.length > 0) {
+      setHasEditedCaptions(true)
+    }
   }
 
-  const handleApplyToAll = () => {
-    // Copy main caption to all selected channels
-    const updatedChannelCaptions = {}
-    selectedChannels.forEach(channel => {
-      updatedChannelCaptions[channel.id] = caption
-    })
-    setChannelCaptions(updatedChannelCaptions)
-    
-    // Show feedback and hide button
-    setCaptionApplied(true)
-    setShowApplyButton(false)
-    
-    // Reset feedback after 2 seconds
-    setTimeout(() => {
-      setCaptionApplied(false)
-    }, 2000)
+  const handleCustomizeClick = () => {
+    setChannelsSeparated(!channelsSeparated)
   }
 
   const handleCancelCrossChannel = () => {
@@ -840,65 +831,105 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       maxMedia={20}
                     />
 
-                    {/* Caption Editor */}
+                    {/* Caption Editor - Rebuilt */}
                     <div style={{
                       flex: 1,
                       display: 'flex',
                       flexDirection: 'column'
                     }}>
+                      {/* Caption Container */}
                       <div style={{
-                        position: 'relative',
-                        flex: 1
+                        height: '120px',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        backgroundColor: '#fff'
                       }}>
-                        <textarea 
-                          placeholder="Write your caption..."
-                          value={caption}
-                          onChange={handleCaptionChange}
-                          onFocus={() => setShowApplyButton(caption.trim() && selectedChannels.length > 0)}
-                          onBlur={() => setTimeout(() => setShowApplyButton(false), 150)} // Delay to allow button click
-                          onMouseEnter={() => setShowApplyButton(caption.trim() && selectedChannels.length > 0)}
-                          onMouseLeave={() => setShowApplyButton(false)}
-                          style={{
-                            width: '100%',
-                            height: '120px',
-                            padding: '12px',
-                            paddingBottom: '40px', // Make room for button
-                            border: '1px solid #dee2e6',
-                            borderRadius: '8px',
-                            resize: 'none',
-                            fontFamily: 'inherit',
-                            fontSize: '14px'
-                          }}
-                        />
-                        
-                        {/* Apply to All Button */}
-                        {(showApplyButton || captionApplied) && (
-                          <button
-                            onClick={handleApplyToAll}
-                            disabled={captionApplied}
+                        {selectedChannels.length === 0 ? (
+                          /* Single Caption Field - Before Channel Selection */
+                          <textarea
+                            placeholder="Write your caption..."
+                            value={caption}
+                            onChange={handleCaptionChange}
                             style={{
-                              position: 'absolute',
-                              bottom: '8px',
-                              right: '8px',
-                              padding: '4px 8px',
-                              fontSize: '12px',
-                              backgroundColor: captionApplied ? '#28a745' : '#007bff',
-                              color: 'white',
+                              width: '100%',
+                              height: '100%',
+                              padding: '12px',
                               border: 'none',
-                              borderRadius: '4px',
-                              cursor: captionApplied ? 'default' : 'pointer',
-                              opacity: showApplyButton || captionApplied ? 1 : 0,
-                              transition: 'opacity 0.2s ease-in-out',
-                              zIndex: 10
+                              resize: 'none',
+                              fontFamily: 'inherit',
+                              fontSize: '14px',
+                              outline: 'none',
+                              backgroundColor: 'transparent'
                             }}
-                          >
-                            {captionApplied ? '✓ Applied!' : 'Apply to All'}
-                          </button>
+                          />
+                        ) : (
+                          /* Individual Channel Caption Fields - After Channel Selection */
+                          <div style={{
+                            height: '100%',
+                            overflowY: 'auto',
+                            padding: '12px'
+                          }}>
+                            {selectedChannels.map((channel, index) => {
+                              const platform = getPlatformById(channel.id)
+                              const isLastChannel = index === selectedChannels.length - 1
+
+                              return (
+                                <div
+                                  key={channel.id}
+                                  style={{
+                                    marginBottom: isLastChannel ? '0' : '16px'
+                                  }}
+                                >
+                                  {/* Channel Label */}
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    marginBottom: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    color: '#495057'
+                                  }}>
+                                    <span style={{ fontSize: '14px' }}>{platform?.icon}</span>
+                                    <span>{platform?.name}</span>
+                                    {channel.postType && (
+                                      <span style={{
+                                        color: '#6c757d',
+                                        fontWeight: '400'
+                                      }}>
+                                        • {channel.postType}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Channel Caption Field */}
+                                  <textarea
+                                    placeholder={`Write caption for ${platform?.name}...`}
+                                    value={channelCaptions[channel.id] || ''}
+                                    onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
+                                    style={{
+                                      width: '100%',
+                                      height: '64px',
+                                      padding: '8px',
+                                      border: '1px solid #e1e5e9',
+                                      borderRadius: '6px',
+                                      resize: 'none',
+                                      fontFamily: 'inherit',
+                                      fontSize: '13px',
+                                      outline: 'none',
+                                      backgroundColor: '#fff'
+                                    }}
+                                  />
+                                </div>
+                              )
+                            })}
+                          </div>
                         )}
                       </div>
-                      
+
                       {/* Caption Character Counters */}
-                      <CaptionCounterGroup 
+                      <CaptionCounterGroup
                         selectedChannels={selectedChannels}
                         caption={caption}
                         channelCaptions={channelCaptions}
