@@ -1476,7 +1476,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     </div>
                   )}
                 </div>
-                </div>
           </div>
 
           {/* Right Panel - Preview Carousel */}
