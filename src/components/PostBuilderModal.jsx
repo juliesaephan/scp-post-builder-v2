@@ -38,6 +38,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Channel separation state
   const [channelsSeparated, setChannelsSeparated] = useState(false) // Global state for channel separation
 
+  // Apply to All button state
+  const [showApplyButton, setShowApplyButton] = useState(false)
+  const [captionApplied, setCaptionApplied] = useState(false)
+
   // Channel options accordion state
   const [expandedAccordions, setExpandedAccordions] = useState({}) // Track which accordions are expanded
   const [channelOptions, setChannelOptions] = useState({}) // Store channel option values
@@ -430,6 +434,29 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
   const handleCustomizeClick = () => {
     setChannelsSeparated(!channelsSeparated)
+  }
+
+  const handleApplyToAll = () => {
+    // Find the first non-empty caption from any channel
+    const firstNonEmptyCaption = selectedChannels
+      .map(channel => channelCaptions[channel.id] || '')
+      .find(caption => caption.trim()) || ''
+
+    // Apply it to all channels
+    const updatedChannelCaptions = {}
+    selectedChannels.forEach(channel => {
+      updatedChannelCaptions[channel.id] = firstNonEmptyCaption
+    })
+    setChannelCaptions(updatedChannelCaptions)
+
+    // Show feedback and hide button
+    setCaptionApplied(true)
+    setShowApplyButton(false)
+
+    // Reset feedback after 2 seconds
+    setTimeout(() => {
+      setCaptionApplied(false)
+    }, 2000)
   }
 
   const handleCancelCrossChannel = () => {
@@ -831,38 +858,88 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       maxMedia={20}
                     />
 
-                    {/* Caption Editor - Rebuilt */}
+                    {/* Caption Editor - Rebuilt with Integrated Counters */}
                     <div style={{
                       flex: 1,
                       display: 'flex',
                       flexDirection: 'column'
                     }}>
-                      {/* Caption Container */}
-                      <div style={{
-                        height: '120px',
-                        border: '1px solid #dee2e6',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        backgroundColor: '#fff'
-                      }}>
+                      {/* Caption Container with Apply to All */}
+                      <div
+                        style={{
+                          position: 'relative',
+                          height: '160px', // Increased to accommodate counters
+                          border: '1px solid #dee2e6',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          backgroundColor: '#fff'
+                        }}
+                        onMouseEnter={() => {
+                          if (selectedChannels.length > 1) {
+                            const hasContent = selectedChannels.some(channel =>
+                              (channelCaptions[channel.id] || '').trim()
+                            )
+                            setShowApplyButton(hasContent)
+                          }
+                        }}
+                        onMouseLeave={() => setShowApplyButton(false)}
+                      >
+                        {/* Apply to All Button */}
+                        {(showApplyButton || captionApplied) && (
+                          <button
+                            onClick={handleApplyToAll}
+                            disabled={captionApplied}
+                            style={{
+                              position: 'absolute',
+                              top: '-40px',
+                              right: '0',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              backgroundColor: captionApplied ? '#28a745' : '#007bff',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: captionApplied ? 'default' : 'pointer',
+                              zIndex: 10,
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}
+                          >
+                            {captionApplied ? '✓ Applied!' : 'Apply to All'}
+                          </button>
+                        )}
+
                         {selectedChannels.length === 0 ? (
                           /* Single Caption Field - Before Channel Selection */
-                          <textarea
-                            placeholder="Write your caption..."
-                            value={caption}
-                            onChange={handleCaptionChange}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              padding: '12px',
-                              border: 'none',
-                              resize: 'none',
-                              fontFamily: 'inherit',
-                              fontSize: '14px',
-                              outline: 'none',
-                              backgroundColor: 'transparent'
-                            }}
-                          />
+                          <div style={{ position: 'relative', height: '100%' }}>
+                            <textarea
+                              placeholder="Write your caption..."
+                              value={caption}
+                              onChange={handleCaptionChange}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                padding: '12px',
+                                paddingBottom: '40px', // Space for character counter
+                                border: 'none',
+                                resize: 'none',
+                                fontFamily: 'inherit',
+                                fontSize: '14px',
+                                outline: 'none',
+                                backgroundColor: 'transparent'
+                              }}
+                            />
+                            {/* Single Caption Character Counter */}
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '8px',
+                              right: '12px',
+                              fontSize: '11px',
+                              color: caption.length > 280 ? '#dc3545' : '#6c757d',
+                              fontWeight: '500'
+                            }}>
+                              {caption.length}/280
+                            </div>
+                          </div>
                         ) : (
                           /* Individual Channel Caption Fields - After Channel Selection */
                           <div style={{
@@ -873,6 +950,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             {selectedChannels.map((channel, index) => {
                               const platform = getPlatformById(channel.id)
                               const isLastChannel = index === selectedChannels.length - 1
+                              const channelCaption = channelCaptions[channel.id] || ''
 
                               return (
                                 <div
@@ -903,24 +981,38 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                     )}
                                   </div>
 
-                                  {/* Channel Caption Field */}
-                                  <textarea
-                                    placeholder={`Write caption for ${platform?.name}...`}
-                                    value={channelCaptions[channel.id] || ''}
-                                    onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
-                                    style={{
-                                      width: '100%',
-                                      height: '64px',
-                                      padding: '8px',
-                                      border: '1px solid #e1e5e9',
-                                      borderRadius: '6px',
-                                      resize: 'none',
-                                      fontFamily: 'inherit',
-                                      fontSize: '13px',
-                                      outline: 'none',
-                                      backgroundColor: '#fff'
-                                    }}
-                                  />
+                                  {/* Channel Caption Field with Integrated Counter */}
+                                  <div style={{ position: 'relative' }}>
+                                    <textarea
+                                      placeholder={`Write caption for ${platform?.name}...`}
+                                      value={channelCaption}
+                                      onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
+                                      style={{
+                                        width: '100%',
+                                        height: '70px',
+                                        padding: '8px',
+                                        paddingBottom: '24px', // Space for character counter
+                                        border: '1px solid #e1e5e9',
+                                        borderRadius: '6px',
+                                        resize: 'none',
+                                        fontFamily: 'inherit',
+                                        fontSize: '13px',
+                                        outline: 'none',
+                                        backgroundColor: '#fff'
+                                      }}
+                                    />
+                                    {/* Individual Character Counter */}
+                                    <div style={{
+                                      position: 'absolute',
+                                      bottom: '4px',
+                                      right: '8px',
+                                      fontSize: '10px',
+                                      color: channelCaption.length > 280 ? '#dc3545' : '#6c757d',
+                                      fontWeight: '500'
+                                    }}>
+                                      {channelCaption.length}/280
+                                    </div>
+                                  </div>
                                 </div>
                               )
                             })}
@@ -928,12 +1020,14 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         )}
                       </div>
 
-                      {/* Caption Character Counters */}
-                      <CaptionCounterGroup
-                        selectedChannels={selectedChannels}
-                        caption={caption}
-                        channelCaptions={channelCaptions}
-                      />
+                      {/* Only show CaptionCounterGroup in single caption mode */}
+                      {selectedChannels.length === 0 && (
+                        <CaptionCounterGroup
+                          selectedChannels={selectedChannels}
+                          caption={caption}
+                          channelCaptions={channelCaptions}
+                        />
+                      )}
                     </div>
                   </div>
 
