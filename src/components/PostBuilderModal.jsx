@@ -382,7 +382,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       selectedChannels.forEach(channel => {
         separatedData[channel.id] = {
           media: [...media], // Each channel gets independent copy of current media
-          caption: channelCaptions[channel.id] || '', // Each channel gets its current caption
+          caption: channelCaptions[channel.id] || caption || '', // Each channel gets its current caption or unified caption
           options: channelOptions[channel.id] || {},
           scheduling: channelScheduling[channel.id] || {}
         }
@@ -1104,6 +1104,17 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         </button>
                       </div>
 
+                      {/* Channel Selection Menu for Separated Mode */}
+                      {showChannelMenu && (
+                        <ChannelMenu
+                          selectedChannels={selectedChannels}
+                          onChannelToggle={handleChannelToggle}
+                          onPostTypeSelect={handlePostTypeSelect}
+                          onClose={() => setShowChannelMenu(false)}
+                          buttonRef={addButtonRef}
+                        />
+                      )}
+
                       {/* Active Channel Content */}
                       {activeChannelTab && separatedChannelData[activeChannelTab] && (
                         <div>
@@ -1302,7 +1313,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                   )}
 
                   {/* Channel Options Accordions - Show in order channels were selected */}
-                  {selectedChannels.length > 0 && (
+                  {selectedChannels.length > 0 && !channelsSeparated && (
                     <div style={{ marginBottom: '20px' }}>
                       {selectedChannels
                         .filter(channel => {
@@ -1595,9 +1606,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
               backgroundColor: '#f8f9fa'
             }}>
               <PreviewCarousel
-                selectedChannels={selectedChannels}
-                caption={caption}
-                media={media}
+                selectedChannels={channelsSeparated && activeChannelTab ? selectedChannels.filter(ch => ch.id === activeChannelTab) : selectedChannels}
+                caption={channelsSeparated && activeChannelTab ? separatedChannelData[activeChannelTab]?.caption || '' : caption}
+                media={channelsSeparated && activeChannelTab ? separatedChannelData[activeChannelTab]?.media || [] : media}
               />
             </div>
           )}
