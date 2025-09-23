@@ -145,16 +145,21 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       } else {
         // Add channel - different logic for unified vs separated modes
         if (channelsSeparated) {
-          // SEPARATED MODE - Always start blank
-          setSeparatedChannelData(prevData => ({
-            ...prevData,
-            [channelId]: {
-              media: [], // Start with empty media
-              caption: '', // Start with empty caption
-              options: {},
-              scheduling: {}
+          // SEPARATED MODE - Check if channel already has data, otherwise start empty
+          setSeparatedChannelData(prevData => {
+            if (!prevData[channelId]) {
+              return {
+                ...prevData,
+                [channelId]: {
+                  media: [], // Start with empty media for new channels
+                  caption: '', // Start with empty caption for new channels
+                  options: {},
+                  scheduling: {}
+                }
+              }
             }
-          }))
+            return prevData // Keep existing data if channel already exists
+          })
           // Set this channel as the active tab
           setActiveChannelTab(channelId)
         } else {
@@ -196,14 +201,63 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const handlePostTypeSelect = (channelId, postType) => {
     setSelectedChannels(prev => {
       const existingIndex = prev.findIndex(channel => channel.id === channelId)
-      
+
       if (existingIndex >= 0) {
         // Update existing channel
         const updated = [...prev]
         updated[existingIndex] = { id: channelId, postType }
         return updated
       } else {
-        // Add new channel with post type
+        // Add new channel with post type - handle caption adoption like in handleChannelToggle
+        if (channelsSeparated) {
+          // SEPARATED MODE - Check if channel already has data, otherwise start empty
+          setSeparatedChannelData(prevData => {
+            if (!prevData[channelId]) {
+              return {
+                ...prevData,
+                [channelId]: {
+                  media: [], // Start with empty media for new channels
+                  caption: '', // Start with empty caption for new channels
+                  options: {},
+                  scheduling: {}
+                }
+              }
+            }
+            return prevData // Keep existing data if channel already exists
+          })
+          // Set this channel as the active tab
+          setActiveChannelTab(channelId)
+        } else {
+          // UNIFIED MODE - Handle caption adoption logic (same as handleChannelToggle)
+          const isFirstChannel = prev.length === 0
+
+          if (isFirstChannel && caption.trim()) {
+            // First channel with pre-written caption - set as template for all future channels
+            setInitialCaption(caption.trim())
+            setChannelCaptions(prevCaptions => ({
+              ...prevCaptions,
+              [channelId]: caption.trim()
+            }))
+          } else if (!isFirstChannel && (caption.trim() || initialCaption) && !hasEditedCaptions) {
+            // Additional channels before any editing - adopt the current caption or template
+            const templateCaption = caption.trim() || initialCaption
+            setChannelCaptions(prevCaptions => ({
+              ...prevCaptions,
+              [channelId]: templateCaption
+            }))
+            // Update template if caption exists and this is still adoption phase
+            if (caption.trim() && !initialCaption) {
+              setInitialCaption(caption.trim())
+            }
+          } else {
+            // New channel after editing or no template - start blank
+            setChannelCaptions(prevCaptions => ({
+              ...prevCaptions,
+              [channelId]: ''
+            }))
+          }
+        }
+
         return [...prev, { id: channelId, postType }]
       }
     })
@@ -1324,11 +1378,12 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         borderRadius: '8px',
                         padding: '12px'
                       }}>
-                        {/* Channel Badges */}
+                        {/* Channel Badges and Plus Button */}
                         <div style={{
                           display: 'flex',
                           flexWrap: 'wrap',
                           gap: '8px',
+                          alignItems: 'center',
                           marginBottom: '12px'
                         }}>
                           {selectedChannels.map(channel => (
@@ -1339,14 +1394,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               onRemove={handleChannelRemove}
                             />
                           ))}
-                        </div>
-                        
-                        {/* Controls */}
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'flex-end'
-                        }}>
+
                           <button
                             ref={addButtonRef}
                             onClick={() => setShowChannelMenu(!showChannelMenu)}
