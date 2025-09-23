@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { platforms } from '../data/platforms'
 
-const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onClose, buttonRef }) => {
+const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onClose, buttonRef, positionBelow = false }) => {
   const [activeSubmenu, setActiveSubmenu] = useState(null)
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
   const [submenuPosition, setSubmenuPosition] = useState({ top: 0, left: 0 })
@@ -15,13 +15,17 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
       const menuWidth = 280
       const menuHeight = 400
       
-      // Position menu above and aligned to right edge of button
+      // Position menu above or below based on positionBelow prop
+      const menuTop = positionBelow
+        ? buttonRect.bottom + 8
+        : buttonRect.top - menuHeight - 8
+
       setMenuPosition({
-        top: buttonRect.top - menuHeight - 8,
+        top: menuTop,
         left: buttonRect.right - menuWidth
       })
     }
-  }, [buttonRef])
+  }, [buttonRef, positionBelow])
 
   // Close menu when clicking outside
   useEffect(() => {

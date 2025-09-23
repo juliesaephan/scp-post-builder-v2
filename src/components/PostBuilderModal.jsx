@@ -59,7 +59,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const saveButtonRef = useRef(null)
   
   const modalWidth = showPreview ? 1120 : 720
-  const modalHeight = 550
+  const modalHeight = 646
   
   // Center the modal on initial load
   const [position, setPosition] = useState(() => ({
@@ -160,21 +160,25 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         } else {
           // UNIFIED MODE - Handle caption adoption logic
           const isFirstChannel = prev.length === 0
-          const templateCaption = isFirstChannel ? caption.trim() : initialCaption
 
           if (isFirstChannel && caption.trim()) {
-            // First channel with pre-written caption - always update template and adopt
+            // First channel with pre-written caption - set as template for all future channels
             setInitialCaption(caption.trim())
             setChannelCaptions(prevCaptions => ({
               ...prevCaptions,
               [channelId]: caption.trim()
             }))
-          } else if (!isFirstChannel && templateCaption && !hasEditedCaptions) {
-            // Additional channels before any editing - adopt template
+          } else if (!isFirstChannel && (caption.trim() || initialCaption) && !hasEditedCaptions) {
+            // Additional channels before any editing - adopt the current caption or template
+            const templateCaption = caption.trim() || initialCaption
             setChannelCaptions(prevCaptions => ({
               ...prevCaptions,
               [channelId]: templateCaption
             }))
+            // Update template if caption exists and this is still adoption phase
+            if (caption.trim() && !initialCaption) {
+              setInitialCaption(caption.trim())
+            }
           } else {
             // New channel after editing or no template - start blank
             setChannelCaptions(prevCaptions => ({
@@ -1178,6 +1182,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           onPostTypeSelect={handlePostTypeSelect}
                           onClose={() => setShowChannelMenu(false)}
                           buttonRef={addButtonRef}
+                          positionBelow={true}
                         />
                       )}
 
