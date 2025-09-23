@@ -30,6 +30,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   
   // Channel separation state
   const [channelsSeparated, setChannelsSeparated] = useState(false) // Global state for channel separation
+  const [activeChannelTab, setActiveChannelTab] = useState(null) // Which channel tab is currently active
+  const [unifiedBackupState, setUnifiedBackupState] = useState(null) // Backup of unified state for reverting
+  const [separatedChannelData, setSeparatedChannelData] = useState({}) // Independent data for each separated channel
 
   // Individual channel Apply to All button state
   const [activeChannelId, setActiveChannelId] = useState(null) // Which channel is being typed in
@@ -346,7 +349,60 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   }
 
   const handleCustomizeClick = () => {
-    setChannelsSeparated(!channelsSeparated)
+    if (!channelsSeparated) {
+      // SEPARATING CHANNELS - Create backup and separate data
+
+      // Create backup of unified state
+      const backupState = {
+        media: [...media],
+        channelCaptions: {...channelCaptions},
+        selectedMediaByChannel: {...selectedMediaByChannel},
+        customizedChannels: {...customizedChannels}
+      }
+      setUnifiedBackupState(backupState)
+
+      // Create independent data for each channel
+      const separatedData = {}
+      selectedChannels.forEach(channel => {
+        separatedData[channel.id] = {
+          media: [...media], // Each channel gets independent copy of current media
+          caption: channelCaptions[channel.id] || '', // Each channel gets its current caption
+          options: channelOptions[channel.id] || {},
+          scheduling: channelScheduling[channel.id] || {}
+        }
+      })
+      setSeparatedChannelData(separatedData)
+
+      // Set first channel as active tab
+      setActiveChannelTab(selectedChannels[0]?.id || null)
+      setChannelsSeparated(true)
+
+    } else {
+      // REVERTING TO UNIFIED - Show confirmation dialog
+      const hasIndividualEdits = Object.keys(separatedChannelData).length > 0
+
+      if (hasIndividualEdits && window.confirm(
+        'Are you sure you want to revert to unified post? This will discard all individual channel customizations.'
+      )) {
+        // Restore unified state from backup
+        if (unifiedBackupState) {
+          setMedia(unifiedBackupState.media)
+          setChannelCaptions(unifiedBackupState.channelCaptions)
+          setSelectedMediaByChannel(unifiedBackupState.selectedMediaByChannel)
+          setCustomizedChannels(unifiedBackupState.customizedChannels)
+        }
+
+        // Clear separated state
+        setSeparatedChannelData({})
+        setUnifiedBackupState(null)
+        setActiveChannelTab(null)
+        setChannelsSeparated(false)
+      } else if (!hasIndividualEdits) {
+        // No edits, just revert
+        setChannelsSeparated(false)
+        setActiveChannelTab(null)
+      }
+    }
   }
 
   const handleApplyToAll = (sourceChannelId) => {
@@ -382,6 +438,27 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     }))
   }
 
+  // Handlers for separated channel data
+  const handleSeparatedChannelMediaChange = (channelId, newMedia) => {
+    setSeparatedChannelData(prev => ({
+      ...prev,
+      [channelId]: {
+        ...prev[channelId],
+        media: newMedia
+      }
+    }))
+  }
+
+  const handleSeparatedChannelCaptionChange = (channelId, newCaption) => {
+    setSeparatedChannelData(prev => ({
+      ...prev,
+      [channelId]: {
+        ...prev[channelId],
+        caption: newCaption
+      }
+    }))
+  }
+
 
   const hasUnsavedChanges = () => {
     return caption.trim() || media.length > 0
@@ -409,14 +486,29 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         type: item.type,
         name: item.name
       })),
-      channels: selectedChannels.map(channel => ({
-        id: channel.id,
-        postType: channel.postType,
-        caption: channelCaptions[channel.id] || caption,
-        media: selectedMediaByChannel[channel.id] || media,
-        options: channelOptions[channel.id] || {},
-        scheduling: channelScheduling[channel.id] || {}
-      })),
+      channels: selectedChannels.map(channel => {
+        // Use separated channel data if channels are separated, otherwise use unified data
+        if (channelsSeparated && separatedChannelData[channel.id]) {
+          const channelData = separatedChannelData[channel.id]
+          return {
+            id: channel.id,
+            postType: channel.postType,
+            caption: channelData.caption || '',
+            media: channelData.media || [],
+            options: channelData.options || {},
+            scheduling: channelData.scheduling || {}
+          }
+        } else {
+          return {
+            id: channel.id,
+            postType: channel.postType,
+            caption: channelCaptions[channel.id] || caption,
+            media: selectedMediaByChannel[channel.id] || media,
+            options: channelOptions[channel.id] || {},
+            scheduling: channelScheduling[channel.id] || {}
+          }
+        }
+      }),
       createdAt: new Date().toISOString(),
       status
     }
@@ -726,7 +818,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           fontWeight: '500'
                         }}
                       >
-                        {channelsSeparated ? 'Unified View' : 'Customize Channels'}
+                        {channelsSeparated ? 'Revert to Unified Post' : 'Customize Channels'}
                       </button>
                     )}
                   </div>
@@ -922,177 +1014,118 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       </div>
                     </div>
                   ) : (
-                    /* CUSTOMIZED VIEW - Individual Channel Sections */
+                    /* CUSTOMIZED VIEW - Tab-Based Individual Channel Editor */
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '20px',
                       marginBottom: '20px'
                     }}>
-                      {selectedChannels.map((channel) => {
-                        const platform = getPlatformById(channel.id)
-                        const channelCaption = channelCaptions[channel.id] || ''
-                        const channelMedia = selectedMediaByChannel[channel.id] || []
+                      {/* Channel Tabs */}
+                      <div style={{
+                        display: 'flex',
+                        borderBottom: '1px solid #e1e5e9',
+                        marginBottom: '20px'
+                      }}>
+                        {selectedChannels.map((channel) => {
+                          const platform = getPlatformById(channel.id)
+                          const isActive = activeChannelTab === channel.id
 
-                        return (
-                          <div
-                            key={channel.id}
-                            style={{
-                              border: '2px solid #e1e5e9',
-                              borderRadius: '12px',
-                              padding: '16px',
-                              backgroundColor: '#fff'
-                            }}
-                          >
-                            {/* Channel Header */}
-                            <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              marginBottom: '16px',
-                              paddingBottom: '12px',
-                              borderBottom: '1px solid #e1e5e9'
-                            }}>
-                              <div style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '8px',
-                                backgroundColor: platform?.color || '#ccc',
+                          return (
+                            <button
+                              key={channel.id}
+                              onClick={() => setActiveChannelTab(channel.id)}
+                              style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '16px'
-                              }}>
-                                {platform?.icon}
-                              </div>
-                              <div>
-                                <div style={{ fontWeight: '600', fontSize: '16px', color: '#495057' }}>
-                                  {platform?.name}
-                                </div>
-                                {channel.postType && (
-                                  <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                                    {channel.postType}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Media and Caption Section */}
-                            <div style={{
-                              display: 'flex',
-                              gap: '16px'
-                            }}>
-                              {/* Channel Media Manager */}
-                              <div style={{ flex: 1 }}>
-                                <h4 style={{
-                                  margin: '0 0 12px 0',
-                                  fontSize: '14px',
-                                  fontWeight: '600',
-                                  color: '#495057'
+                                gap: '8px',
+                                padding: '12px 16px',
+                                backgroundColor: isActive ? '#f8f9fa' : 'transparent',
+                                border: 'none',
+                                borderBottom: isActive ? '2px solid #007bff' : '2px solid transparent',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: isActive ? '600' : '500',
+                                color: isActive ? '#007bff' : '#495057',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <span style={{ fontSize: '16px' }}>{platform?.icon}</span>
+                              <span>{platform?.name}</span>
+                              {channel.postType && (
+                                <span style={{
+                                  fontSize: '12px',
+                                  color: '#6c757d',
+                                  fontWeight: '400'
                                 }}>
-                                  Media
-                                </h4>
-                                <div style={{
-                                  border: '1px solid #dee2e6',
-                                  borderRadius: '8px',
+                                  • {channel.postType}
+                                </span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      {/* Active Channel Content */}
+                      {activeChannelTab && separatedChannelData[activeChannelTab] && (
+                        <div style={{
+                          display: 'flex',
+                          gap: '16px'
+                        }}>
+                          {/* Channel Media Manager */}
+                          <MediaManager
+                            media={separatedChannelData[activeChannelTab].media || []}
+                            onMediaChange={(newMedia) => handleSeparatedChannelMediaChange(activeChannelTab, newMedia)}
+                            maxMedia={20}
+                          />
+
+                          {/* Channel Caption Editor */}
+                          <div style={{
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column'
+                          }}>
+                            <div
+                              style={{
+                                position: 'relative',
+                                height: '280px',
+                                border: '1px solid #dee2e6',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                backgroundColor: '#fff'
+                              }}
+                            >
+                              <textarea
+                                placeholder={`Write caption for ${getPlatformById(activeChannelTab)?.name}...`}
+                                value={separatedChannelData[activeChannelTab].caption || ''}
+                                onChange={(e) => handleSeparatedChannelCaptionChange(activeChannelTab, e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
                                   padding: '12px',
-                                  minHeight: '120px',
-                                  backgroundColor: '#f8f9fa'
-                                }}>
-                                  <div style={{
-                                    fontSize: '12px',
-                                    color: '#6c757d',
-                                    textAlign: 'center',
-                                    padding: '20px'
-                                  }}>
-                                    {channelMedia.length} media items selected
-                                    <br />
-                                    <small>Individual media management coming soon</small>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Channel Caption */}
-                              <div style={{ flex: 1 }}>
-                                <h4 style={{
-                                  margin: '0 0 12px 0',
+                                  paddingBottom: '40px', // Space for character counter
+                                  border: 'none',
+                                  resize: 'none',
+                                  fontFamily: 'inherit',
                                   fontSize: '14px',
-                                  fontWeight: '600',
-                                  color: '#495057'
-                                }}>
-                                  Caption
-                                </h4>
-                                <div style={{ position: 'relative' }}>
-                                  <textarea
-                                    placeholder={`Write caption for ${platform?.name}...`}
-                                    value={channelCaption}
-                                    onChange={(e) => handleChannelCaptionChange(channel.id, e.target.value)}
-                                    onFocus={() => setActiveChannelId(channel.id)}
-                                    onBlur={() => {
-                                      setTimeout(() => setActiveChannelId(null), 200)
-                                    }}
-                                    onMouseEnter={() => setHoveredChannelId(channel.id)}
-                                    onMouseLeave={() => setHoveredChannelId(null)}
-                                    style={{
-                                      width: '100%',
-                                      height: '120px',
-                                      padding: '12px',
-                                      paddingTop: '32px', // Space for Apply to All button
-                                      paddingBottom: '24px', // Space for character counter
-                                      border: '1px solid #dee2e6',
-                                      borderRadius: '8px',
-                                      resize: 'none',
-                                      fontFamily: 'inherit',
-                                      fontSize: '14px',
-                                      outline: 'none',
-                                      backgroundColor: '#fff'
-                                    }}
-                                  />
-
-                                  {/* Individual Apply to All Button */}
-                                  {selectedChannels.length > 1 &&
-                                   (activeChannelId === channel.id || hoveredChannelId === channel.id) &&
-                                   channelCaption.trim() && (
-                                    <button
-                                      onClick={() => handleApplyToAll(channel.id)}
-                                      disabled={appliedChannelId === channel.id}
-                                      style={{
-                                        position: 'absolute',
-                                        top: '8px',
-                                        right: '8px',
-                                        padding: '6px 10px',
-                                        fontSize: '11px',
-                                        backgroundColor: appliedChannelId === channel.id ? '#28a745' : '#007bff',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: appliedChannelId === channel.id ? 'default' : 'pointer',
-                                        zIndex: 10,
-                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                        transition: 'all 0.2s ease-in-out'
-                                      }}
-                                    >
-                                      {appliedChannelId === channel.id ? '✓ Applied!' : 'Apply to All'}
-                                    </button>
-                                  )}
-
-                                  {/* Individual Character Counter */}
-                                  <div style={{
-                                    position: 'absolute',
-                                    bottom: '6px',
-                                    right: '12px',
-                                    fontSize: '11px',
-                                    color: channelCaption.length > 280 ? '#dc3545' : '#6c757d',
-                                    fontWeight: '500'
-                                  }}>
-                                    {channelCaption.length}/280
-                                  </div>
-                                </div>
+                                  outline: 'none',
+                                  backgroundColor: 'transparent'
+                                }}
+                              />
+                              {/* Character Counter */}
+                              <div style={{
+                                position: 'absolute',
+                                bottom: '8px',
+                                right: '12px',
+                                fontSize: '11px',
+                                color: (separatedChannelData[activeChannelTab].caption || '').length > 280 ? '#dc3545' : '#6c757d',
+                                fontWeight: '500'
+                              }}>
+                                {(separatedChannelData[activeChannelTab].caption || '').length}/280
                               </div>
                             </div>
                           </div>
-                        )
-                      })}
+                        </div>
+                      )}
                     </div>
                   )}
 
