@@ -31,6 +31,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Channel separation state
   const [channelsSeparated, setChannelsSeparated] = useState(false) // Global state for channel separation
   const [activeChannelTab, setActiveChannelTab] = useState(null) // Which channel tab is currently active
+  const [hoveredChannelTab, setHoveredChannelTab] = useState(null) // Which channel tab is being hovered for delete
   const [unifiedBackupState, setUnifiedBackupState] = useState(null) // Backup of unified state for reverting
   const [separatedChannelData, setSeparatedChannelData] = useState({}) // Independent data for each separated channel
 
@@ -473,6 +474,32 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         caption: newCaption
       }
     }))
+  }
+
+  const handleDeleteChannelTab = (channelId) => {
+    // Remove channel from selectedChannels
+    const updatedChannels = selectedChannels.filter(channel => channel.id !== channelId)
+    setSelectedChannels(updatedChannels)
+
+    // Remove channel data from separatedChannelData
+    setSeparatedChannelData(prev => {
+      const { [channelId]: removed, ...rest } = prev
+      return rest
+    })
+
+    // Handle active tab switching
+    if (activeChannelTab === channelId) {
+      // If we deleted the active tab, switch to first remaining channel
+      const nextActiveChannel = updatedChannels[0]
+      setActiveChannelTab(nextActiveChannel?.id || null)
+    }
+
+    // If no channels remain, exit separated mode
+    if (updatedChannels.length === 0) {
+      setChannelsSeparated(false)
+      setActiveChannelTab(null)
+      setSeparatedChannelData({})
+    }
   }
 
 
@@ -1041,16 +1068,22 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         display: 'flex',
                         borderBottom: '1px solid #e1e5e9',
                         marginBottom: '20px',
-                        position: 'relative'
+                        position: 'relative',
+                        overflowX: 'auto',
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: '#dee2e6 transparent'
                       }}>
                         {selectedChannels.map((channel) => {
                           const platform = getPlatformById(channel.id)
                           const isActive = activeChannelTab === channel.id
+                          const isHovered = hoveredChannelTab === channel.id
 
                           return (
                             <button
                               key={channel.id}
                               onClick={() => setActiveChannelTab(channel.id)}
+                              onMouseEnter={() => setHoveredChannelTab(channel.id)}
+                              onMouseLeave={() => setHoveredChannelTab(null)}
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -1063,7 +1096,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 fontSize: '14px',
                                 fontWeight: isActive ? '600' : '500',
                                 color: isActive ? '#007bff' : '#495057',
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.2s ease',
+                                position: 'relative',
+                                minWidth: 'fit-content',
+                                whiteSpace: 'nowrap'
                               }}
                             >
                               <span style={{ fontSize: '16px' }}>{platform?.icon}</span>
@@ -1076,6 +1112,36 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 }}>
                                   • {channel.postType}
                                 </span>
+                              )}
+
+                              {/* Delete Icon on Hover */}
+                              {isHovered && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleDeleteChannelTab(channel.id)
+                                  }}
+                                  style={{
+                                    position: 'absolute',
+                                    top: '4px',
+                                    right: '4px',
+                                    width: '16px',
+                                    height: '16px',
+                                    borderRadius: '50%',
+                                    backgroundColor: '#dc3545',
+                                    color: 'white',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '10px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    lineHeight: '1'
+                                  }}
+                                  title="Delete channel"
+                                >
+                                  ×
+                                </button>
                               )}
                             </button>
                           )
