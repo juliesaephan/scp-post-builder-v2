@@ -1449,19 +1449,26 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         {/* Channel Badges and Plus Button */}
                         <div style={{
                           display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: '8px',
                           alignItems: 'center',
+                          gap: '12px',
                           marginBottom: '12px'
                         }}>
-                          {selectedChannels.map(channel => (
-                            <ChannelBadge
-                              key={channel.id}
-                              channelId={channel.id}
-                              postType={channel.postType}
-                              onRemove={handleChannelRemove}
-                            />
-                          ))}
+                          <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '8px',
+                            alignItems: 'center',
+                            flex: 1
+                          }}>
+                            {selectedChannels.map(channel => (
+                              <ChannelBadge
+                                key={channel.id}
+                                channelId={channel.id}
+                                postType={channel.postType}
+                                onRemove={handleChannelRemove}
+                              />
+                            ))}
+                          </div>
 
                           <button
                             ref={addButtonRef}
@@ -1477,7 +1484,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               fontSize: '18px',
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center'
+                              justifyContent: 'center',
+                              flexShrink: 0
                             }}
                           >
                             +
@@ -1569,19 +1577,21 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     alignItems: 'center',
                     gap: '12px'
                   }}>
-                    <button
-                      onClick={() => setShowDateScheduling(!showDateScheduling)}
-                      style={{
-                        padding: '8px 12px',
-                        backgroundColor: showDateScheduling ? '#e9ecef' : '#f8f9fa',
-                        border: '1px solid #dee2e6',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                      }}
-                    >
-                      📅 {getSchedulingButtonText()}
-                    </button>
+                    {!channelsSeparated && (
+                      <button
+                        onClick={() => setShowDateScheduling(!showDateScheduling)}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: showDateScheduling ? '#e9ecef' : '#f8f9fa',
+                          border: '1px solid #dee2e6',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '14px'
+                        }}
+                      >
+                        📅 {getSchedulingButtonText()}
+                      </button>
+                    )}
 
                     <button 
                       ref={saveButtonRef}
