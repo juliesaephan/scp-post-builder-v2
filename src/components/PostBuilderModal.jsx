@@ -7,6 +7,7 @@ import CaptionCounterGroup from './CaptionCounterGroup'
 import ChannelOptionsAccordion from './ChannelOptionsAccordion'
 import SavePostMenu from './SavePostMenu'
 import ConfirmationDialog from './ConfirmationDialog'
+import DateTimeDisplay from './DateTimeDisplay'
 import { getPlatformById } from '../data/platforms'
 
 const PostBuilderModal = ({ onClose, onPostSaved }) => {
@@ -46,6 +47,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   
   // Channel scheduling state
   const [channelScheduling, setChannelScheduling] = useState({}) // Store per-channel scheduling: { channelId: { date, time, type } }
+  const [unifiedDate, setUnifiedDate] = useState('') // Unified date for all channels
+  const [unifiedTime, setUnifiedTime] = useState('11:30') // Unified time for all channels
   
   // Save state
   const [isSaving, setIsSaving] = useState(false)
@@ -443,7 +446,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           media: [...media], // Each channel gets independent copy of current media
           caption: channelCaptions[channel.id] || caption || '', // Each channel gets its current caption or unified caption
           options: channelOptions[channel.id] || {},
-          scheduling: channelScheduling[channel.id] || {}
+          scheduling: channelScheduling[channel.id] || { date: '', time: '11:30', type: 'auto' }
         }
       })
       setSeparatedChannelData(separatedData)
@@ -511,6 +514,25 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         [field]: value
       }
     }))
+  }
+
+  const handleUnifiedDateTimeChange = (date, time) => {
+    setUnifiedDate(date)
+    setUnifiedTime(time)
+  }
+
+  const handleApplyToAllChannels = () => {
+    if (!unifiedDate) return
+
+    const newScheduling = { ...channelScheduling }
+    selectedChannels.forEach(channel => {
+      newScheduling[channel.id] = {
+        ...newScheduling[channel.id],
+        date: unifiedDate,
+        time: unifiedTime
+      }
+    })
+    setChannelScheduling(newScheduling)
   }
 
   // Handlers for separated channel data
@@ -1309,20 +1331,66 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             const platform = getPlatformById(activeChannelTab)
                             if (platform?.options && platform.options.length > 0) {
                               return (
-                                <ChannelOptionsAccordion
-                                  platform={platform}
-                                  isExpanded={expandedAccordions[activeChannelTab] || false}
-                                  onToggle={() => handleAccordionToggle(activeChannelTab)}
-                                  optionValues={channelOptions[activeChannelTab] || {}}
-                                  onOptionChange={(optionId, value) =>
-                                    handleChannelOptionChange(activeChannelTab, optionId, value)
-                                  }
-                                  disabled={false}
-                                />
+                                <div style={{ marginBottom: '20px' }}>
+                                  <ChannelOptionsAccordion
+                                    platform={platform}
+                                    isExpanded={expandedAccordions[activeChannelTab] || false}
+                                    onToggle={() => handleAccordionToggle(activeChannelTab)}
+                                    optionValues={channelOptions[activeChannelTab] || {}}
+                                    onOptionChange={(optionId, value) =>
+                                      handleChannelOptionChange(activeChannelTab, optionId, value)
+                                    }
+                                    disabled={false}
+                                  />
+                                </div>
                               )
                             }
                             return null
                           })()}
+
+                          {/* Date/Time and Posting Options for Active Channel */}
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                            padding: '16px',
+                            border: '1px solid #e1e5e9',
+                            borderRadius: '8px',
+                            backgroundColor: 'white'
+                          }}>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px'
+                            }}>
+                              <DateTimeDisplay
+                                date={channelScheduling[activeChannelTab]?.date || ''}
+                                time={channelScheduling[activeChannelTab]?.time || '11:30'}
+                                onDateTimeChange={(date, time) => {
+                                  handleChannelSchedulingChange(activeChannelTab, 'date', date)
+                                  handleChannelSchedulingChange(activeChannelTab, 'time', time)
+                                }}
+                                placeholder="Select date & time"
+                                style={{ flex: 1 }}
+                              />
+
+                              <select
+                                value={channelScheduling[activeChannelTab]?.type || 'auto'}
+                                onChange={(e) => handleChannelSchedulingChange(activeChannelTab, 'type', e.target.value)}
+                                style={{
+                                  padding: '8px 12px',
+                                  border: '1px solid #dee2e6',
+                                  borderRadius: '6px',
+                                  fontSize: '14px',
+                                  minWidth: '120px',
+                                  backgroundColor: 'white'
+                                }}
+                              >
+                                <option value="auto">Auto-post</option>
+                                <option value="reminder">Reminder</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1590,6 +1658,52 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         color: '#495057'
                       }}>
                         Schedule Posts by Channel
+                      </div>
+
+                      {/* Unified Date/Time Selector */}
+                      <div style={{
+                        padding: '16px',
+                        borderBottom: '1px solid #e1e5e9',
+                        backgroundColor: '#f8f9fa'
+                      }}>
+                        <div style={{
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          color: '#495057',
+                          marginBottom: '12px'
+                        }}>
+                          Set date and time for all channels
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px'
+                        }}>
+                          <DateTimeDisplay
+                            date={unifiedDate}
+                            time={unifiedTime}
+                            onDateTimeChange={handleUnifiedDateTimeChange}
+                            placeholder="Select date for all"
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            onClick={handleApplyToAllChannels}
+                            disabled={!unifiedDate}
+                            style={{
+                              padding: '8px 16px',
+                              backgroundColor: unifiedDate ? '#007bff' : '#e9ecef',
+                              color: unifiedDate ? 'white' : '#6c757d',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: unifiedDate ? 'pointer' : 'not-allowed',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            Apply to All
+                          </button>
+                        </div>
                       </div>
 
                       <div style={{ padding: '16px' }}>
