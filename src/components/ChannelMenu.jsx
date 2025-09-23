@@ -65,10 +65,10 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
         const submenuWidth = 160
         const submenuHeight = 120
         
-        // Position submenu to the left of the menu to avoid horizontal scroll
+        // Position submenu to the right of the menu item
         setSubmenuPosition({
           top: itemRect.top,
-          left: menuPosition.left - submenuWidth - 8
+          left: itemRect.right + 8
         })
       }
     } else {

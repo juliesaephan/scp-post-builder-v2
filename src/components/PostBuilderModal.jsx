@@ -142,29 +142,45 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
         return updatedChannels
       } else {
-        // Add channel - handle caption adoption logic
-        const isFirstChannel = prev.length === 0
-        const templateCaption = isFirstChannel ? caption.trim() : initialCaption
-
-        if (isFirstChannel && caption.trim()) {
-          // First channel with pre-written caption - always update template and adopt
-          setInitialCaption(caption.trim())
-          setChannelCaptions(prevCaptions => ({
-            ...prevCaptions,
-            [channelId]: caption.trim()
+        // Add channel - different logic for unified vs separated modes
+        if (channelsSeparated) {
+          // SEPARATED MODE - Always start blank
+          setSeparatedChannelData(prevData => ({
+            ...prevData,
+            [channelId]: {
+              media: [], // Start with empty media
+              caption: '', // Start with empty caption
+              options: {},
+              scheduling: {}
+            }
           }))
-        } else if (!isFirstChannel && templateCaption && !hasEditedCaptions) {
-          // Additional channels before any editing - adopt template
-          setChannelCaptions(prevCaptions => ({
-            ...prevCaptions,
-            [channelId]: templateCaption
-          }))
+          // Set this channel as the active tab
+          setActiveChannelTab(channelId)
         } else {
-          // New channel after editing or no template - start blank
-          setChannelCaptions(prevCaptions => ({
-            ...prevCaptions,
-            [channelId]: ''
-          }))
+          // UNIFIED MODE - Handle caption adoption logic
+          const isFirstChannel = prev.length === 0
+          const templateCaption = isFirstChannel ? caption.trim() : initialCaption
+
+          if (isFirstChannel && caption.trim()) {
+            // First channel with pre-written caption - always update template and adopt
+            setInitialCaption(caption.trim())
+            setChannelCaptions(prevCaptions => ({
+              ...prevCaptions,
+              [channelId]: caption.trim()
+            }))
+          } else if (!isFirstChannel && templateCaption && !hasEditedCaptions) {
+            // Additional channels before any editing - adopt template
+            setChannelCaptions(prevCaptions => ({
+              ...prevCaptions,
+              [channelId]: templateCaption
+            }))
+          } else {
+            // New channel after editing or no template - start blank
+            setChannelCaptions(prevCaptions => ({
+              ...prevCaptions,
+              [channelId]: ''
+            }))
+          }
         }
 
         return [...prev, { id: channelId, postType }]
@@ -1024,7 +1040,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       <div style={{
                         display: 'flex',
                         borderBottom: '1px solid #e1e5e9',
-                        marginBottom: '20px'
+                        marginBottom: '20px',
+                        position: 'relative'
                       }}>
                         {selectedChannels.map((channel) => {
                           const platform = getPlatformById(channel.id)
@@ -1063,77 +1080,124 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             </button>
                           )
                         })}
+
+                        {/* Plus Tab for Adding Channels */}
+                        <button
+                          ref={addButtonRef}
+                          onClick={() => setShowChannelMenu(!showChannelMenu)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '12px 16px',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderBottom: '2px solid transparent',
+                            cursor: 'pointer',
+                            fontSize: '18px',
+                            fontWeight: '500',
+                            color: '#007bff',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          +
+                        </button>
                       </div>
 
                       {/* Active Channel Content */}
                       {activeChannelTab && separatedChannelData[activeChannelTab] && (
-                        <div style={{
-                          display: 'flex',
-                          gap: '16px'
-                        }}>
-                          {/* Channel Media Manager */}
-                          <MediaManager
-                            media={separatedChannelData[activeChannelTab].media || []}
-                            onMediaChange={(newMedia) => handleSeparatedChannelMediaChange(activeChannelTab, newMedia)}
-                            maxMedia={20}
-                          />
-
-                          {/* Channel Caption Editor */}
+                        <div>
+                          {/* Media and Caption Row */}
                           <div style={{
-                            flex: 1,
                             display: 'flex',
-                            flexDirection: 'column'
+                            gap: '16px',
+                            marginBottom: '20px'
                           }}>
-                            <div
-                              style={{
-                                position: 'relative',
-                                height: '280px',
-                                border: '1px solid #dee2e6',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                backgroundColor: '#fff'
-                              }}
-                            >
-                              <textarea
-                                placeholder={`Write caption for ${getPlatformById(activeChannelTab)?.name}...`}
-                                value={separatedChannelData[activeChannelTab].caption || ''}
-                                onChange={(e) => handleSeparatedChannelCaptionChange(activeChannelTab, e.target.value)}
+                            {/* Channel Media Manager */}
+                            <MediaManager
+                              media={separatedChannelData[activeChannelTab].media || []}
+                              onMediaChange={(newMedia) => handleSeparatedChannelMediaChange(activeChannelTab, newMedia)}
+                              maxMedia={20}
+                            />
+
+                            {/* Channel Caption Editor */}
+                            <div style={{
+                              flex: 1,
+                              display: 'flex',
+                              flexDirection: 'column'
+                            }}>
+                              <div
                                 style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  padding: '12px',
-                                  paddingBottom: '40px', // Space for character counter
-                                  border: 'none',
-                                  resize: 'none',
-                                  fontFamily: 'inherit',
-                                  fontSize: '14px',
-                                  outline: 'none',
-                                  backgroundColor: 'transparent'
+                                  position: 'relative',
+                                  height: '280px',
+                                  border: '1px solid #dee2e6',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  backgroundColor: '#fff'
                                 }}
-                              />
-                              {/* Character Counter */}
-                              <div style={{
-                                position: 'absolute',
-                                bottom: '8px',
-                                right: '12px',
-                                fontSize: '11px',
-                                color: (separatedChannelData[activeChannelTab].caption || '').length > 280 ? '#dc3545' : '#6c757d',
-                                fontWeight: '500'
-                              }}>
-                                {(separatedChannelData[activeChannelTab].caption || '').length}/280
+                              >
+                                <textarea
+                                  placeholder={`Write caption for ${getPlatformById(activeChannelTab)?.name}...`}
+                                  value={separatedChannelData[activeChannelTab].caption || ''}
+                                  onChange={(e) => handleSeparatedChannelCaptionChange(activeChannelTab, e.target.value)}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    padding: '12px',
+                                    paddingBottom: '40px', // Space for character counter
+                                    border: 'none',
+                                    resize: 'none',
+                                    fontFamily: 'inherit',
+                                    fontSize: '14px',
+                                    outline: 'none',
+                                    backgroundColor: 'transparent'
+                                  }}
+                                />
+                                {/* Character Counter */}
+                                <div style={{
+                                  position: 'absolute',
+                                  bottom: '8px',
+                                  right: '12px',
+                                  fontSize: '11px',
+                                  color: (separatedChannelData[activeChannelTab].caption || '').length > 280 ? '#dc3545' : '#6c757d',
+                                  fontWeight: '500'
+                                }}>
+                                  {(separatedChannelData[activeChannelTab].caption || '').length}/280
+                                </div>
                               </div>
                             </div>
                           </div>
+
+                          {/* Channel Options for Active Channel */}
+                          {(() => {
+                            const platform = getPlatformById(activeChannelTab)
+                            if (platform?.options && platform.options.length > 0) {
+                              return (
+                                <ChannelOptionsAccordion
+                                  platform={platform}
+                                  isExpanded={expandedAccordions[activeChannelTab] || false}
+                                  onToggle={() => handleAccordionToggle(activeChannelTab)}
+                                  optionValues={channelOptions[activeChannelTab] || {}}
+                                  onOptionChange={(optionId, value) =>
+                                    handleChannelOptionChange(activeChannelTab, optionId, value)
+                                  }
+                                  disabled={false}
+                                />
+                              )
+                            }
+                            return null
+                          })()}
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Social Channel Selector */}
-                  <div style={{
-                    marginBottom: '20px',
-                    position: 'relative'
-                  }}>
+                  {/* Social Channel Selector - Only show in unified mode */}
+                  {!channelsSeparated && (
+                    <div style={{
+                      marginBottom: '20px',
+                      position: 'relative'
+                    }}>
                     {selectedChannels.length === 0 ? (
                       // Empty State
                       <div style={{
@@ -1235,6 +1299,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       />
                     )}
                   </div>
+                  )}
 
                   {/* Channel Options Accordions - Show in order channels were selected */}
                   {selectedChannels.length > 0 && (
