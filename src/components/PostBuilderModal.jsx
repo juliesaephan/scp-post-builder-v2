@@ -941,7 +941,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           fontWeight: '500'
                         }}
                       >
-                        {channelsSeparated ? 'Revert to Unified Post' : 'Customize Channels'}
+                        {channelsSeparated ? 'Revert to Unified Post' : 'Customize for each channel'}
                       </button>
                     )}
                   </div>
