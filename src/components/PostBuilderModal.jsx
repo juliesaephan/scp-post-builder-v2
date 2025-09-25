@@ -927,23 +927,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       Post Content
                     </h3>
 
-                    {selectedChannels.length > 1 && (
-                      <button
-                        onClick={handleCustomizeClick}
-                        style={{
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          backgroundColor: channelsSeparated ? '#007bff' : '#f8f9fa',
-                          color: channelsSeparated ? 'white' : '#495057',
-                          border: '1px solid #dee2e6',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontWeight: '500'
-                        }}
-                      >
-                        {channelsSeparated ? 'Revert to Unified Post' : 'Customize for each channel'}
-                      </button>
-                    )}
                   </div>
 
                   {/* Conditional Rendering: Unified vs Customized View */}
@@ -1370,7 +1353,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                   handleChannelSchedulingChange(activeChannelTab, 'date', date)
                                   handleChannelSchedulingChange(activeChannelTab, 'time', time)
                                 }}
-                                placeholder="Select date & time"
+                                placeholder="Custom Time"
                                 style={{ flex: 1 }}
                               />
 
@@ -1559,24 +1542,24 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     backgroundColor: 'white',
                     flexShrink: 0
                   }}>
-                  <button 
-                    onClick={handleCloseRequest}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '18px',
-                      color: '#dc3545'
-                    }}
-                  >
-                    🗑️
-                  </button>
-
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px'
                   }}>
+                    <button
+                      onClick={handleCloseRequest}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '18px',
+                        color: '#dc3545'
+                      }}
+                    >
+                      🗑️
+                    </button>
+
                     {!channelsSeparated && (
                       <button
                         onClick={() => setShowDateScheduling(!showDateScheduling)}
@@ -1592,8 +1575,32 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         📅 {getSchedulingButtonText()}
                       </button>
                     )}
+                  </div>
 
-                    <button 
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    {selectedChannels.length > 1 && (
+                      <button
+                        onClick={handleCustomizeClick}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: '14px',
+                          backgroundColor: channelsSeparated ? '#007bff' : '#f8f9fa',
+                          color: channelsSeparated ? 'white' : '#495057',
+                          border: '1px solid #dee2e6',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontWeight: '500'
+                        }}
+                      >
+                        {channelsSeparated ? 'Revert to Unified Post' : 'Customize for each channel'}
+                      </button>
+                    )}
+
+                    <button
                       ref={saveButtonRef}
                       onClick={() => setShowSavePostMenu(!showSavePostMenu)}
                       disabled={isSaving}
