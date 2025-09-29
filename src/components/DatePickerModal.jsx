@@ -19,11 +19,7 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
   }
 
   const handleBackdropClick = () => {
-    if (selectedDate) {
-      handleSelect()  // Save and close if date is selected
-    } else {
-      onClose()  // Just close if no date selected
-    }
+    onClose()  // Always just close when clicking outside
   }
 
   const today = new Date()

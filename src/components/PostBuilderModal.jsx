@@ -584,6 +584,22 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     setChannelScheduling(newScheduling)
   }
 
+  const handleRemoveUnifiedDate = () => {
+    setUnifiedDate('')
+    setUnifiedTime('11:30')
+  }
+
+  const handleRemoveChannelDate = (channelId) => {
+    setChannelScheduling(prev => ({
+      ...prev,
+      [channelId]: {
+        ...prev[channelId],
+        date: '',
+        time: '11:30'
+      }
+    }))
+  }
+
   // Handlers for separated channel data
   const handleSeparatedChannelMediaChange = (channelId, newMedia) => {
     setSeparatedChannelData(prev => ({
@@ -1402,6 +1418,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                   handleChannelSchedulingChange(activeChannelTab, 'date', date)
                                   handleChannelSchedulingChange(activeChannelTab, 'time', time)
                                 }}
+                                onRemoveDate={() => handleRemoveChannelDate(activeChannelTab)}
                                 placeholder={getIndividualChannelDateText()}
                                 style={{ flex: 1 }}
                               />
@@ -1756,6 +1773,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             date={unifiedDate}
                             time={unifiedTime}
                             onDateTimeChange={handleUnifiedDateTimeChange}
+                            onRemoveDate={handleRemoveUnifiedDate}
                             placeholder="Select date for all"
                             style={{ flex: 1 }}
                           />

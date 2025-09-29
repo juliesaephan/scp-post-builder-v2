@@ -6,7 +6,8 @@ const DateTimeDisplay = ({
   time = '11:30',
   onDateTimeChange,
   placeholder = 'Select date',
-  style = {}
+  style = {},
+  onRemoveDate
 }) => {
   const [showDatePicker, setShowDatePicker] = useState(false)
 
@@ -34,6 +35,13 @@ const DateTimeDisplay = ({
     onDateTimeChange(selectedDate, selectedTime)
   }
 
+  const handleRemoveDate = (e) => {
+    e.stopPropagation()
+    if (onRemoveDate) {
+      onRemoveDate()
+    }
+  }
+
   return (
     <>
       <div
@@ -41,6 +49,7 @@ const DateTimeDisplay = ({
         style={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           padding: '12px 16px',
           border: '1px solid #dee2e6',
           borderRadius: '8px',
@@ -50,6 +59,7 @@ const DateTimeDisplay = ({
           minHeight: '20px',
           fontSize: '14px',
           color: date ? '#495057' : '#6c757d',
+          position: 'relative',
           ...style
         }}
         onMouseEnter={(e) => {
@@ -61,8 +71,31 @@ const DateTimeDisplay = ({
           e.target.style.backgroundColor = '#fff'
         }}
       >
-        <span style={{ marginRight: '8px' }}>📅</span>
-        <span>{formatDisplayText()}</span>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{ marginRight: '8px' }}>📅</span>
+          <span>{formatDisplayText()}</span>
+        </div>
+
+        {date && onRemoveDate && (
+          <button
+            onClick={handleRemoveDate}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#dc3545',
+              fontSize: '14px',
+              padding: '2px 4px',
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title="Remove date"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       <DatePickerModal
