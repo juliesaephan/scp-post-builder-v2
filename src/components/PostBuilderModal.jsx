@@ -1933,6 +1933,30 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                         <option value="reminder">Reminder only</option>
                                       )}
                                     </select>
+
+                                    {/* Remove date button for individual channel */}
+                                    {channelScheduling[channel.id]?.date && (
+                                      <button
+                                        onClick={() => handleRemoveChannelDate(channel.id)}
+                                        style={{
+                                          background: 'none',
+                                          border: 'none',
+                                          cursor: 'pointer',
+                                          color: '#dc3545',
+                                          fontSize: '14px',
+                                          padding: '4px',
+                                          borderRadius: '4px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          minWidth: '24px',
+                                          height: '24px'
+                                        }}
+                                        title="Remove date for this channel"
+                                      >
+                                        ✕
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               )
