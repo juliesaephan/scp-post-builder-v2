@@ -214,13 +214,6 @@ const PreviewCarousel = ({
           justifyContent: 'center'
         }}>
           {previewData.map((preview, index) => {
-            const IconComponent = getIconComponent(preview.platform?.id)
-            console.log('PreviewCarousel rendering:', {
-              platformId: preview.platform?.id,
-              platformName: preview.platform?.name,
-              IconComponent: IconComponent,
-              hasIcon: !!IconComponent
-            })
             return (
               <button
                 key={preview.id}
@@ -241,13 +234,29 @@ const PreviewCarousel = ({
                   transition: 'all 0.2s ease'
                 }}
               >
-                {IconComponent ? (
-                  <IconComponent size={16} color="white" />
-                ) : preview.platform?.id === 'instagram' ? (
-                  <InstagramIcon size={16} color="white" />
-                ) : (
-                  <span style={{ fontSize: '12px', color: 'white' }}>{preview.platform?.name?.[0] || '?'}</span>
-                )}
+                {(() => {
+                  const platformId = preview.platform?.id
+                  switch (platformId) {
+                    case 'instagram':
+                      return <InstagramIcon size={16} color="white" />
+                    case 'facebook':
+                      return <FacebookIcon size={16} color="white" />
+                    case 'tiktok':
+                      return <TikTokIcon size={16} color="white" />
+                    case 'x':
+                      return <TwitterIcon size={16} color="white" />
+                    case 'threads':
+                      return <ThreadsIcon size={16} color="white" />
+                    case 'youtube':
+                      return <YouTubeIcon size={16} color="white" />
+                    case 'linkedin':
+                      return <LinkedInIcon size={16} color="white" />
+                    case 'pinterest':
+                      return <PinterestIcon size={16} color="white" />
+                    default:
+                      return <span style={{ fontSize: '12px', color: 'white' }}>{preview.platform?.name?.[0] || '?'}</span>
+                  }
+                })()}
               </button>
             )
           })}
