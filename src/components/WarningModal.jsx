@@ -81,7 +81,7 @@ const WarningModal = ({
             width: '48px',
             height: '48px',
             borderRadius: '24px',
-            backgroundColor: '#fff3cd',
+            backgroundColor: '#e8eaf0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
