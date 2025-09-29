@@ -3,11 +3,24 @@ import { useState, useEffect } from 'react'
 const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialTime = '11:30' }) => {
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('11:30')
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth())
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
 
   useEffect(() => {
     if (isOpen) {
       setSelectedDate(initialDate)
       setSelectedTime(initialTime)
+      // Reset to current month/year when opening if no initial date
+      if (!initialDate) {
+        const today = new Date()
+        setCurrentMonth(today.getMonth())
+        setCurrentYear(today.getFullYear())
+      } else {
+        // Set to the month/year of the initial date
+        const initialDateObj = new Date(initialDate)
+        setCurrentMonth(initialDateObj.getMonth())
+        setCurrentYear(initialDateObj.getFullYear())
+      }
     }
   }, [isOpen, initialDate, initialTime])
 
@@ -23,10 +36,28 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
   }
 
   const today = new Date()
-  const currentYear = today.getFullYear()
-  const currentMonth = today.getMonth()
+  const todayDateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
-  // Generate calendar for current month
+  // Month navigation functions
+  const goToPreviousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11)
+      setCurrentYear(currentYear - 1)
+    } else {
+      setCurrentMonth(currentMonth - 1)
+    }
+  }
+
+  const goToNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0)
+      setCurrentYear(currentYear + 1)
+    } else {
+      setCurrentMonth(currentMonth + 1)
+    }
+  }
+
+  // Generate calendar for selected month/year
   const firstDay = new Date(currentYear, currentMonth, 1)
   const lastDay = new Date(currentYear, currentMonth + 1, 0)
   const firstDayOfWeek = firstDay.getDay()
@@ -51,38 +82,73 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const dayDate = new Date(currentYear, currentMonth, day)
       const isSelected = selectedDate === dateString
-      const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()
+      const isToday = dateString === todayDateString
+      const isPast = dayDate < today && !isToday
+      const isFuture = dayDate > today
+      const isClickable = !isPast
+
+      let backgroundColor = 'transparent'
+      let color = '#495057'
+      let cursor = 'pointer'
+      let hoverColor = '#f8f9fa'
+
+      if (isSelected) {
+        backgroundColor = '#007bff'
+        color = 'white'
+      } else if (isToday) {
+        backgroundColor = '#28a745'
+        color = 'white'
+      } else if (isPast) {
+        color = '#adb5bd'
+        cursor = 'not-allowed'
+        hoverColor = 'transparent'
+      } else if (isFuture) {
+        color = '#495057'
+        hoverColor = '#e3f2fd'
+      }
 
       currentWeek.push(
         <div
           key={day}
-          className={`calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
-          onClick={() => setSelectedDate(dateString)}
+          className={`calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''} ${isPast ? 'past' : ''} ${isFuture ? 'future' : ''}`}
+          onClick={() => {
+            if (isClickable) {
+              setSelectedDate(dateString)
+            }
+          }}
           style={{
             width: '40px',
             height: '40px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer',
+            cursor: cursor,
             borderRadius: '8px',
             fontSize: '14px',
-            backgroundColor: isSelected ? '#007bff' : 'transparent',
-            color: isSelected ? 'white' : isToday ? '#007bff' : '#495057',
-            fontWeight: isToday ? '600' : '400',
-            transition: 'all 0.2s ease'
+            backgroundColor: backgroundColor,
+            color: color,
+            fontWeight: isToday ? '700' : isSelected ? '600' : '400',
+            transition: 'all 0.2s ease',
+            border: isToday && !isSelected ? '2px solid #28a745' : '2px solid transparent',
+            opacity: isPast ? 0.5 : 1
           }}
           onMouseEnter={(e) => {
-            if (!isSelected) {
-              e.target.style.backgroundColor = '#f8f9fa'
+            if (!isSelected && isClickable) {
+              e.target.style.backgroundColor = hoverColor
             }
           }}
           onMouseLeave={(e) => {
-            if (!isSelected) {
-              e.target.style.backgroundColor = 'transparent'
+            if (!isSelected && isClickable) {
+              e.target.style.backgroundColor = backgroundColor
             }
           }}
+          title={
+            isToday ? 'Today' :
+            isPast ? 'Past date (cannot select)' :
+            'Available date'
+          }
         >
           {day}
         </div>
@@ -136,34 +202,98 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header with Navigation */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           marginBottom: '20px'
         }}>
+          <button
+            onClick={goToPreviousMonth}
+            style={{
+              background: 'none',
+              border: '1px solid #dee2e6',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              color: '#495057',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#f8f9fa'
+              e.target.style.borderColor = '#adb5bd'
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent'
+              e.target.style.borderColor = '#dee2e6'
+            }}
+            title="Previous month"
+          >
+            ‹
+          </button>
+
           <h3 style={{
             margin: 0,
             fontSize: '18px',
             fontWeight: '600',
-            color: '#495057'
+            color: '#495057',
+            minWidth: '180px',
+            textAlign: 'center'
           }}>
             {monthNames[currentMonth]} {currentYear}
           </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              padding: '4px',
-              color: '#6c757d'
-            }}
-          >
-            ✕
-          </button>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={goToNextMonth}
+              style={{
+                background: 'none',
+                border: '1px solid #dee2e6',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                color: '#495057',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#f8f9fa'
+                e.target.style.borderColor = '#adb5bd'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent'
+                e.target.style.borderColor = '#dee2e6'
+              }}
+              title="Next month"
+            >
+              ›
+            </button>
+
+            <button
+              onClick={onClose}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '18px',
+                cursor: 'pointer',
+                padding: '4px',
+                color: '#6c757d'
+              }}
+              title="Close"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Day headers */}
