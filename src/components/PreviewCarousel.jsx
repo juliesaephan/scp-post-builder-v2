@@ -212,6 +212,12 @@ const PreviewCarousel = ({
         }}>
           {previewData.map((preview, index) => {
             const IconComponent = getIconComponent(preview.platform?.id)
+            console.log('PreviewCarousel rendering:', {
+              platformId: preview.platform?.id,
+              platformName: preview.platform?.name,
+              IconComponent: IconComponent,
+              hasIcon: !!IconComponent
+            })
             return (
               <button
                 key={preview.id}
@@ -234,6 +240,8 @@ const PreviewCarousel = ({
               >
                 {IconComponent ? (
                   <IconComponent size={16} color="white" />
+                ) : preview.platform?.id === 'instagram' ? (
+                  <InstagramIcon size={16} color="white" />
                 ) : (
                   <span style={{ fontSize: '12px', color: 'white' }}>{preview.platform?.name?.[0] || '?'}</span>
                 )}
