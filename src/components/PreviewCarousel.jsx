@@ -203,17 +203,23 @@ const PreviewCarousel = ({
                   fontSize: '16px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  justifyContent: 'flex-start',
+                  paddingLeft: '8px',
                   opacity: activePreviewIndex === index ? 1 : 0.7,
                   transition: 'all 0.2s ease'
                 }}
               >
-                {preview.platform?.icon ?
-                  React.createElement(preview.platform.icon, { size: 16, color: 'white' }) :
-                  <span style={{ fontSize: '12px', color: 'white', fontWeight: 'bold' }}>
-                    {preview.platform?.name?.[0] || '?'}
-                  </span>
-                }
+                <span style={{
+                  fontSize: '10px',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                  width: '100%',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {preview.platform?.name || 'Unknown'}
+                </span>
               </button>
             )
           })}
