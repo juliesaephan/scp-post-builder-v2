@@ -123,14 +123,16 @@ const ChannelOptionField = ({ option, value, onChange, disabled = true }) => {
   )
 }
 
-const ChannelOptionsAccordion = ({ 
-  platform, 
-  isExpanded = false, 
-  onToggle, 
-  optionValues = {}, 
+const ChannelOptionsAccordion = ({
+  platform,
+  isExpanded = false,
+  onToggle,
+  optionValues = {},
   onOptionChange,
-  disabled = true 
+  disabled = true
 }) => {
+  const IconComponent = platform?.icon
+
   if (!platform.options || platform.options.length === 0) {
     return null
   }
@@ -171,7 +173,7 @@ const ChannelOptionsAccordion = ({
             justifyContent: 'center',
             fontSize: '10px'
           }}>
-            {React.createElement(platform.icon, { size: 10, color: 'white' })}
+            {IconComponent && <IconComponent size={10} color="white" />}
           </div>
           <span style={{ 
             fontWeight: '500', 

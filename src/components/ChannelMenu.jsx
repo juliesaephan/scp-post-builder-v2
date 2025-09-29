@@ -92,6 +92,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
     const selectedType = getSelectedPostType(platform.id)
     const hasTypes = platform.types && platform.types.length > 0
     const showSubmenu = activeSubmenu === platform.id
+    const IconComponent = platform.icon
 
     return (
       <div key={platform.id} style={{ position: 'relative' }}>
@@ -174,7 +175,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
               border: '2px solid white',
               boxSizing: 'border-box'
             }}>
-              {React.createElement(platform.icon, { size: 8, color: 'white' })}
+              {IconComponent && <IconComponent size={8} color="white" />}
             </div>
           </div>
           

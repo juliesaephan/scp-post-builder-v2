@@ -1,3 +1,5 @@
+import React from 'react'
+
 const YouTubeIcon = ({ size = 16, color = "#282828", ...props }) => (
   <svg
     width={size}

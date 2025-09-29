@@ -1,3 +1,5 @@
+import React from 'react'
+
 const FacebookIcon = ({ size = 16, color = "#3A3A3A", ...props }) => (
   <svg
     width={size}

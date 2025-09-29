@@ -17,6 +17,7 @@ const IndividualChannelEditor = ({
   const [accordionExpanded, setAccordionExpanded] = useState(true) // Expanded by default in individual editing
   
   const platform = getPlatformById(editingChannelId)
+  const IconComponent = platform?.icon
   
   const handleMediaChange = (newMedia) => {
     // Mark channel as customized for media ONLY and update temp changes
@@ -143,7 +144,7 @@ const IndividualChannelEditor = ({
             justifyContent: 'center',
             fontSize: '10px'
           }}>
-            {React.createElement(platform.icon, { size: 10, color: 'white' })}
+            {IconComponent && <IconComponent size={10} color="white" />}
           </div>
           <span style={{ fontWeight: '500', fontSize: '14px' }}>
             {platform?.name}
