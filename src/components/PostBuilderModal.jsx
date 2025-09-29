@@ -1900,29 +1900,20 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                     alignItems: 'center',
                                     gap: '8px'
                                   }}>
-                                    <input
-                                      type="date"
-                                      value={channelScheduling[channel.id]?.date || ''}
-                                      onChange={(e) => handleChannelSchedulingChange(channel.id, 'date', e.target.value)}
-                                      style={{
-                                        padding: '6px',
-                                        border: '1px solid #dee2e6',
-                                        borderRadius: '4px',
-                                        fontSize: '12px',
-                                        flex: 1
+                                    <DateTimeDisplay
+                                      date={channelScheduling[channel.id]?.date || ''}
+                                      time={channelScheduling[channel.id]?.time || '11:30'}
+                                      onDateTimeChange={(date, time) => {
+                                        handleChannelSchedulingChange(channel.id, 'date', date)
+                                        handleChannelSchedulingChange(channel.id, 'time', time)
                                       }}
-                                    />
-
-                                    <input
-                                      type="time"
-                                      value={channelScheduling[channel.id]?.time || '11:30'}
-                                      onChange={(e) => handleChannelSchedulingChange(channel.id, 'time', e.target.value)}
+                                      onRemoveDate={() => handleRemoveChannelDate(channel.id)}
+                                      placeholder="Select date"
                                       style={{
-                                        padding: '6px',
-                                        border: '1px solid #dee2e6',
-                                        borderRadius: '4px',
+                                        flex: 1,
                                         fontSize: '12px',
-                                        width: '80px'
+                                        padding: '6px 12px',
+                                        minHeight: '16px'
                                       }}
                                     />
 
@@ -1946,30 +1937,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                         <option value="reminder">Reminder only</option>
                                       )}
                                     </select>
-
-                                    {/* Remove date button for individual channel */}
-                                    {channelScheduling[channel.id]?.date && (
-                                      <button
-                                        onClick={() => handleRemoveChannelDate(channel.id)}
-                                        style={{
-                                          background: 'none',
-                                          border: 'none',
-                                          cursor: 'pointer',
-                                          color: '#dc3545',
-                                          fontSize: '14px',
-                                          padding: '4px',
-                                          borderRadius: '4px',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          minWidth: '24px',
-                                          height: '24px'
-                                        }}
-                                        title="Remove date for this channel"
-                                      >
-                                        ✕
-                                      </button>
-                                    )}
                                   </div>
                                 </div>
                               )
