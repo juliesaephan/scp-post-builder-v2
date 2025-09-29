@@ -207,7 +207,7 @@ const PreviewCarousel = ({
                 transition: 'all 0.2s ease'
               }}
             >
-              {preview.platform.icon}
+              <preview.platform.icon size={16} color="white" />
             </button>
           ))}
         </div>

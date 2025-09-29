@@ -174,7 +174,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
               border: '2px solid white',
               boxSizing: 'border-box'
             }}>
-              {platform.icon}
+              <platform.icon size={8} color="white" />
             </div>
           </div>
           

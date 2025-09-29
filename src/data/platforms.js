@@ -1,3 +1,12 @@
+import InstagramIcon from '../components/icons/InstagramIcon'
+import FacebookIcon from '../components/icons/FacebookIcon'
+import PinterestIcon from '../components/icons/PinterestIcon'
+import ThreadsIcon from '../components/icons/ThreadsIcon'
+import TikTokIcon from '../components/icons/TikTokIcon'
+import TwitterIcon from '../components/icons/TwitterIcon'
+import YouTubeIcon from '../components/icons/YouTubeIcon'
+import LinkedInIcon from '../components/icons/LinkedInIcon'
+
 export const platforms = {
   connected: [
     { 
@@ -6,7 +15,7 @@ export const platforms = {
       account: "Bestie's Bakes", 
       color: '#E4405F', 
       types: ['Post', 'Reel', 'Story'],
-      icon: '📷',
+      icon: InstagramIcon,
       options: [
         {
           id: 'firstComment',
@@ -29,7 +38,7 @@ export const platforms = {
       name: 'TikTok', 
       account: "Bestie's Bakes", 
       color: '#000000',
-      icon: '🎵',
+      icon: TikTokIcon,
       options: [
         {
           id: 'creatorStore',
@@ -39,20 +48,20 @@ export const platforms = {
         }
       ]
     },
-    { 
-      id: 'facebook', 
-      name: 'Facebook', 
-      account: "Bestie's Bakes", 
-      color: '#1877F2', 
+    {
+      id: 'facebook',
+      name: 'Facebook',
+      account: "Bestie's Bakes",
+      color: '#1877F2',
       types: ['Post', 'Reel', 'Story'],
-      icon: '👥'
+      icon: FacebookIcon
     },
     { 
       id: 'threads', 
       name: 'Threads', 
       account: "Bestie's Bakes", 
       color: '#000000',
-      icon: '🧵'
+      icon: ThreadsIcon
     }
   ],
   unconnected: [
@@ -61,7 +70,7 @@ export const platforms = {
       name: 'YouTube', 
       color: '#FF0000', 
       types: ['Video', 'Shorts'],
-      icon: '📺',
+      icon: YouTubeIcon,
       options: [
         {
           id: 'notifySubscribers',
@@ -90,14 +99,14 @@ export const platforms = {
       id: 'linkedin', 
       name: 'LinkedIn', 
       color: '#0A66C2',
-      icon: '💼'
+      icon: LinkedInIcon
     },
     { 
       id: 'pinterest', 
       name: 'Pinterest', 
       color: '#BD081C', 
       types: ['Pin', 'Video Pin', 'Image Pin'],
-      icon: '📌',
+      icon: PinterestIcon,
       options: [
         {
           id: 'addLink',
@@ -120,7 +129,7 @@ export const platforms = {
       id: 'x', 
       name: 'X', 
       color: '#000000',
-      icon: '❌'
+      icon: TwitterIcon
     }
   ]
 }

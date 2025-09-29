@@ -32,7 +32,7 @@ const ChannelBadge = ({ channelId, postType, onRemove }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <span style={{ fontSize: '16px' }}>{platform.icon}</span>
+      <platform.icon size={16} color="white" />
       <span>{displayText}</span>
 
       <button
