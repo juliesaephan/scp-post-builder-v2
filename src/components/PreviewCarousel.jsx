@@ -60,6 +60,8 @@ const PreviewCarousel = ({
       // Normal mode - show all selected channels
       data = selectedChannels.map(channel => {
         const platform = getPlatformById(channel.id)
+        console.log('PreviewCarousel - Platform for', channel.id, ':', platform)
+        console.log('PreviewCarousel - Icon for', channel.id, ':', platform?.icon)
         return {
           id: channel.id,
           platform: platform,
@@ -188,7 +190,7 @@ const PreviewCarousel = ({
           justifyContent: 'center'
         }}>
           {previewData.map((preview, index) => {
-            const IconComponent = preview.platform.icon
+            const IconComponent = preview.platform?.icon
             return (
               <button
                 key={preview.id}
@@ -197,7 +199,7 @@ const PreviewCarousel = ({
                   width: '40px',
                   height: '40px',
                   borderRadius: '8px',
-                  backgroundColor: preview.platform.color,
+                  backgroundColor: preview.platform?.color || '#ccc',
                   color: 'white',
                   border: activePreviewIndex === index ? '2px solid #007bff' : '2px solid transparent',
                   cursor: 'pointer',
@@ -209,7 +211,11 @@ const PreviewCarousel = ({
                   transition: 'all 0.2s ease'
                 }}
               >
-                <IconComponent size={16} color="white" />
+                {IconComponent ? (
+                  <IconComponent size={16} color="white" />
+                ) : (
+                  <span style={{ fontSize: '12px' }}>?</span>
+                )}
               </button>
             )
           })}
