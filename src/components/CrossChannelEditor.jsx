@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { getPlatformById } from '../data/platforms'
 import { getRandomMediaItems } from '../data/mockMedia'
 import ChannelMediaGrid from './ChannelMediaGrid'
@@ -43,6 +43,7 @@ const CrossChannelEditor = ({
         }}>
           {selectedChannels.map((channel) => {
             const platform = getPlatformById(channel.id)
+            const IconComponent = platform?.icon
             const isCustomized = channelCustomizations[channel.id]
             const selectedMediaForChannel = isCustomized 
               ? (channelMediaSelections[channel.id] || [])
@@ -74,7 +75,7 @@ const CrossChannelEditor = ({
                     marginRight: '8px',
                     fontSize: '12px'
                   }}>
-                    {platform?.icon}
+                    {IconComponent && <IconComponent size={12} color="white" />}
                   </div>
                   <span style={{ fontWeight: '500', fontSize: '14px' }}>
                     {platform?.name} {channel.postType && `• ${channel.postType}`}
@@ -202,6 +203,7 @@ const CrossChannelEditor = ({
         }}>
           {selectedChannels.map((channel, index) => {
             const platform = getPlatformById(channel.id)
+            const IconComponent = platform?.icon
             return (
               <div key={channel.id} style={{
                 border: '1px solid #e1e5e9',
@@ -228,7 +230,7 @@ const CrossChannelEditor = ({
                     marginRight: '8px',
                     fontSize: '12px'
                   }}>
-                    {platform?.icon}
+                    {IconComponent && <IconComponent size={12} color="white" />}
                   </div>
                   <span style={{ fontWeight: '500', fontSize: '14px' }}>
                     {platform?.name} {channel.postType && `• ${channel.postType}`}
@@ -308,6 +310,7 @@ const CrossChannelEditor = ({
         }}>
           {selectedChannels.map((channel, index) => {
             const platform = getPlatformById(channel.id)
+            const IconComponent = platform?.icon
             const isConnected = platform?.account
             
             return (
@@ -337,7 +340,7 @@ const CrossChannelEditor = ({
                     marginRight: '12px',
                     fontSize: '16px'
                   }}>
-                    {platform?.icon}
+                    {IconComponent && <IconComponent size={12} color="white" />}
                   </div>
                   <div>
                     <div style={{ fontWeight: '500', fontSize: '14px' }}>

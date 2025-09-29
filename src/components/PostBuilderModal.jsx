@@ -1156,6 +1156,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             }}>
                               {selectedChannels.map((channel, index) => {
                                 const platform = getPlatformById(channel.id)
+                                const IconComponent = platform?.icon
                                 const isLastChannel = index === selectedChannels.length - 1
                                 const channelCaption = channelCaptions[channel.id] || ''
 
@@ -1178,7 +1179,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                       fontWeight: '600',
                                       color: '#495057'
                                     }}>
-                                      <span style={{ fontSize: '14px' }}>{platform?.icon}</span>
+                                      {IconComponent && <IconComponent size={14} color="#495057" />}
                                       <span>{platform?.name}</span>
                                       {channel.postType && (
                                         <span style={{
@@ -1291,6 +1292,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       }}>
                         {selectedChannels.map((channel) => {
                           const platform = getPlatformById(channel.id)
+                          const IconComponent = platform?.icon
                           const isActive = activeChannelTab === channel.id
                           const isHovered = hoveredChannelTab === channel.id
 
@@ -1318,7 +1320,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 whiteSpace: 'nowrap'
                               }}
                             >
-                              <span style={{ fontSize: '16px' }}>{platform?.icon}</span>
+                              {IconComponent && <IconComponent size={16} color={isActive ? '#007bff' : '#6c757d'} />}
                               <span>{platform?.name}</span>
                               {channel.postType && (
                                 <span style={{
@@ -1908,6 +1910,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           }}>
                             {selectedChannels.map((channel) => {
                               const platform = getPlatformById(channel.id)
+                              const IconComponent = platform?.icon
                               const isConnected = platform?.account
 
                               return (
@@ -1937,7 +1940,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                       marginRight: '8px',
                                       fontSize: '12px'
                                     }}>
-                                      {platform?.icon}
+                                      {IconComponent && <IconComponent size={12} color="white" />}
                                     </div>
                                     <div>
                                       <div style={{ fontWeight: '500', fontSize: '13px' }}>

@@ -1,3 +1,4 @@
+import React from 'react'
 import { getPlatformById } from '../data/platforms'
 
 const CaptionCounterGroup = ({ 
@@ -51,6 +52,7 @@ const CaptionCounterGroup = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {group.channels.map((channel, index) => {
               const platform = getPlatformById(channel.id)
+              const IconComponent = platform?.icon
               return (
                 <div
                   key={channel.id}
@@ -59,7 +61,7 @@ const CaptionCounterGroup = ({
                     marginLeft: index > 0 ? '-2px' : '0'
                   }}
                 >
-                  {platform?.icon}
+                  {IconComponent && <IconComponent size={14} color="#6c757d" />}
                 </div>
               )
             })}
