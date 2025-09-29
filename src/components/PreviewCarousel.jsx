@@ -1,15 +1,38 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { getPlatformById } from '../data/platforms'
 import PostPreview from './PostPreview'
+import InstagramIcon from './icons/InstagramIcon'
+import FacebookIcon from './icons/FacebookIcon'
+import TikTokIcon from './icons/TikTokIcon'
+import TwitterIcon from './icons/TwitterIcon'
+import ThreadsIcon from './icons/ThreadsIcon'
+import YouTubeIcon from './icons/YouTubeIcon'
+import LinkedInIcon from './icons/LinkedInIcon'
+import PinterestIcon from './icons/PinterestIcon'
 
-const PreviewCarousel = ({ 
-  selectedChannels, 
-  caption, 
+// Helper function to get the correct icon component
+const getIconComponent = (platformId) => {
+  switch (platformId) {
+    case 'instagram': return InstagramIcon
+    case 'facebook': return FacebookIcon
+    case 'tiktok': return TikTokIcon
+    case 'x': return TwitterIcon
+    case 'threads': return ThreadsIcon
+    case 'youtube': return YouTubeIcon
+    case 'linkedin': return LinkedInIcon
+    case 'pinterest': return PinterestIcon
+    default: return null
+  }
+}
+
+const PreviewCarousel = ({
+  selectedChannels,
+  caption,
   media,
   // Individual channel mode props
   individualChannelMode = false,
   editingChannelId = null,
-  tempChanges = {} 
+  tempChanges = {}
 }) => {
   const [activePreviewIndex, setActivePreviewIndex] = useState(0)
   const [previewData, setPreviewData] = useState([])
@@ -60,8 +83,6 @@ const PreviewCarousel = ({
       // Normal mode - show all selected channels
       data = selectedChannels.map(channel => {
         const platform = getPlatformById(channel.id)
-        console.log('PreviewCarousel - Platform for', channel.id, ':', platform)
-        console.log('PreviewCarousel - Icon for', channel.id, ':', platform?.icon)
         return {
           id: channel.id,
           platform: platform,
@@ -190,7 +211,7 @@ const PreviewCarousel = ({
           justifyContent: 'center'
         }}>
           {previewData.map((preview, index) => {
-            const IconComponent = preview.platform?.icon
+            const IconComponent = getIconComponent(preview.platform?.id)
             return (
               <button
                 key={preview.id}
@@ -214,7 +235,7 @@ const PreviewCarousel = ({
                 {IconComponent ? (
                   <IconComponent size={16} color="white" />
                 ) : (
-                  <span style={{ fontSize: '12px' }}>?</span>
+                  <span style={{ fontSize: '12px', color: 'white' }}>{preview.platform?.name?.[0] || '?'}</span>
                 )}
               </button>
             )
