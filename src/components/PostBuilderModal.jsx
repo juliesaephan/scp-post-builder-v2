@@ -9,6 +9,8 @@ import SavePostMenu from './SavePostMenu'
 import ConfirmationDialog from './ConfirmationDialog'
 import DateTimeDisplay from './DateTimeDisplay'
 import WarningModal from './WarningModal'
+import TrashIcon from './icons/TrashIcon'
+import PencilIcon from './icons/PencilIcon'
 import { getPlatformById } from '../data/platforms'
 
 const PostBuilderModal = ({ onClose, onPostSaved }) => {
@@ -891,7 +893,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       `}</style>
       
       {/* Overlay */}
-      <div 
+      <div
         style={{
           position: 'fixed',
           top: 0,
@@ -900,11 +902,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
           zIndex: 999
-        }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            handleCloseRequest()
-          }
         }}
       />
       
@@ -1014,12 +1011,15 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                 padding: '4px',
                 borderRadius: '4px',
                 opacity: isEditingTitle ? 0.5 : 1,
-                transition: 'opacity 0.2s ease'
+                transition: 'opacity 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
               disabled={isEditingTitle}
               title="Edit title"
             >
-              ✏️
+              <PencilIcon size={14} color="#6c757d" />
             </button>
           </div>
 
@@ -1726,11 +1726,14 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        fontSize: '18px',
-                        color: '#dc3545'
+                        color: '#dc3545',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '8px'
                       }}
                     >
-                      🗑️
+                      <TrashIcon size={18} color="#dc3545" />
                     </button>
 
                     <button
