@@ -62,6 +62,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Warning modals
   const [showCustomizeWarning, setShowCustomizeWarning] = useState(false)
   const [showRevertWarning, setShowRevertWarning] = useState(false)
+
+  // Title editing
+  const [postTitle, setPostTitle] = useState('New Post')
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
   
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
@@ -565,6 +569,28 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     setChannelsSeparated(false)
   }
 
+  // Title editing handlers
+  const handleTitleEdit = () => {
+    setIsEditingTitle(true)
+  }
+
+  const handleTitleSave = () => {
+    setIsEditingTitle(false)
+  }
+
+  const handleTitleCancel = () => {
+    setIsEditingTitle(false)
+    // Could optionally reset title to previous value here
+  }
+
+  const handleTitleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleTitleSave()
+    } else if (e.key === 'Escape') {
+      handleTitleCancel()
+    }
+  }
+
   const handleApplyToAll = (sourceChannelId) => {
     // Get the caption from the source channel
     const sourceCaption = channelCaptions[sourceChannelId] || ''
@@ -937,14 +963,62 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
             gap: '8px',
             flex: 1
           }}>
-            <span style={{ fontWeight: '600', fontSize: '16px' }}>New Post</span>
-            <button style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '4px',
-              borderRadius: '4px'
-            }}>
+            {isEditingTitle ? (
+              <input
+                type="text"
+                value={postTitle}
+                onChange={(e) => setPostTitle(e.target.value)}
+                onKeyDown={handleTitleKeyPress}
+                onBlur={handleTitleSave}
+                autoFocus
+                style={{
+                  fontWeight: '600',
+                  fontSize: '16px',
+                  border: '2px solid #007bff',
+                  borderRadius: '4px',
+                  padding: '4px 8px',
+                  backgroundColor: '#fff',
+                  outline: 'none',
+                  minWidth: '150px'
+                }}
+              />
+            ) : (
+              <span
+                style={{
+                  fontWeight: '600',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.2s ease'
+                }}
+                onClick={handleTitleEdit}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f8f9fa'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent'
+                }}
+                title="Click to edit title"
+              >
+                {postTitle}
+              </span>
+            )}
+
+            <button
+              onClick={handleTitleEdit}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                borderRadius: '4px',
+                opacity: isEditingTitle ? 0.5 : 1,
+                transition: 'opacity 0.2s ease'
+              }}
+              disabled={isEditingTitle}
+              title="Edit title"
+            >
               ✏️
             </button>
           </div>
