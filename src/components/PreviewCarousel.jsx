@@ -208,21 +208,10 @@ const PreviewCarousel = ({
                   transition: 'all 0.2s ease'
                 }}
               >
-                {(() => {
-                  const platform = preview.platform
-                  const IconComponent = platform?.icon
-                  console.log('Platform:', platform?.name, 'Has icon:', !!IconComponent, 'Icon type:', typeof IconComponent)
-
-                  if (IconComponent) {
-                    try {
-                      return <IconComponent size={16} color="white" />
-                    } catch (e) {
-                      console.error('Icon render error:', e)
-                      return <span style={{ fontSize: '10px', color: 'white' }}>❌</span>
-                    }
-                  }
-                  return <span style={{ fontSize: '10px', color: 'white' }}>{platform?.name?.[0] || '❓'}</span>
-                })()
+                {preview.platform?.icon ?
+                  React.createElement(preview.platform.icon, { size: 16, color: 'white' }) :
+                  <span style={{ fontSize: '12px', color: 'white' }}>{preview.platform?.name?.[0] || 'X'}</span>
+                }
               </button>
             )
           })}
