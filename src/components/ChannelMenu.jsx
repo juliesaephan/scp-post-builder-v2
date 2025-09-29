@@ -96,6 +96,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
     return (
       <div key={platform.id} style={{ position: 'relative' }}>
         <div
+          data-menu-item
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -126,7 +127,10 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
                   onChannelToggle(platform.id, null)
                 } else {
                   // Channel is not selected - clicking checkmark opens submenu
-                  handleChannelClick(platform, e)
+                  // Use the parent div element for positioning instead of checkbox
+                  const parentDiv = e.target.closest('[data-menu-item]')
+                  const syntheticEvent = { ...e, currentTarget: parentDiv }
+                  handleChannelClick(platform, syntheticEvent)
                 }
               }
             }}
