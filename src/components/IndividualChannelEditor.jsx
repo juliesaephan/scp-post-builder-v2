@@ -143,7 +143,7 @@ const IndividualChannelEditor = ({
             justifyContent: 'center',
             fontSize: '10px'
           }}>
-            {platform?.icon}
+            <platform.icon size={10} color="white" />
           </div>
           <span style={{ fontWeight: '500', fontSize: '14px' }}>
             {platform?.name}

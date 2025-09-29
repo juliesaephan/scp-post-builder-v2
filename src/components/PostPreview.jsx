@@ -339,7 +339,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
         fontSize: '32px',
         marginBottom: '12px'
       }}>
-        {platform?.icon}
+        <platform.icon size={32} color={platform?.color || '#666'} />
       </div>
       <div style={{
         fontSize: '16px',

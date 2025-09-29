@@ -1081,25 +1081,6 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                   padding: '20px',
                   paddingBottom: '10px'
                 }}>
-                  {/* Post Content Header */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '16px',
-                    paddingBottom: '8px',
-                    borderBottom: '1px solid #e1e5e9'
-                  }}>
-                    <h3 style={{
-                      margin: 0,
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      color: '#495057'
-                    }}>
-                      Post Content
-                    </h3>
-
-                  </div>
 
                   {/* Conditional Rendering: Unified vs Customized View */}
                   {!channelsSeparated ? (
@@ -1764,7 +1745,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           fontSize: '14px',
                           backgroundColor: 'transparent',
                           color: '#6c757d',
-                          border: channelsSeparated ? '1px solid #dee2e6' : 'none',
+                          border: 'none',
                           borderRadius: '6px',
                           cursor: 'pointer',
                           fontWeight: '400',
