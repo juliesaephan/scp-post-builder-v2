@@ -103,7 +103,7 @@ const ConfirmationDialog = ({ onSaveAsDraft, onDiscardChanges, onCancel, isLoadi
               disabled={isLoading}
               style={{
                 padding: '10px 16px',
-                backgroundColor: '#28a745',
+                backgroundColor: '#3c3c3c',
                 border: 'none',
                 borderRadius: '6px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',

@@ -230,10 +230,10 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
             style={{
               width: 60,
               height: 60,
-              border: '2px dashed #007bff',
+              border: '2px dashed #62759F',
               borderRadius: '8px',
               backgroundColor: '#f8f9fb',
-              color: '#007bff',
+              color: '#62759F',
               cursor: 'pointer',
               fontSize: '24px',
               display: 'flex',
@@ -243,12 +243,12 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#007bff'
+              e.target.style.backgroundColor = '#62759F'
               e.target.style.color = 'white'
             }}
             onMouseLeave={(e) => {
               e.target.style.backgroundColor = '#f8f9fb'
-              e.target.style.color = '#007bff'
+              e.target.style.color = '#62759F'
             }}
           >
             +

@@ -175,7 +175,7 @@ const IndividualChannelEditor = ({
             onClick={onUpdate}
             style={{
               padding: '8px 16px',
-              backgroundColor: '#28a745',
+              backgroundColor: '#3c3c3c',
               color: 'white',
               border: 'none',
               borderRadius: '6px',

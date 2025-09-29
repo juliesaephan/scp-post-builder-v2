@@ -211,7 +211,7 @@ const SavePostMenu = ({
             width: '20px',
             height: '20px',
             border: '2px solid #e1e5e9',
-            borderTopColor: '#007bff',
+            borderTopColor: '#62759F',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite'
           }} />

@@ -63,7 +63,7 @@ const DateTimeDisplay = ({
           ...style
         }}
         onMouseEnter={(e) => {
-          e.target.style.borderColor = '#007bff'
+          e.target.style.borderColor = '#62759F'
           e.target.style.backgroundColor = '#f8f9fa'
         }}
         onMouseLeave={(e) => {

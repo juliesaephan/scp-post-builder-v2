@@ -449,8 +449,8 @@ const CrossChannelEditor = ({
                 fontSize: '14px',
                 fontWeight: '500',
                 cursor: 'pointer',
-                color: activeTab === tab.key ? '#007bff' : '#6c757d',
-                borderBottom: activeTab === tab.key ? '2px solid #007bff' : '2px solid transparent',
+                color: activeTab === tab.key ? '#62759F' : '#6c757d',
+                borderBottom: activeTab === tab.key ? '2px solid #62759F' : '2px solid transparent',
                 transition: 'all 0.2s'
               }}
             >
@@ -483,7 +483,7 @@ const CrossChannelEditor = ({
             onClick={onUpdate}
             style={{
               padding: '8px 16px',
-              backgroundColor: '#28a745',
+              backgroundColor: '#3c3c3c',
               color: 'white',
               border: 'none',
               borderRadius: '6px',

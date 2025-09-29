@@ -39,7 +39,7 @@ function App() {
         onClick={() => setIsModalOpen(true)}
         style={{
           padding: '12px 24px',
-          backgroundColor: '#007bff',
+          backgroundColor: '#62759F',
           color: 'white',
           border: 'none',
           borderRadius: '6px',

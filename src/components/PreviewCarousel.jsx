@@ -198,7 +198,7 @@ const PreviewCarousel = ({
                   borderRadius: '8px',
                   backgroundColor: preview.platform?.color || '#ccc',
                   color: 'white',
-                  border: activePreviewIndex === index ? '2px solid #007bff' : '2px solid transparent',
+                  border: activePreviewIndex === index ? '2px solid #62759F' : '2px solid transparent',
                   cursor: 'pointer',
                   fontSize: '16px',
                   display: 'flex',

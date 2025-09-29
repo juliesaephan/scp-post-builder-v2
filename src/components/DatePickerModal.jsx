@@ -95,10 +95,10 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
       let hoverColor = '#f8f9fa'
 
       if (isSelected) {
-        backgroundColor = '#007bff'
+        backgroundColor = '#62759F'
         color = 'white'
       } else if (isToday) {
-        backgroundColor = '#28a745'
+        backgroundColor = '#3c3c3c'
         color = 'white'
       } else if (isPast) {
         color = '#adb5bd'
@@ -131,7 +131,7 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
             color: color,
             fontWeight: isToday ? '700' : isSelected ? '600' : '400',
             transition: 'all 0.2s ease',
-            border: isToday && !isSelected ? '2px solid #28a745' : '2px solid transparent',
+            border: isToday && !isSelected ? '2px solid #3c3c3c' : '2px solid transparent',
             opacity: isPast ? 0.5 : 1
           }}
           onMouseEnter={(e) => {
@@ -375,7 +375,7 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
             disabled={!selectedDate}
             style={{
               padding: '8px 16px',
-              backgroundColor: selectedDate ? '#007bff' : '#e9ecef',
+              backgroundColor: selectedDate ? '#62759F' : '#e9ecef',
               color: selectedDate ? 'white' : '#6c757d',
               border: 'none',
               borderRadius: '6px',

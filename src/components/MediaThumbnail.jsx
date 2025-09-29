@@ -30,7 +30,7 @@ const MediaThumbnail = ({
         borderRadius: '8px',
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
-        border: isSelected ? '2px solid #007bff' : '1px solid #dee2e6',
+        border: isSelected ? '2px solid #62759F' : '1px solid #dee2e6',
         flexShrink: 0
       }}
       onMouseEnter={() => setShowDeleteButton(true)}

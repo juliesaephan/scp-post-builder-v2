@@ -971,7 +971,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                 style={{
                   fontWeight: '600',
                   fontSize: '16px',
-                  border: '2px solid #007bff',
+                  border: '2px solid #62759F',
                   borderRadius: '4px',
                   padding: '4px 8px',
                   backgroundColor: '#fff',
@@ -1033,7 +1033,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
               onClick={() => setShowPreview(!showPreview)}
               style={{
                 padding: '8px 12px',
-                backgroundColor: showPreview ? '#e9ecef' : '#007bff',
+                backgroundColor: showPreview ? '#e9ecef' : '#62759F',
                 color: showPreview ? '#495057' : 'white',
                 border: 'none',
                 borderRadius: '6px',
@@ -1230,7 +1230,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                             right: '6px',
                                             padding: '4px 8px',
                                             fontSize: '10px',
-                                            backgroundColor: appliedChannelId === channel.id ? '#28a745' : '#007bff',
+                                            backgroundColor: appliedChannelId === channel.id ? '#3c3c3c' : '#62759F',
                                             color: 'white',
                                             border: 'none',
                                             borderRadius: '4px',
@@ -1309,18 +1309,18 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 padding: '12px 16px',
                                 backgroundColor: isActive ? '#f8f9fa' : 'transparent',
                                 border: 'none',
-                                borderBottom: isActive ? '2px solid #007bff' : '2px solid transparent',
+                                borderBottom: isActive ? '2px solid #62759F' : '2px solid transparent',
                                 cursor: 'pointer',
                                 fontSize: '14px',
                                 fontWeight: isActive ? '600' : '500',
-                                color: isActive ? '#007bff' : '#495057',
+                                color: isActive ? '#62759F' : '#495057',
                                 transition: 'all 0.2s ease',
                                 position: 'relative',
                                 minWidth: 'fit-content',
                                 whiteSpace: 'nowrap'
                               }}
                             >
-                              {IconComponent && <IconComponent size={16} color={isActive ? '#007bff' : '#6c757d'} />}
+                              {IconComponent && <IconComponent size={16} color={isActive ? '#62759F' : '#6c757d'} />}
                               <span>{platform?.name}</span>
                               {channel.postType && (
                                 <span style={{
@@ -1380,7 +1380,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             cursor: 'pointer',
                             fontSize: '18px',
                             fontWeight: '500',
-                            color: '#007bff',
+                            color: '#62759F',
                             transition: 'all 0.2s ease'
                           }}
                         >
@@ -1564,7 +1564,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           style={{
                             height: '40px',
                             width: '40px',
-                            backgroundColor: '#007bff',
+                            backgroundColor: '#62759F',
                             color: 'white',
                             border: 'none',
                             borderRadius: '8px',
@@ -1615,7 +1615,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             style={{
                               height: '36px',
                               width: '36px',
-                              backgroundColor: '#007bff',
+                              backgroundColor: '#62759F',
                               color: 'white',
                               border: 'none',
                               borderRadius: '6px',
@@ -1772,7 +1772,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       disabled={isSaving}
                       style={{
                         padding: '10px 20px',
-                        backgroundColor: isSaving ? '#6c757d' : '#28a745',
+                        backgroundColor: isSaving ? '#6c757d' : '#3c3c3c',
                         color: 'white',
                         border: 'none',
                         borderRadius: '6px',
@@ -1877,7 +1877,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             disabled={!unifiedDate}
                             style={{
                               padding: '8px 16px',
-                              backgroundColor: unifiedDate ? '#007bff' : '#e9ecef',
+                              backgroundColor: unifiedDate ? '#62759F' : '#e9ecef',
                               color: unifiedDate ? 'white' : '#6c757d',
                               border: 'none',
                               borderRadius: '6px',
@@ -2034,7 +2034,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         title="Customize Channels"
         message="You're about to separate your channels for individual customization. Once separated, content changes will no longer sync between channels. You'll be able to customize captions, media, and settings for each channel independently."
         confirmText="Continue"
-        confirmButtonColor="#007bff"
+        confirmButtonColor="#62759F"
       />
 
       <WarningModal
