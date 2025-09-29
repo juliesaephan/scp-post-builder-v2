@@ -117,7 +117,17 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
             onClick={(e) => {
               e.stopPropagation()
               if (!hasTypes) {
+                // Single post type - always toggle
                 onChannelToggle(platform.id, null)
+              } else {
+                // Multiple post types
+                if (selected) {
+                  // Channel is selected - clicking checkmark removes it
+                  onChannelToggle(platform.id, null)
+                } else {
+                  // Channel is not selected - clicking checkmark opens submenu
+                  handleChannelClick(platform, e)
+                }
               }
             }}
           />

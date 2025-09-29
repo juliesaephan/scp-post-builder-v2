@@ -194,6 +194,18 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
               [channelId]: ''
             }))
           }
+
+          // Apply unified date/time to new channel if available
+          if (unifiedDate) {
+            setChannelScheduling(prevScheduling => ({
+              ...prevScheduling,
+              [channelId]: {
+                date: unifiedDate,
+                time: unifiedTime,
+                type: 'auto'
+              }
+            }))
+          }
         }
 
         return [...prev, { id: channelId, postType }]
@@ -257,6 +269,18 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
             setChannelCaptions(prevCaptions => ({
               ...prevCaptions,
               [channelId]: ''
+            }))
+          }
+
+          // Apply unified date/time to new channel if available
+          if (unifiedDate) {
+            setChannelScheduling(prevScheduling => ({
+              ...prevScheduling,
+              [channelId]: {
+                date: unifiedDate,
+                time: unifiedTime,
+                type: 'auto'
+              }
             }))
           }
         }
@@ -331,8 +355,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
     // Check if all scheduled channels have the same date and time
     const firstScheduling = scheduledChannels[0].scheduling
-    const allSame = scheduledChannels.every(channel => 
-      channel.scheduling.date === firstScheduling.date && 
+    const allSame = scheduledChannels.every(channel =>
+      channel.scheduling.date === firstScheduling.date &&
       (channel.scheduling.time || '11:30') === (firstScheduling.time || '11:30')
     )
 
@@ -349,6 +373,27 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       }, scheduledChannels[0].scheduling)
 
       return `Earliest at ${formatDateForDisplay(earliest.date, earliest.time || '11:30')}`
+    }
+  }
+
+  const getIndividualChannelDateText = () => {
+    const scheduledChannels = getScheduledChannels()
+
+    if (scheduledChannels.length === 0) {
+      return 'Select date'
+    }
+
+    // Check if all scheduled channels have the same date and time
+    const firstScheduling = scheduledChannels[0].scheduling
+    const allSame = scheduledChannels.every(channel =>
+      channel.scheduling.date === firstScheduling.date &&
+      (channel.scheduling.time || '11:30') === (firstScheduling.time || '11:30')
+    )
+
+    if (allSame) {
+      return formatDateForDisplay(firstScheduling.date, firstScheduling.time || '11:30')
+    } else {
+      return 'Custom times'
     }
   }
 
@@ -1353,7 +1398,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                   handleChannelSchedulingChange(activeChannelTab, 'date', date)
                                   handleChannelSchedulingChange(activeChannelTab, 'time', time)
                                 }}
-                                placeholder="Custom Time"
+                                placeholder={getIndividualChannelDateText()}
                                 style={{ flex: 1 }}
                               />
 
@@ -1588,7 +1633,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         style={{
                           padding: '8px 12px',
                           fontSize: '14px',
-                          backgroundColor: channelsSeparated ? '#007bff' : '#f8f9fa',
+                          backgroundColor: channelsSeparated ? '#6c757d' : '#f8f9fa',
                           color: channelsSeparated ? 'white' : '#495057',
                           border: '1px solid #dee2e6',
                           borderRadius: '6px',

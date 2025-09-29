@@ -19,41 +19,51 @@ const ChannelBadge = ({ channelId, postType, onRemove }) => {
         alignItems: 'center',
         gap: '8px',
         padding: '8px 12px',
+        paddingRight: '40px', // Fixed padding to accommodate X button
         backgroundColor: platform.color,
         color: 'white',
         borderRadius: '6px',
         fontSize: '14px',
         fontWeight: '500',
         position: 'relative',
-        cursor: isHovered ? 'pointer' : 'default'
+        cursor: isHovered ? 'pointer' : 'default',
+        minWidth: 'fit-content'
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <span style={{ fontSize: '16px' }}>{platform.icon}</span>
       <span>{displayText}</span>
-      
-      {isHovered && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onRemove?.(channelId)
-          }}
-          style={{
-            background: 'rgba(255, 255, 255, 0.2)',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            color: 'white',
-            marginLeft: '8px'
-          }}
-          title="Remove channel"
-        >
-          ✕
-        </button>
-      )}
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          onRemove?.(channelId)
+        }}
+        style={{
+          position: 'absolute',
+          right: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: 'rgba(255, 255, 255, 0.2)',
+          border: 'none',
+          borderRadius: '4px',
+          padding: '4px',
+          cursor: 'pointer',
+          fontSize: '12px',
+          color: 'white',
+          opacity: isHovered ? 1 : 0,
+          transition: 'opacity 0.2s ease',
+          width: '20px',
+          height: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        title="Remove channel"
+      >
+        ✕
+      </button>
     </div>
   )
 }
