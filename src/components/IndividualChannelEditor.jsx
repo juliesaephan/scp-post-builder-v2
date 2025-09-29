@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { getPlatformById } from '../data/platforms'
 import MediaManager from './MediaManager'
 import ChannelOptionsAccordion from './ChannelOptionsAccordion'
@@ -143,7 +143,7 @@ const IndividualChannelEditor = ({
             justifyContent: 'center',
             fontSize: '10px'
           }}>
-            <platform.icon size={10} color="white" />
+            {React.createElement(platform.icon, { size: 10, color: 'white' })}
           </div>
           <span style={{ fontWeight: '500', fontSize: '14px' }}>
             {platform?.name}

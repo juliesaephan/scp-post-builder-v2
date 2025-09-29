@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { getPlatformById } from '../data/platforms'
 
 const ChannelBadge = ({ channelId, postType, onRemove }) => {
@@ -32,7 +32,7 @@ const ChannelBadge = ({ channelId, postType, onRemove }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <platform.icon size={16} color="white" />
+      {React.createElement(platform.icon, { size: 16, color: 'white' })}
       <span>{displayText}</span>
 
       <button

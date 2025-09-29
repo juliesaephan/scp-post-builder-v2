@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 const ChannelOptionField = ({ option, value, onChange, disabled = true }) => {
   const renderField = () => {
@@ -171,7 +171,7 @@ const ChannelOptionsAccordion = ({
             justifyContent: 'center',
             fontSize: '10px'
           }}>
-            <platform.icon size={10} color="white" />
+            {React.createElement(platform.icon, { size: 10, color: 'white' })}
           </div>
           <span style={{ 
             fontWeight: '500', 

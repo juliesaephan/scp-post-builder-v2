@@ -187,29 +187,32 @@ const PreviewCarousel = ({
           flex: 1,
           justifyContent: 'center'
         }}>
-          {previewData.map((preview, index) => (
-            <button
-              key={preview.id}
-              onClick={() => handleTabClick(index)}
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '8px',
-                backgroundColor: preview.platform.color,
-                color: 'white',
-                border: activePreviewIndex === index ? '2px solid #007bff' : '2px solid transparent',
-                cursor: 'pointer',
-                fontSize: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: activePreviewIndex === index ? 1 : 0.7,
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <preview.platform.icon size={16} color="white" />
-            </button>
-          ))}
+          {previewData.map((preview, index) => {
+            const IconComponent = preview.platform.icon
+            return (
+              <button
+                key={preview.id}
+                onClick={() => handleTabClick(index)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  backgroundColor: preview.platform.color,
+                  color: 'white',
+                  border: activePreviewIndex === index ? '2px solid #007bff' : '2px solid transparent',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: activePreviewIndex === index ? 1 : 0.7,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <IconComponent size={16} color="white" />
+              </button>
+            )
+          })}
         </div>
 
         {/* Next Arrow */}

@@ -325,22 +325,24 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
     </div>
   )
 
-  const GenericPreview = () => (
-    <div style={{
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      border: '1px solid #e1e5e9',
-      maxWidth: '300px',
-      margin: '0 auto',
-      padding: '16px',
-      textAlign: 'center'
-    }}>
+  const GenericPreview = () => {
+    const IconComponent = platform?.icon
+    return (
       <div style={{
-        fontSize: '32px',
-        marginBottom: '12px'
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        border: '1px solid #e1e5e9',
+        maxWidth: '300px',
+        margin: '0 auto',
+        padding: '16px',
+        textAlign: 'center'
       }}>
-        <platform.icon size={32} color={platform?.color || '#666'} />
-      </div>
+        <div style={{
+          fontSize: '32px',
+          marginBottom: '12px'
+        }}>
+          {IconComponent && <IconComponent size={32} color={platform?.color || '#666'} />}
+        </div>
       <div style={{
         fontSize: '16px',
         fontWeight: '600',
@@ -365,8 +367,9 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
           Add caption to see preview
         </div>
       )}
-    </div>
-  )
+      </div>
+    )
+  }
 
   // Choose the appropriate preview based on platform
   const renderPreview = () => {

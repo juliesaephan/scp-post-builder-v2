@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { platforms } from '../data/platforms'
 
 const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onClose, buttonRef, positionBelow = false }) => {
@@ -174,7 +174,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
               border: '2px solid white',
               boxSizing: 'border-box'
             }}>
-              <platform.icon size={8} color="white" />
+              {React.createElement(platform.icon, { size: 8, color: 'white' })}
             </div>
           </div>
           
