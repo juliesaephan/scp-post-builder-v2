@@ -8,6 +8,7 @@ import ChannelOptionsAccordion from './ChannelOptionsAccordion'
 import SavePostMenu from './SavePostMenu'
 import ConfirmationDialog from './ConfirmationDialog'
 import DateTimeDisplay from './DateTimeDisplay'
+import WarningModal from './WarningModal'
 import { getPlatformById } from '../data/platforms'
 
 const PostBuilderModal = ({ onClose, onPostSaved }) => {
@@ -57,6 +58,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Date scheduling interface
   const [showDateScheduling, setShowDateScheduling] = useState(false)
   const dateSchedulingRef = useRef(null)
+
+  // Warning modals
+  const [showCustomizeWarning, setShowCustomizeWarning] = useState(false)
+  const [showRevertWarning, setShowRevertWarning] = useState(false)
   
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
@@ -497,59 +502,67 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
   const handleCustomizeClick = () => {
     if (!channelsSeparated) {
-      // SEPARATING CHANNELS - Create backup and separate data
-
-      // Create backup of unified state
-      const backupState = {
-        media: [...media],
-        channelCaptions: {...channelCaptions},
-        selectedMediaByChannel: {...selectedMediaByChannel},
-        customizedChannels: {...customizedChannels}
-      }
-      setUnifiedBackupState(backupState)
-
-      // Create independent data for each channel
-      const separatedData = {}
-      selectedChannels.forEach(channel => {
-        separatedData[channel.id] = {
-          media: [...media], // Each channel gets independent copy of current media
-          caption: channelCaptions[channel.id] || caption || '', // Each channel gets its current caption or unified caption
-          options: channelOptions[channel.id] || {},
-          scheduling: channelScheduling[channel.id] || { date: '', time: '11:30', type: 'auto' }
-        }
-      })
-      setSeparatedChannelData(separatedData)
-
-      // Set first channel as active tab
-      setActiveChannelTab(selectedChannels[0]?.id || null)
-      setChannelsSeparated(true)
-
+      // Show warning before separating channels
+      setShowCustomizeWarning(true)
     } else {
       // REVERTING TO UNIFIED - Show confirmation dialog
       const hasIndividualEdits = Object.keys(separatedChannelData).length > 0
-
-      if (hasIndividualEdits && window.confirm(
-        'Are you sure you want to revert to unified post? This will discard all individual channel customizations.'
-      )) {
-        // Restore unified state from backup
-        if (unifiedBackupState) {
-          setMedia(unifiedBackupState.media)
-          setChannelCaptions(unifiedBackupState.channelCaptions)
-          setSelectedMediaByChannel(unifiedBackupState.selectedMediaByChannel)
-          setCustomizedChannels(unifiedBackupState.customizedChannels)
-        }
-
-        // Clear separated state
-        setSeparatedChannelData({})
-        setUnifiedBackupState(null)
-        setActiveChannelTab(null)
-        setChannelsSeparated(false)
-      } else if (!hasIndividualEdits) {
+      if (hasIndividualEdits) {
+        setShowRevertWarning(true)
+      } else {
         // No edits, just revert
         setChannelsSeparated(false)
         setActiveChannelTab(null)
       }
     }
+  }
+
+  const handleConfirmCustomize = () => {
+    // SEPARATING CHANNELS - Create backup and separate data
+    setShowCustomizeWarning(false)
+
+    // Create backup of unified state
+    const backupState = {
+      media: [...media],
+      channelCaptions: {...channelCaptions},
+      selectedMediaByChannel: {...selectedMediaByChannel},
+      customizedChannels: {...customizedChannels}
+    }
+    setUnifiedBackupState(backupState)
+
+    // Create independent data for each channel
+    const separatedData = {}
+    selectedChannels.forEach(channel => {
+      separatedData[channel.id] = {
+        media: [...media], // Each channel gets independent copy of current media
+        caption: channelCaptions[channel.id] || caption || '', // Each channel gets its current caption or unified caption
+        options: channelOptions[channel.id] || {},
+        scheduling: channelScheduling[channel.id] || { date: '', time: '11:30', type: 'auto' }
+      }
+    })
+    setSeparatedChannelData(separatedData)
+
+    // Set first channel as active tab
+    setActiveChannelTab(selectedChannels[0]?.id || null)
+    setChannelsSeparated(true)
+  }
+
+  const handleConfirmRevert = () => {
+    setShowRevertWarning(false)
+
+    // Restore unified state from backup
+    if (unifiedBackupState) {
+      setMedia(unifiedBackupState.media)
+      setChannelCaptions(unifiedBackupState.channelCaptions)
+      setSelectedMediaByChannel(unifiedBackupState.selectedMediaByChannel)
+      setCustomizedChannels(unifiedBackupState.customizedChannels)
+    }
+
+    // Clear separated state
+    setSeparatedChannelData({})
+    setUnifiedBackupState(null)
+    setActiveChannelTab(null)
+    setChannelsSeparated(false)
   }
 
   const handleApplyToAll = (sourceChannelId) => {
@@ -1984,6 +1997,27 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           )}
         </div>
       </div>
+
+      {/* Warning Modals */}
+      <WarningModal
+        isOpen={showCustomizeWarning}
+        onClose={() => setShowCustomizeWarning(false)}
+        onConfirm={handleConfirmCustomize}
+        title="Customize Channels"
+        message="You're about to separate your channels for individual customization. Once separated, content changes will no longer sync between channels. You'll be able to customize captions, media, and settings for each channel independently."
+        confirmText="Continue"
+        confirmButtonColor="#007bff"
+      />
+
+      <WarningModal
+        isOpen={showRevertWarning}
+        onClose={() => setShowRevertWarning(false)}
+        onConfirm={handleConfirmRevert}
+        title="Revert to Unified Post"
+        message="Are you sure you want to revert to unified posting? This will discard all individual channel customizations and merge everything back into a single unified post."
+        confirmText="Revert to Unified"
+        confirmButtonColor="#dc3545"
+      />
 
       {/* Confirmation Dialog */}
       {showConfirmationDialog && (
