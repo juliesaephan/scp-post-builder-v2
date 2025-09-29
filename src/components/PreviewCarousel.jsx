@@ -208,11 +208,7 @@ const PreviewCarousel = ({
                   transition: 'all 0.2s ease'
                 }}
               >
-                {(() => {
-                  const platform = preview.platform
-                  const IconComponent = platform?.icon
-                  return IconComponent ? <IconComponent size={16} color="white" /> : <span style={{ fontSize: '12px', color: 'white' }}>{platform?.name?.[0] || '?'}</span>
-                })()}
+                <span style={{ fontSize: '10px', color: 'white' }}>🔥</span>}
               </button>
             )
           })}
