@@ -12,6 +12,7 @@ import PinterestIcon from './icons/PinterestIcon'
 
 // Helper function to get the correct icon component
 const getIconComponent = (platformId) => {
+  console.log('getIconComponent called with:', platformId)
   switch (platformId) {
     case 'instagram': return InstagramIcon
     case 'facebook': return FacebookIcon
@@ -21,7 +22,9 @@ const getIconComponent = (platformId) => {
     case 'youtube': return YouTubeIcon
     case 'linkedin': return LinkedInIcon
     case 'pinterest': return PinterestIcon
-    default: return null
+    default:
+      console.log('No icon component found for platform:', platformId)
+      return null
   }
 }
 
