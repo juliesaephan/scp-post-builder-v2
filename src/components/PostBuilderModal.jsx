@@ -617,13 +617,36 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   }
 
   const handleChannelSchedulingChange = (channelId, field, value) => {
-    setChannelScheduling(prev => ({
-      ...prev,
-      [channelId]: {
-        ...prev[channelId],
+    setChannelScheduling(prev => {
+      // Create a completely new state object to avoid any reference issues
+      const newScheduling = {}
+
+      // Copy all existing channel scheduling, ensuring each channel has its own object
+      Object.keys(prev).forEach(existingChannelId => {
+        newScheduling[existingChannelId] = {
+          date: prev[existingChannelId]?.date || '',
+          time: prev[existingChannelId]?.time || '11:30',
+          type: prev[existingChannelId]?.type || 'auto'
+        }
+      })
+
+      // Ensure the target channel exists and update only its specific field
+      if (!newScheduling[channelId]) {
+        newScheduling[channelId] = {
+          date: '',
+          time: '11:30',
+          type: 'auto'
+        }
+      }
+
+      // Update only the specific field for the specific channel
+      newScheduling[channelId] = {
+        ...newScheduling[channelId],
         [field]: value
       }
-    }))
+
+      return newScheduling
+    })
   }
 
   const handleUnifiedDateTimeChange = (date, time) => {
@@ -713,15 +736,143 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     return caption.trim() || media.length > 0
   }
 
+  const validateChannelRequirements = (channel) => {
+    const platform = getPlatformById(channel.id)
+
+    // Get channel-specific content
+    const channelMedia = channelsSeparated && separatedChannelData[channel.id]
+      ? separatedChannelData[channel.id].media || []
+      : selectedMediaByChannel[channel.id] || media
+
+    const channelCaption = channelsSeparated && separatedChannelData[channel.id]
+      ? separatedChannelData[channel.id].caption || ''
+      : channelCaptions[channel.id] || caption
+
+    const videoCount = channelMedia.filter(item => item.type === 'video').length
+    const photoCount = channelMedia.filter(item => item.type === 'image').length
+    const totalMediaCount = channelMedia.length
+
+    // Helper function to create media description
+    const getMediaDescription = () => {
+      const parts = []
+      if (photoCount > 0) parts.push(`${photoCount} photo${photoCount > 1 ? 's' : ''}`)
+      if (videoCount > 0) parts.push(`${videoCount} video${videoCount > 1 ? 's' : ''}`)
+      return parts.join(' and ')
+    }
+
+    switch (channel.id) {
+      case 'instagram':
+      case 'facebook':
+        if (channel.postType === 'Post') {
+          // Instagram/Facebook Post: 1-20 media (mixed photos/videos OK)
+          if (totalMediaCount === 0) {
+            return `${platform?.name} Post requires at least 1 media item`
+          }
+          if (totalMediaCount > 20) {
+            return `${platform?.name} Post can only have up to 20 media items. You have ${totalMediaCount} items - customize by channel`
+          }
+        } else if (channel.postType === 'Reel' || channel.postType === 'Story') {
+          // Instagram/Facebook Reel/Story: Exactly 1 video
+          if (videoCount === 0) {
+            return `${platform?.name} ${channel.postType} requires exactly 1 video`
+          }
+          if (videoCount > 1) {
+            return `${platform?.name} ${channel.postType} can only have 1 video. You have ${videoCount} videos - customize by channel`
+          }
+          if (photoCount > 0) {
+            return `${platform?.name} ${channel.postType} requires video only. You have ${getMediaDescription()} - customize by channel`
+          }
+        }
+        break
+
+      case 'tiktok':
+        // TikTok: Exactly 1 video (no photos allowed)
+        if (videoCount === 0) {
+          return 'TikTok requires exactly 1 video'
+        }
+        if (videoCount > 1) {
+          return `TikTok can only post 1 video. You have ${videoCount} videos - customize by channel`
+        }
+        if (photoCount > 0) {
+          return `TikTok requires video only. You have ${getMediaDescription()} - customize by channel`
+        }
+        break
+
+      case 'threads':
+      case 'x':
+        // Threads/X: 0-20 media OR caption
+        if (totalMediaCount === 0 && !channelCaption.trim()) {
+          return `${platform?.name} requires at least 1 media item OR a caption`
+        }
+        if (totalMediaCount > 20) {
+          return `${platform?.name} can only have up to 20 media items. You have ${totalMediaCount} items - customize by channel`
+        }
+        break
+
+      case 'youtube':
+        // YouTube: Exactly 1 video (no photos allowed)
+        if (videoCount === 0) {
+          return `YouTube ${channel.postType || 'Video'} requires exactly 1 video`
+        }
+        if (videoCount > 1) {
+          return `YouTube can only post 1 video. You have ${videoCount} videos - customize by channel`
+        }
+        if (photoCount > 0) {
+          return `YouTube requires video only. You have ${getMediaDescription()} - customize by channel`
+        }
+        break
+
+      case 'pinterest':
+        // Pinterest: 1-20 media
+        if (totalMediaCount === 0) {
+          return 'Pinterest requires at least 1 media item'
+        }
+        if (totalMediaCount > 20) {
+          return `Pinterest can only have up to 20 media items. You have ${totalMediaCount} items - customize by channel`
+        }
+        break
+
+      case 'linkedin':
+        // LinkedIn: 0-20 media OR caption
+        if (totalMediaCount === 0 && !channelCaption.trim()) {
+          return 'LinkedIn requires at least 1 media item OR a caption'
+        }
+        if (totalMediaCount > 20) {
+          return `LinkedIn can only have up to 20 media items. You have ${totalMediaCount} items - customize by channel`
+        }
+        break
+    }
+
+    return null
+  }
+
+  const getChannelWarnings = () => {
+    const warnings = []
+
+    selectedChannels.forEach(channel => {
+      const warning = validateChannelRequirements(channel)
+      if (warning) {
+        warnings.push({
+          channelId: channel.id,
+          message: warning
+        })
+      }
+    })
+
+    return warnings
+  }
+
   const validatePost = () => {
     if (selectedChannels.length === 0) {
       return 'Please select at least one channel before saving.'
     }
-    
-    if (!caption.trim() && !media.length) {
-      return 'Please add either a caption or media before saving.'
+
+    // Check channel-specific requirements
+    const warnings = getChannelWarnings()
+    if (warnings.length > 0) {
+      return warnings[0].message
     }
-    
+
     return null
   }
 
@@ -766,24 +917,23 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const handleSaveAsDraft = async () => {
     const validationError = validatePost()
     if (validationError) {
-      setSaveError(validationError)
-      return
+      return // Just return early, warnings are shown at top
     }
-    
+
     setIsSaving(true)
     setShowSavePostMenu(false)
-    
+
     try {
       const postData = collectPostData('draft')
       console.log('Saving as draft:', postData)
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       // Close modal and show success toast
       onClose()
       onPostSaved?.('draft')
-      
+
     } catch (error) {
       setSaveError('Failed to save draft. Please try again.')
       console.error('Save error:', error)
@@ -793,36 +943,35 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   }
 
   const handleSchedule = async () => {
+    // Don't show errors since we have validation warnings at the top
     const validationError = validatePost()
     if (validationError) {
-      setSaveError(validationError)
-      return
+      return // Just return early, no error display
     }
 
     // Check if any channels have scheduling dates
-    const scheduledChannels = selectedChannels.filter(channel => 
+    const scheduledChannels = selectedChannels.filter(channel =>
       channelScheduling[channel.id]?.date
     )
 
     if (scheduledChannels.length === 0) {
-      setSaveError('Please select a date for at least one channel before scheduling.')
-      return
+      return // Just return early, no error display
     }
-    
+
     setIsSaving(true)
     setShowSavePostMenu(false)
-    
+
     try {
       const postData = collectPostData('scheduled')
       console.log('Scheduling post:', postData)
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       // Close modal and show success toast
       onClose()
       onPostSaved?.('scheduled')
-      
+
     } catch (error) {
       setSaveError('Failed to schedule post. Please try again.')
       console.error('Schedule error:', error)
@@ -834,24 +983,23 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const handlePostNow = async () => {
     const validationError = validatePost()
     if (validationError) {
-      setSaveError(validationError)
-      return
+      return // Just return early, warnings are shown at top
     }
-    
+
     setIsSaving(true)
     setShowSavePostMenu(false)
-    
+
     try {
       const postData = collectPostData('published')
       console.log('Publishing post now:', postData)
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1500))
-      
+
       // Close modal and show success toast
       onClose()
       onPostSaved?.('published')
-      
+
     } catch (error) {
       setSaveError('Failed to publish post. Please try again.')
       console.error('Publish error:', error)
@@ -1074,9 +1222,101 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
             flexDirection: 'column',
             position: 'relative'
           }}>
+            {/* Channel Warnings */}
+            {selectedChannels.length > 0 && (() => {
+              const warnings = getChannelWarnings()
+              if (warnings.length === 0) return null
+
+              return (
+                <div style={{
+                  backgroundColor: '#fff3cd',
+                  borderBottom: '1px solid #ffeaa7',
+                  padding: '12px 20px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px'
+                  }}>
+                    <div style={{
+                      fontSize: '16px',
+                      lineHeight: '1',
+                      marginTop: '2px'
+                    }}>
+                      ⚠️
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#856404',
+                        marginBottom: '4px'
+                      }}>
+                        Content Requirements Missing
+                      </div>
+                      <div style={{
+                        fontSize: '13px',
+                        color: '#856404',
+                        lineHeight: '1.4'
+                      }}>
+                        {warnings.length === 1 ? (
+                          warnings[0].message
+                        ) : (
+                          <>
+                            {warnings.length} channels need attention:
+                            <ul style={{
+                              margin: '4px 0 0 0',
+                              paddingLeft: '16px',
+                              listStyle: 'disc'
+                            }}>
+                              {warnings.map((warning, index) => {
+                                const platform = getPlatformById(warning.channelId)
+                                return (
+                                  <li key={index} style={{ marginBottom: '2px' }}>
+                                    <strong>{platform?.name}:</strong> {warning.message.replace(`${platform?.name} `, '')}
+                                  </li>
+                                )
+                              })}
+                            </ul>
+                          </>
+                        )}
+
+                        {/* Customize by channel link - only show when channels aren't separated */}
+                        {!channelsSeparated && selectedChannels.length > 1 && (
+                          <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #ffeaa7' }}>
+                            <button
+                              onClick={handleCustomizeClick}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#856404',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                                padding: 0
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.color = '#6c5a00'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.color = '#856404'
+                              }}
+                            >
+                              Need different media for each channel? Customize by channel →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+
             {/* Post Creation Mode */}
-                <div style={{ 
-                  flex: 1, 
+                <div style={{
+                  flex: 1,
                   overflow: 'auto',
                   padding: '20px',
                   paddingBottom: '10px'
@@ -1815,6 +2055,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       schedulingButtonText={getSchedulingButtonText()}
                       hasScheduledChannels={getScheduledChannels().length > 0}
                       isLoading={isSaving}
+                      hasValidationErrors={getChannelWarnings().length > 0}
                     />
                   )}
 
@@ -2017,9 +2258,11 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
               backgroundColor: '#f8f9fa'
             }}>
               <PreviewCarousel
-                selectedChannels={channelsSeparated && activeChannelTab ? selectedChannels.filter(ch => ch.id === activeChannelTab) : selectedChannels}
-                caption={channelsSeparated && activeChannelTab ? separatedChannelData[activeChannelTab]?.caption || '' : caption}
-                media={channelsSeparated && activeChannelTab ? separatedChannelData[activeChannelTab]?.media || [] : media}
+                selectedChannels={selectedChannels}
+                caption={caption}
+                media={media}
+                separatedMode={channelsSeparated}
+                separatedChannelData={separatedChannelData}
               />
             </div>
           )}

@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 
-const SavePostMenu = ({ 
-  onSaveAsDraft, 
-  onSchedule, 
-  onPostNow, 
-  onClose, 
+const SavePostMenu = ({
+  onSaveAsDraft,
+  onSchedule,
+  onPostNow,
+  onClose,
   buttonRef,
   schedulingButtonText,
   hasScheduledChannels,
-  isLoading 
+  isLoading,
+  hasValidationErrors = false
 }) => {
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
   const menuRef = useRef(null)
@@ -43,17 +44,24 @@ const SavePostMenu = ({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [onClose, buttonRef])
 
-  const handleOptionClick = (action) => {
+  const handleOptionClick = (action, requiresValidation = false) => {
     if (isLoading) return
+    if (requiresValidation && hasValidationErrors) return
     action()
   }
 
   const getScheduleSecondaryText = () => {
+    if (hasValidationErrors) {
+      return 'Fix content requirements first'
+    }
     if (!hasScheduledChannels) {
       return 'Please select date first'
     }
     return schedulingButtonText.replace('📅 ', '').replace('Earliest at ', '')
   }
+
+  // Determine if schedule button should be disabled
+  const isScheduleDisabled = isLoading || hasValidationErrors || !hasScheduledChannels
 
   return (
     <div
@@ -114,17 +122,17 @@ const SavePostMenu = ({
 
       {/* Schedule */}
       <div
-        onClick={() => handleOptionClick(onSchedule)}
+        onClick={() => handleOptionClick(onSchedule, true)}
         style={{
           padding: '16px 20px',
-          cursor: isLoading ? 'not-allowed' : 'pointer',
+          cursor: isScheduleDisabled ? 'not-allowed' : 'pointer',
           borderBottom: '1px solid #f8f9fa',
-          opacity: isLoading ? 0.6 : 1,
+          opacity: isScheduleDisabled ? 0.6 : 1,
           backgroundColor: 'transparent',
           transition: 'background-color 0.2s'
         }}
         onMouseEnter={(e) => {
-          if (!isLoading) e.target.style.backgroundColor = '#f8f9fa'
+          if (!isScheduleDisabled) e.target.style.backgroundColor = '#f8f9fa'
         }}
         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
       >
@@ -142,9 +150,9 @@ const SavePostMenu = ({
             }}>
               Schedule
             </div>
-            <div style={{ 
-              fontSize: '12px', 
-              color: hasScheduledChannels ? '#6c757d' : '#dc3545',
+            <div style={{
+              fontSize: '12px',
+              color: hasValidationErrors ? '#dc3545' : (hasScheduledChannels ? '#6c757d' : '#dc3545'),
               marginTop: '2px'
             }}>
               {getScheduleSecondaryText()}

@@ -325,6 +325,124 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
     </div>
   )
 
+  const TikTokPreview = () => (
+    <div style={{
+      backgroundColor: '#000',
+      borderRadius: '12px',
+      width: '220px',
+      height: '390px',
+      margin: '0 auto',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      position: 'relative',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* Main Content Area */}
+      <div style={{
+        flex: 1,
+        backgroundColor: '#000',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundImage: media && media.length > 0 && media[0].url ?
+          `url(${media[0].url})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
+        {media && media.length > 0 ? (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '24px'
+          }}>
+            ▶️
+          </div>
+        ) : (
+          <div style={{
+            color: 'white',
+            fontSize: '14px',
+            textAlign: 'center',
+            padding: '20px'
+          }}>
+            Add video to see TikTok preview
+          </div>
+        )}
+      </div>
+
+      {/* Side Actions */}
+      <div style={{
+        position: 'absolute',
+        right: '12px',
+        bottom: '80px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        alignItems: 'center'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '50%',
+          backgroundColor: '#f0f0f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '2px solid white'
+        }}>
+          🧁
+        </div>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '4px',
+          color: 'white'
+        }}>
+          <div style={{ fontSize: '20px' }}>❤️</div>
+          <div style={{ fontSize: '10px' }}>1.2K</div>
+        </div>
+      </div>
+
+      {/* Bottom Info */}
+      <div style={{
+        position: 'absolute',
+        bottom: '16px',
+        left: '16px',
+        right: '80px',
+        color: 'white'
+      }}>
+        <div style={{
+          fontSize: '14px',
+          fontWeight: '600',
+          marginBottom: '4px'
+        }}>
+          @{account || 'bestiesbakes'}
+        </div>
+        {caption && (
+          <div style={{
+            fontSize: '13px',
+            lineHeight: '16px',
+            marginBottom: '8px'
+          }}>
+            {caption.length > 60 ? `${caption.substring(0, 60)}...` : caption}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
   const GenericPreview = () => {
     const IconComponent = platform?.icon
     return (
@@ -382,6 +500,8 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
         return <LinkedInPreview />
       case 'x':
         return <TwitterPreview />
+      case 'tiktok':
+        return <TikTokPreview />
       default:
         return <GenericPreview />
     }

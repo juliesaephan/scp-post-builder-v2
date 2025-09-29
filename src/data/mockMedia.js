@@ -9,8 +9,8 @@ export const mockMediaItems = [
   },
   {
     id: 2,
-    type: 'image',
-    name: 'Rainbow Cake',
+    type: 'video',
+    name: 'Rainbow Cake Process',
     url: 'https://picsum.photos/seed/cake1/500/500',
     thumbnail: 'https://picsum.photos/seed/cake1/150/150'
   },
@@ -30,8 +30,8 @@ export const mockMediaItems = [
   },
   {
     id: 5,
-    type: 'image',
-    name: 'Wedding Cake',
+    type: 'video',
+    name: 'Wedding Cake Tutorial',
     url: 'https://picsum.photos/seed/wedding1/500/500',
     thumbnail: 'https://picsum.photos/seed/wedding1/150/150'
   },
@@ -44,8 +44,8 @@ export const mockMediaItems = [
   },
   {
     id: 7,
-    type: 'image',
-    name: 'Fresh Croissants',
+    type: 'video',
+    name: 'Croissant Making',
     url: 'https://picsum.photos/seed/croissant1/500/500',
     thumbnail: 'https://picsum.photos/seed/croissant1/150/150'
   },
@@ -65,8 +65,8 @@ export const mockMediaItems = [
   },
   {
     id: 10,
-    type: 'image',
-    name: 'Artisan Bread',
+    type: 'video',
+    name: 'Bread Baking Process',
     url: 'https://picsum.photos/seed/bread1/500/500',
     thumbnail: 'https://picsum.photos/seed/bread1/150/150'
   },
@@ -86,8 +86,8 @@ export const mockMediaItems = [
   },
   {
     id: 13,
-    type: 'image',
-    name: 'Bakery Interior',
+    type: 'video',
+    name: 'Bakery Tour',
     url: 'https://picsum.photos/seed/interior1/500/500',
     thumbnail: 'https://picsum.photos/seed/interior1/150/150'
   },
@@ -100,8 +100,8 @@ export const mockMediaItems = [
   },
   {
     id: 15,
-    type: 'image',
-    name: 'Pastry Display',
+    type: 'video',
+    name: 'Pastry Decorating',
     url: 'https://picsum.photos/seed/pastry1/500/500',
     thumbnail: 'https://picsum.photos/seed/pastry1/150/150'
   },
@@ -114,8 +114,8 @@ export const mockMediaItems = [
   },
   {
     id: 17,
-    type: 'image',
-    name: 'French Macarons',
+    type: 'video',
+    name: 'Macaron Making',
     url: 'https://picsum.photos/seed/french1/500/500',
     thumbnail: 'https://picsum.photos/seed/french1/150/150'
   },
@@ -145,6 +145,20 @@ export const mockMediaItems = [
 // Helper function to get random media items
 export const getRandomMediaItems = (count = 1) => {
   const shuffled = [...mockMediaItems].sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, count)
+}
+
+// Helper function to get random photo items only
+export const getRandomPhotoItems = (count = 1) => {
+  const photos = mockMediaItems.filter(item => item.type === 'image')
+  const shuffled = [...photos].sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, count)
+}
+
+// Helper function to get random video items only
+export const getRandomVideoItems = (count = 1) => {
+  const videos = mockMediaItems.filter(item => item.type === 'video')
+  const shuffled = [...videos].sort(() => 0.5 - Math.random())
   return shuffled.slice(0, count)
 }
 

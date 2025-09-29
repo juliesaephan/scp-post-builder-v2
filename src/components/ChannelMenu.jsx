@@ -137,46 +137,65 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
             }}
           />
           
-          {/* Profile Picture with Social Icon Badge */}
-          <div style={{ 
-            position: 'relative', 
+          {/* Icon - Different for connected vs unconnected */}
+          <div style={{
+            position: 'relative',
             marginRight: '12px',
             width: '32px',
             height: '32px'
           }}>
-            {/* Mock Profile Picture */}
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              backgroundColor: '#f0f0f0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '18px',
-              border: '2px solid #e1e5e9'
-            }}>
-              🧁
-            </div>
-            
-            {/* Social Platform Badge */}
-            <div style={{
-              position: 'absolute',
-              bottom: '-2px',
-              right: '-2px',
-              width: '16px',
-              height: '16px',
-              borderRadius: '50%',
-              backgroundColor: platform.color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '8px',
-              border: '2px solid white',
-              boxSizing: 'border-box'
-            }}>
-              {IconComponent && <IconComponent size={8} color="white" />}
-            </div>
+            {isConnected ? (
+              // Connected channels: Profile picture with platform badge
+              <>
+                {/* Mock Profile Picture */}
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  backgroundColor: '#f0f0f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '18px',
+                  border: '2px solid #e1e5e9'
+                }}>
+                  🧁
+                </div>
+
+                {/* Social Platform Badge */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-2px',
+                  right: '-2px',
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  backgroundColor: platform.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '8px',
+                  border: '2px solid white',
+                  boxSizing: 'border-box'
+                }}>
+                  {IconComponent && <IconComponent size={8} color="white" />}
+                </div>
+              </>
+            ) : (
+              // Unconnected channels: Platform icon only
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: platform.color,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid #e1e5e9'
+              }}>
+                {IconComponent && <IconComponent size={16} color="white" />}
+              </div>
+            )}
           </div>
           
           <div style={{ flex: 1 }}>

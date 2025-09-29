@@ -101,11 +101,10 @@ export const platforms = {
       color: '#0A66C2',
       icon: LinkedInIcon
     },
-    { 
-      id: 'pinterest', 
-      name: 'Pinterest', 
-      color: '#BD081C', 
-      types: ['Pin', 'Video Pin', 'Image Pin'],
+    {
+      id: 'pinterest',
+      name: 'Pinterest',
+      color: '#BD081C',
       icon: PinterestIcon,
       options: [
         {

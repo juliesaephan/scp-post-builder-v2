@@ -47,7 +47,28 @@ const MediaThumbnail = ({
         }}
         loading="lazy"
       />
-      
+
+      {/* Media Type Indicator */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '4px',
+          left: '4px',
+          width: '18px',
+          height: '18px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '10px',
+          lineHeight: '1'
+        }}
+        title={media.type === 'video' ? 'Video' : 'Photo'}
+      >
+        {media.type === 'video' ? '🎬' : '📷'}
+      </div>
+
       {showDelete && showDeleteButton && (
         <button
           onClick={handleDelete}

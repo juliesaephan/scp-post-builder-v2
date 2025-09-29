@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import MediaThumbnail from './MediaThumbnail'
-import { getRandomMediaItems } from '../data/mockMedia'
+import MediaTypeModal from './MediaTypeModal'
+import { getRandomMediaItems, getRandomPhotoItems, getRandomVideoItems } from '../data/mockMedia'
 
 const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
   const [selectedPreview, setSelectedPreview] = useState(0)
   const [carouselStart, setCarouselStart] = useState(0)
+  const [showMediaTypeModal, setShowMediaTypeModal] = useState(false)
   
   // Carousel configuration
   const maxVisibleThumbnails = 4 // Maximum thumbnails visible at once
@@ -12,17 +14,35 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
   const gap = 8
   
   const handleAddMedia = () => {
-    // Add 1-3 random media items, respecting max limit
+    // Check if there's space for more media
     const availableSlots = maxMedia - media.length
     if (availableSlots <= 0) return
-    
+
+    // Show media type selection modal
+    setShowMediaTypeModal(true)
+  }
+
+  const handleMediaTypeSelect = (mediaType) => {
+    // Add 1-3 random media items of the selected type, respecting max limit
+    const availableSlots = maxMedia - media.length
+    if (availableSlots <= 0) return
+
     const newItems = Math.min(Math.floor(Math.random() * 3) + 1, availableSlots)
-    const randomMedia = getRandomMediaItems(newItems)
-    
+
+    // Get media items based on selected type
+    let randomMedia
+    if (mediaType === 'photo') {
+      randomMedia = getRandomPhotoItems(newItems)
+    } else if (mediaType === 'video') {
+      randomMedia = getRandomVideoItems(newItems)
+    } else {
+      randomMedia = getRandomMediaItems(newItems)
+    }
+
     // Filter out any duplicates
     const existingIds = new Set(media.map(item => item.id))
     const uniqueNewMedia = randomMedia.filter(item => !existingIds.has(item.id))
-    
+
     if (uniqueNewMedia.length > 0) {
       onMediaChange([...media, ...uniqueNewMedia])
     }
@@ -69,36 +89,47 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
   // Empty state
   if (media.length === 0) {
     return (
-      <div 
-        onClick={handleAddMedia}
-        style={{
-          flex: 1,
-          border: '2px dashed #dee2e6',
-          borderRadius: '8px',
-          padding: '40px 20px',
-          textAlign: 'center',
-          backgroundColor: '#f8f9fa',
-          cursor: 'pointer',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '200px'
-        }}
-      >
-        <div style={{ fontSize: '48px', marginBottom: '12px' }}>📁</div>
-        <div style={{ fontWeight: '500', marginBottom: '4px' }}>
-          Upload Media
+      <>
+        <div
+          onClick={handleAddMedia}
+          style={{
+            flex: 1,
+            border: '2px dashed #dee2e6',
+            borderRadius: '8px',
+            padding: '40px 20px',
+            textAlign: 'center',
+            backgroundColor: '#f8f9fa',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '200px'
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>📁</div>
+          <div style={{ fontWeight: '500', marginBottom: '4px' }}>
+            Upload Media
+          </div>
+          <div style={{ fontSize: '14px', color: '#6c757d' }}>
+            Drag & drop or click to upload
+          </div>
         </div>
-        <div style={{ fontSize: '14px', color: '#6c757d' }}>
-          Drag & drop or click to upload
-        </div>
-      </div>
+        {/* Modal for empty state too */}
+        <MediaTypeModal
+          isOpen={showMediaTypeModal}
+          onClose={() => setShowMediaTypeModal(false)}
+          onSelectType={handleMediaTypeSelect}
+          title="Choose Media Type"
+          description="What type of media would you like to add to your post?"
+        />
+      </>
     )
   }
 
   // Media loaded state
   return (
+    <>
     <div style={{
       flex: 1,
       display: 'flex',
@@ -264,7 +295,17 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
       }}>
         {media.length} of {maxMedia} media files selected
       </div>
+
     </div>
+      {/* Render modal at document level */}
+      <MediaTypeModal
+      isOpen={showMediaTypeModal}
+      onClose={() => setShowMediaTypeModal(false)}
+      onSelectType={handleMediaTypeSelect}
+      title="Choose Media Type"
+      description="What type of media would you like to add to your post?"
+    />
+  </>
   )
 }
 

@@ -9,7 +9,10 @@ const PreviewCarousel = ({
   // Individual channel mode props
   individualChannelMode = false,
   editingChannelId = null,
-  tempChanges = {}
+  tempChanges = {},
+  // Separated mode props
+  separatedMode = false,
+  separatedChannelData = {}
 }) => {
   const [activePreviewIndex, setActivePreviewIndex] = useState(0)
   const [previewData, setPreviewData] = useState([])
@@ -19,14 +22,14 @@ const PreviewCarousel = ({
   // Generate preview data when channels or content changes
   useEffect(() => {
     let data
-    
+
     if (individualChannelMode && editingChannelId) {
       // Filter to just the channel being edited
       const channel = selectedChannels.find(c => c.id === editingChannelId)
       if (channel) {
         const platform = getPlatformById(channel.id)
         const customizations = tempChanges.customizedChannels?.[editingChannelId] || {}
-        
+
         // Get media - use channel-specific if customized, otherwise master
         let channelMedia = media || []
         if (customizations.media && tempChanges.selectedMediaByChannel?.[editingChannelId]) {
@@ -34,7 +37,7 @@ const PreviewCarousel = ({
         } else if (tempChanges.channelMedia) {
           channelMedia = tempChanges.channelMedia
         }
-        
+
         // Get caption - use channel-specific if customized, otherwise master
         let channelCaption = caption || ''
         if (customizations.caption && tempChanges.channelCaptions?.[editingChannelId]) {
@@ -42,7 +45,7 @@ const PreviewCarousel = ({
         } else if (tempChanges.caption) {
           channelCaption = tempChanges.caption
         }
-        
+
         data = [{
           id: channel.id,
           platform: platform,
@@ -56,8 +59,25 @@ const PreviewCarousel = ({
       } else {
         data = []
       }
+    } else if (separatedMode) {
+      // Separated mode - each channel shows its own content
+      data = selectedChannels.map(channel => {
+        const platform = getPlatformById(channel.id)
+        const channelData = separatedChannelData[channel.id] || {}
+
+        return {
+          id: channel.id,
+          platform: platform,
+          postType: channel.postType,
+          content: {
+            caption: channelData.caption || '',
+            media: channelData.media || [],
+            account: platform?.account || "Bestie's Bakes"
+          }
+        }
+      })
     } else {
-      // Normal mode - show all selected channels
+      // Normal unified mode - show all selected channels with same content
       data = selectedChannels.map(channel => {
         const platform = getPlatformById(channel.id)
         return {
@@ -91,7 +111,7 @@ const PreviewCarousel = ({
     if (activePreviewIndex >= data.length && data.length > 0) {
       setActivePreviewIndex(0)
     }
-  }, [selectedChannels, caption, media, activePreviewIndex, individualChannelMode, editingChannelId, tempChanges])
+  }, [selectedChannels, caption, media, activePreviewIndex, individualChannelMode, editingChannelId, tempChanges, separatedMode, separatedChannelData])
 
   const handleTabClick = (index) => {
     setActivePreviewIndex(index)
