@@ -188,7 +188,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                   media: [], // Start with empty media for new channels
                   caption: '', // Start with empty caption for new channels
                   options: {},
-                  scheduling: {}
+                  scheduling: { date: '', time: '11:30', type: 'auto' }
                 }
               }
             }
@@ -265,7 +265,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                   media: [], // Start with empty media for new channels
                   caption: '', // Start with empty caption for new channels
                   options: {},
-                  scheduling: {}
+                  scheduling: { date: '', time: '11:30', type: 'auto' }
                 }
               }
             }
@@ -701,6 +701,33 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       [channelId]: {
         ...prev[channelId],
         caption: newCaption
+      }
+    }))
+  }
+
+  const handleSeparatedChannelSchedulingChange = (channelId, field, value) => {
+    setSeparatedChannelData(prev => ({
+      ...prev,
+      [channelId]: {
+        ...prev[channelId],
+        scheduling: {
+          ...prev[channelId]?.scheduling,
+          [field]: value
+        }
+      }
+    }))
+  }
+
+  const handleRemoveSeparatedChannelDate = (channelId) => {
+    setSeparatedChannelData(prev => ({
+      ...prev,
+      [channelId]: {
+        ...prev[channelId],
+        scheduling: {
+          ...prev[channelId]?.scheduling,
+          date: '',
+          time: '11:30'
+        }
       }
     }))
   }
@@ -1742,20 +1769,25 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               gap: '12px'
                             }}>
                               <DateTimeDisplay
-                                date={channelScheduling[activeChannelTab]?.date || ''}
-                                time={channelScheduling[activeChannelTab]?.time || '11:30'}
+                                date={channelsSeparated ? separatedChannelData[activeChannelTab]?.scheduling?.date || '' : channelScheduling[activeChannelTab]?.date || ''}
+                                time={channelsSeparated ? separatedChannelData[activeChannelTab]?.scheduling?.time || '11:30' : channelScheduling[activeChannelTab]?.time || '11:30'}
                                 onDateTimeChange={(date, time) => {
-                                  handleChannelSchedulingChange(activeChannelTab, 'date', date)
-                                  handleChannelSchedulingChange(activeChannelTab, 'time', time)
+                                  if (channelsSeparated) {
+                                    handleSeparatedChannelSchedulingChange(activeChannelTab, 'date', date)
+                                    handleSeparatedChannelSchedulingChange(activeChannelTab, 'time', time)
+                                  } else {
+                                    handleChannelSchedulingChange(activeChannelTab, 'date', date)
+                                    handleChannelSchedulingChange(activeChannelTab, 'time', time)
+                                  }
                                 }}
-                                onRemoveDate={() => handleRemoveChannelDate(activeChannelTab)}
+                                onRemoveDate={() => channelsSeparated ? handleRemoveSeparatedChannelDate(activeChannelTab) : handleRemoveChannelDate(activeChannelTab)}
                                 placeholder={getIndividualChannelDateText()}
                                 style={{ flex: 1 }}
                               />
 
                               <select
-                                value={channelScheduling[activeChannelTab]?.type || 'auto'}
-                                onChange={(e) => handleChannelSchedulingChange(activeChannelTab, 'type', e.target.value)}
+                                value={channelsSeparated ? separatedChannelData[activeChannelTab]?.scheduling?.type || 'auto' : channelScheduling[activeChannelTab]?.type || 'auto'}
+                                onChange={(e) => channelsSeparated ? handleSeparatedChannelSchedulingChange(activeChannelTab, 'type', e.target.value) : handleChannelSchedulingChange(activeChannelTab, 'type', e.target.value)}
                                 style={{
                                   padding: '8px 12px',
                                   border: '1px solid #dee2e6',
