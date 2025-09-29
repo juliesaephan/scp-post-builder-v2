@@ -208,9 +208,12 @@ const PreviewCarousel = ({
                   transition: 'all 0.2s ease'
                 }}
               >
-                <span style={{ fontSize: '12px', color: 'white', fontWeight: 'bold' }}>
-                  {preview.platform?.name || 'NO_PLATFORM'}
-                </span>
+                {preview.platform?.icon ?
+                  React.createElement(preview.platform.icon, { size: 16, color: 'white' }) :
+                  <span style={{ fontSize: '12px', color: 'white', fontWeight: 'bold' }}>
+                    {preview.platform?.name?.[0] || '?'}
+                  </span>
+                }
               </button>
             )
           })}
