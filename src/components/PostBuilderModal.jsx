@@ -56,6 +56,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
   // Date scheduling interface
   const [showDateScheduling, setShowDateScheduling] = useState(false)
+  const dateSchedulingRef = useRef(null)
   
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
@@ -115,13 +116,32 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
-      
+
       return () => {
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseUp)
       }
     }
   }, [isDragging, dragOffset])
+
+  // Handle click outside date scheduling interface
+  useEffect(() => {
+    if (showDateScheduling) {
+      const handleClickOutside = (event) => {
+        if (dateSchedulingRef.current && !dateSchedulingRef.current.contains(event.target)) {
+          // Also check if click was on the trigger button
+          const scheduleButton = event.target.closest('button')
+          if (scheduleButton && scheduleButton.textContent.includes('📅')) {
+            return // Don't close if clicking on the schedule button
+          }
+          setShowDateScheduling(false)
+        }
+      }
+
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showDateScheduling])
 
   // Channel management functions
   const handleChannelToggle = (channelId, postType) => {
@@ -1727,19 +1747,21 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
                   {/* Date Scheduling Interface */}
                   {showDateScheduling && (
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '70px',
-                      right: '20px',
-                      left: '20px',
-                      backgroundColor: 'white',
-                      border: '1px solid #dee2e6',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                      zIndex: 1000,
-                      maxHeight: '300px',
-                      overflowY: 'auto'
-                    }}>
+                    <div
+                      ref={dateSchedulingRef}
+                      style={{
+                        position: 'absolute',
+                        bottom: '70px',
+                        right: '20px',
+                        left: '20px',
+                        backgroundColor: 'white',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                        zIndex: 1000,
+                        maxHeight: '300px',
+                        overflowY: 'auto'
+                      }}>
                       <div style={{
                         padding: '16px',
                         borderBottom: '1px solid #e1e5e9',
