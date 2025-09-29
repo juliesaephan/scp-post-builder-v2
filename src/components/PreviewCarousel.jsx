@@ -210,6 +210,7 @@ const PreviewCarousel = ({
               >
                 {(() => {
                   const platformId = preview.platform?.id
+                  console.log('Preview platform ID:', platformId, 'Platform:', preview.platform)
                   switch (platformId) {
                     case 'instagram':
                       return (
