@@ -66,3 +66,15 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Override any #7F6E9B colors with #62759F */
+* {
+  --color-override: #62759F;
+}
+
+*[style*="#7F6E9B"],
+*[style*="#7f6e9b"] {
+  background-color: #62759F !important;
+  border-color: #62759F !important;
+  color: #62759F !important;
+}
