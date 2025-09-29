@@ -350,6 +350,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     const scheduledChannels = getScheduledChannels()
 
     if (scheduledChannels.length === 0) {
+      // Check if unified date is set even when no channels are scheduled
+      if (unifiedDate) {
+        return formatDateForDisplay(unifiedDate, unifiedTime)
+      }
       return 'Select Date'
     }
 
@@ -1605,21 +1609,19 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       🗑️
                     </button>
 
-                    {!channelsSeparated && (
-                      <button
-                        onClick={() => setShowDateScheduling(!showDateScheduling)}
-                        style={{
-                          padding: '8px 12px',
-                          backgroundColor: showDateScheduling ? '#e9ecef' : '#f8f9fa',
-                          border: '1px solid #dee2e6',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                      >
-                        📅 {getSchedulingButtonText()}
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setShowDateScheduling(!showDateScheduling)}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: showDateScheduling ? '#e9ecef' : '#f8f9fa',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      📅 {getSchedulingButtonText()}
+                    </button>
                   </div>
 
                   <div style={{
@@ -1633,12 +1635,21 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         style={{
                           padding: '8px 12px',
                           fontSize: '14px',
-                          backgroundColor: channelsSeparated ? '#6c757d' : '#f8f9fa',
-                          color: channelsSeparated ? 'white' : '#495057',
-                          border: '1px solid #dee2e6',
+                          backgroundColor: 'transparent',
+                          color: '#6c757d',
+                          border: channelsSeparated ? '1px solid #dee2e6' : 'none',
                           borderRadius: '6px',
                           cursor: 'pointer',
-                          fontWeight: '500'
+                          fontWeight: '400',
+                          textDecoration: channelsSeparated ? 'none' : 'none'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.textDecoration = 'underline'
+                          e.target.style.color = '#495057'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.textDecoration = 'none'
+                          e.target.style.color = '#6c757d'
                         }}
                       >
                         {channelsSeparated ? 'Revert to Unified Post' : 'Customize for each channel'}
@@ -1763,7 +1774,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                               whiteSpace: 'nowrap'
                             }}
                           >
-                            Apply to All
+                            Save for all
                           </button>
                         </div>
                       </div>
