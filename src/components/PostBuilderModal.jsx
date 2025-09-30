@@ -14,7 +14,8 @@ import PencilIcon from './icons/PencilIcon'
 import { getPlatformById } from '../data/platforms'
 
 const PostBuilderModal = ({ onClose, onPostSaved }) => {
-  const [showPreview, setShowPreview] = useState(true)
+  // Initialize showPreview based on screen size - hidden by default on mobile
+  const [showPreview, setShowPreview] = useState(() => window.innerWidth >= 768)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [selectedChannels, setSelectedChannels] = useState([])
@@ -72,9 +73,25 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const modalRef = useRef(null)
   const addButtonRef = useRef(null)
   const saveButtonRef = useRef(null)
-  
-  const modalWidth = showPreview ? 1120 : 720
-  const modalHeight = 646
+
+  // Responsive breakpoints
+  const [windowSize, setWindowSize] = useState(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight
+  }))
+
+  const isMobile = windowSize.width < 768
+  const isTablet = windowSize.width >= 768 && windowSize.width < 1024
+  const isDesktop = windowSize.width >= 1024
+
+  // Responsive modal dimensions
+  const modalWidth = isMobile ? windowSize.width :
+                    isTablet ? Math.min(windowSize.width * 0.9, 900) :
+                    showPreview ? 1120 : 720
+
+  const modalHeight = isMobile ? windowSize.height :
+                     isTablet ? windowSize.height * 0.9 :
+                     646
   
   // Center the modal on initial load
   const [position, setPosition] = useState(() => ({
@@ -82,13 +99,28 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
     y: (window.innerHeight - modalHeight) / 2
   }))
 
-  // Update position when preview toggle changes modal width
+  // Update window size on resize
   useEffect(() => {
-    setPosition(prev => ({
-      ...prev,
-      x: (window.innerWidth - modalWidth) / 2
-    }))
-  }, [modalWidth])
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      })
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Update position when preview toggle changes modal width (desktop only)
+  useEffect(() => {
+    if (isDesktop) {
+      setPosition(prev => ({
+        ...prev,
+        x: (window.innerWidth - modalWidth) / 2
+      }))
+    }
+  }, [modalWidth, isDesktop])
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -357,10 +389,17 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   // Date scheduling helpers and handlers
   const formatDateForDisplay = (date, time) => {
     if (!date || !time) return null
-    const dateObj = new Date(`${date}T${time}`)
+
+    // Parse date components to avoid timezone issues
+    const [year, month, day] = date.split('-').map(num => parseInt(num))
+    const [hours, minutes] = time.split(':').map(num => parseInt(num))
+
+    // Create date object using local timezone
+    const dateObj = new Date(year, month - 1, day, hours, minutes)
+
     return dateObj.toLocaleString('en-US', {
       month: 'short',
-      day: 'numeric', 
+      day: 'numeric',
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
@@ -369,66 +408,166 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   }
 
   const getScheduledChannels = () => {
-    return selectedChannels
-      .map(channel => ({
-        ...channel,
-        scheduling: channelScheduling[channel.id]
-      }))
-      .filter(channel => channel.scheduling?.date) // Only require date, time defaults to 11:30
+    if (channelsSeparated) {
+      return selectedChannels
+        .map(channel => ({
+          ...channel,
+          scheduling: separatedChannelData[channel.id]?.scheduling
+        }))
+        .filter(channel => channel.scheduling?.date) // Only require date, time defaults to 11:30
+    } else {
+      return selectedChannels
+        .map(channel => ({
+          ...channel,
+          scheduling: channelScheduling[channel.id]
+        }))
+        .filter(channel => channel.scheduling?.date) // Only require date, time defaults to 11:30
+    }
+  }
+
+  // Helper functions for date comparison and synchronization
+  const areAllChannelDatesSame = () => {
+    if (selectedChannels.length === 0) return true
+
+    if (channelsSeparated) {
+      // Check separatedChannelData
+      const dates = selectedChannels.map(ch =>
+        separatedChannelData[ch.id]?.scheduling?.date || ''
+      )
+      const times = selectedChannels.map(ch =>
+        separatedChannelData[ch.id]?.scheduling?.time || '11:30'
+      )
+      return dates.every(date => date === dates[0]) && times.every(time => time === times[0])
+    } else {
+      // Check channelScheduling
+      const dates = selectedChannels.map(ch =>
+        channelScheduling[ch.id]?.date || ''
+      )
+      const times = selectedChannels.map(ch =>
+        channelScheduling[ch.id]?.time || '11:30'
+      )
+      return dates.every(date => date === dates[0]) && times.every(time => time === times[0])
+    }
+  }
+
+  const getCommonDate = () => {
+    if (selectedChannels.length === 0) return ''
+
+    if (channelsSeparated) {
+      return separatedChannelData[selectedChannels[0]?.id]?.scheduling?.date || ''
+    } else {
+      return channelScheduling[selectedChannels[0]?.id]?.date || ''
+    }
+  }
+
+  const getCommonTime = () => {
+    if (selectedChannels.length === 0) return '11:30'
+
+    if (channelsSeparated) {
+      return separatedChannelData[selectedChannels[0]?.id]?.scheduling?.time || '11:30'
+    } else {
+      return channelScheduling[selectedChannels[0]?.id]?.time || '11:30'
+    }
+  }
+
+  const hasAnyChannelDate = () => {
+    if (channelsSeparated) {
+      return selectedChannels.some(ch =>
+        separatedChannelData[ch.id]?.scheduling?.date
+      )
+    } else {
+      return selectedChannels.some(ch =>
+        channelScheduling[ch.id]?.date
+      )
+    }
   }
 
   const getSchedulingButtonText = () => {
-    const scheduledChannels = getScheduledChannels()
-
-    if (scheduledChannels.length === 0) {
-      // Check if unified date is set even when no channels are scheduled
-      if (unifiedDate) {
-        return formatDateForDisplay(unifiedDate, unifiedTime)
-      }
-      return 'Select Date'
-    }
-
-    // Check if all scheduled channels have the same date and time
-    const firstScheduling = scheduledChannels[0].scheduling
-    const allSame = scheduledChannels.every(channel =>
-      channel.scheduling.date === firstScheduling.date &&
-      (channel.scheduling.time || '11:30') === (firstScheduling.time || '11:30')
-    )
-
-    if (allSame) {
-      return formatDateForDisplay(firstScheduling.date, firstScheduling.time || '11:30')
+    if (channelsSeparated) {
+      // In separated mode, use the same logic as individual channel date text
+      return getIndividualChannelDateText()
     } else {
-      // Find earliest date/time
-      const earliest = scheduledChannels.reduce((earliest, channel) => {
-        const channelTime = channel.scheduling.time || '11:30'
-        const earliestTime = earliest.time || '11:30'
-        const channelDateTime = new Date(`${channel.scheduling.date}T${channelTime}`)
-        const earliestDateTime = new Date(`${earliest.date}T${earliestTime}`)
-        return channelDateTime < earliestDateTime ? channel.scheduling : earliest
-      }, scheduledChannels[0].scheduling)
+      // Unified mode - keep existing logic
+      const scheduledChannels = getScheduledChannels()
 
-      return `Earliest at ${formatDateForDisplay(earliest.date, earliest.time || '11:30')}`
+      if (scheduledChannels.length === 0) {
+        // Check if unified date is set even when no channels are scheduled
+        if (unifiedDate) {
+          return formatDateForDisplay(unifiedDate, unifiedTime)
+        }
+        return 'Select Date'
+      }
+
+      // Check if all scheduled channels have the same date and time
+      const firstScheduling = scheduledChannels[0].scheduling
+      const allSame = scheduledChannels.every(channel =>
+        channel.scheduling.date === firstScheduling.date &&
+        (channel.scheduling.time || '11:30') === (firstScheduling.time || '11:30')
+      )
+
+      if (allSame) {
+        return formatDateForDisplay(firstScheduling.date, firstScheduling.time || '11:30')
+      } else {
+        // Find earliest date/time
+        const earliest = scheduledChannels.reduce((earliest, channel) => {
+          const channelTime = channel.scheduling.time || '11:30'
+          const earliestTime = earliest.time || '11:30'
+
+          // Parse dates safely without timezone issues
+          const [channelYear, channelMonth, channelDay] = channel.scheduling.date.split('-').map(num => parseInt(num))
+          const [channelHours, channelMinutes] = channelTime.split(':').map(num => parseInt(num))
+          const channelDateTime = new Date(channelYear, channelMonth - 1, channelDay, channelHours, channelMinutes)
+
+          const [earliestYear, earliestMonth, earliestDay] = earliest.date.split('-').map(num => parseInt(num))
+          const [earliestHours, earliestMinutes] = earliestTime.split(':').map(num => parseInt(num))
+          const earliestDateTime = new Date(earliestYear, earliestMonth - 1, earliestDay, earliestHours, earliestMinutes)
+
+          return channelDateTime < earliestDateTime ? channel.scheduling : earliest
+        }, scheduledChannels[0].scheduling)
+
+        return `Earliest at ${formatDateForDisplay(earliest.date, earliest.time || '11:30')}`
+      }
     }
   }
 
   const getIndividualChannelDateText = () => {
-    const scheduledChannels = getScheduledChannels()
-
-    if (scheduledChannels.length === 0) {
+    if (selectedChannels.length === 0) {
       return 'Select date'
     }
 
-    // Check if all scheduled channels have the same date and time
-    const firstScheduling = scheduledChannels[0].scheduling
-    const allSame = scheduledChannels.every(channel =>
-      channel.scheduling.date === firstScheduling.date &&
-      (channel.scheduling.time || '11:30') === (firstScheduling.time || '11:30')
-    )
-
-    if (allSame) {
-      return formatDateForDisplay(firstScheduling.date, firstScheduling.time || '11:30')
+    if (channelsSeparated) {
+      // In separated mode, use the new helper functions
+      if (areAllChannelDatesSame()) {
+        const commonDate = getCommonDate()
+        if (commonDate) {
+          const commonTime = separatedChannelData[selectedChannels[0]?.id]?.scheduling?.time || '11:30'
+          return formatDateForDisplay(commonDate, commonTime)
+        } else {
+          return 'Select date'
+        }
+      } else {
+        return 'Custom dates'
+      }
     } else {
-      return 'Custom times'
+      // Unified mode - use existing logic
+      const scheduledChannels = getScheduledChannels()
+
+      if (scheduledChannels.length === 0) {
+        return 'Select date'
+      }
+
+      // Check if all scheduled channels have the same date and time
+      const firstScheduling = scheduledChannels[0].scheduling
+      const allSame = scheduledChannels.every(channel =>
+        channel.scheduling.date === firstScheduling.date &&
+        (channel.scheduling.time || '11:30') === (firstScheduling.time || '11:30')
+      )
+
+      if (allSame) {
+        return formatDateForDisplay(firstScheduling.date, firstScheduling.time || '11:30')
+      } else {
+        return 'Custom times'
+      }
     }
   }
 
@@ -452,37 +591,40 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
   // Initialize channel media selections with master inheritance
   useEffect(() => {
-    selectedChannels.forEach(channel => {
-      if (!selectedMediaByChannel[channel.id]) {
-        // New channels inherit master media UNLESS they are customized OR channels are separated
-        setSelectedMediaByChannel(prev => ({
-          ...prev,
-          [channel.id]: (customizedChannels[channel.id] || channelsSeparated) ? [] : [...media]
-        }))
-      }
-    })
-    
-    // Clean up selections for removed channels
     const activeChannelIds = new Set(selectedChannels.map(ch => ch.id))
-    const cleanedSelections = {}
-    const cleanedCustomizations = {}
-    
-    Object.entries(selectedMediaByChannel).forEach(([channelId, channelMedia]) => {
-      if (activeChannelIds.has(channelId)) {
-        cleanedSelections[channelId] = channelMedia
+    const updatedSelections = {}
+    let hasChanges = false
+
+    selectedChannels.forEach(channel => {
+      const isCustomized = customizedChannels[channel.id]
+      const existingMedia = selectedMediaByChannel[channel.id]
+
+      if (!existingMedia) {
+        // New channel - inherit master media UNLESS customized OR separated
+        updatedSelections[channel.id] = (isCustomized || channelsSeparated) ? [] : [...media]
+        hasChanges = true
+      } else if (!isCustomized && !channelsSeparated) {
+        // Existing non-customized channel in unified mode - sync with master media
+        updatedSelections[channel.id] = [...media]
+        hasChanges = true
+      } else {
+        // Customized or separated channel - keep existing media
+        updatedSelections[channel.id] = existingMedia
       }
     })
-    
+
+    // Clean up selections for removed channels
+    const cleanedCustomizations = {}
     Object.entries(customizedChannels).forEach(([channelId, isCustomized]) => {
       if (activeChannelIds.has(channelId)) {
         cleanedCustomizations[channelId] = isCustomized
       }
     })
-    
-    if (Object.keys(cleanedSelections).length !== Object.keys(selectedMediaByChannel).length) {
-      setSelectedMediaByChannel(cleanedSelections)
+
+    if (hasChanges || Object.keys(updatedSelections).length !== Object.keys(selectedMediaByChannel).length) {
+      setSelectedMediaByChannel(updatedSelections)
     }
-    
+
     if (Object.keys(cleanedCustomizations).length !== Object.keys(customizedChannels).length) {
       setCustomizedChannels(cleanedCustomizations)
     }
@@ -657,15 +799,35 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const handleApplyToAllChannels = () => {
     if (!unifiedDate) return
 
-    const newScheduling = { ...channelScheduling }
-    selectedChannels.forEach(channel => {
-      newScheduling[channel.id] = {
-        ...newScheduling[channel.id],
-        date: unifiedDate,
-        time: unifiedTime
-      }
-    })
-    setChannelScheduling(newScheduling)
+    if (channelsSeparated) {
+      // Update separatedChannelData for all channels
+      setSeparatedChannelData(prev => {
+        const updated = { ...prev }
+        selectedChannels.forEach(channel => {
+          updated[channel.id] = {
+            ...updated[channel.id],
+            scheduling: {
+              ...updated[channel.id]?.scheduling,
+              date: unifiedDate,
+              time: unifiedTime,
+              type: updated[channel.id]?.scheduling?.type || 'auto'
+            }
+          }
+        })
+        return updated
+      })
+    } else {
+      // Update channelScheduling for unified mode
+      const newScheduling = { ...channelScheduling }
+      selectedChannels.forEach(channel => {
+        newScheduling[channel.id] = {
+          ...newScheduling[channel.id],
+          date: unifiedDate,
+          time: unifiedTime
+        }
+      })
+      setChannelScheduling(newScheduling)
+    }
   }
 
   const handleRemoveUnifiedDate = () => {
@@ -766,10 +928,18 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
   const validateChannelRequirements = (channel) => {
     const platform = getPlatformById(channel.id)
 
-    // Get channel-specific content
-    const channelMedia = channelsSeparated && separatedChannelData[channel.id]
-      ? separatedChannelData[channel.id].media || []
-      : selectedMediaByChannel[channel.id] || media
+    // Get channel-specific content - prioritize current state
+    let channelMedia
+    if (channelsSeparated && separatedChannelData[channel.id]?.media) {
+      // In separated mode with channel-specific media
+      channelMedia = separatedChannelData[channel.id].media
+    } else if (selectedMediaByChannel[channel.id]) {
+      // Channel has customized media selection
+      channelMedia = selectedMediaByChannel[channel.id]
+    } else {
+      // Use master media
+      channelMedia = media || []
+    }
 
     const channelCaption = channelsSeparated && separatedChannelData[channel.id]
       ? separatedChannelData[channel.id].caption || ''
@@ -793,21 +963,21 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         if (channel.postType === 'Post') {
           // Instagram/Facebook Post: 1-20 media (mixed photos/videos OK)
           if (totalMediaCount === 0) {
-            return `${platform?.name} Post requires at least 1 media item`
+            return `Add at least 1 photo or video for ${platform?.name}`
           }
           if (totalMediaCount > 20) {
-            return `${platform?.name} Post can only have up to 20 media items. You have ${totalMediaCount} items - customize by channel`
+            return `${platform?.name} can only have up to 20 media items (you have ${totalMediaCount}). Remove extras or edit each platform separately`
           }
         } else if (channel.postType === 'Reel' || channel.postType === 'Story') {
           // Instagram/Facebook Reel/Story: Exactly 1 video
           if (videoCount === 0) {
-            return `${platform?.name} ${channel.postType} requires exactly 1 video`
+            return `${platform?.name} ${channel.postType}s need a video to post`
           }
           if (videoCount > 1) {
-            return `${platform?.name} ${channel.postType} can only have 1 video. You have ${videoCount} videos - customize by channel`
+            return `${platform?.name} ${channel.postType}s can only have 1 video (you have ${videoCount}). Remove extras or edit each platform separately`
           }
           if (photoCount > 0) {
-            return `${platform?.name} ${channel.postType} requires video only. You have ${getMediaDescription()} - customize by channel`
+            return `${platform?.name} ${channel.postType}s only accept videos, not photos. Remove photos or edit each platform separately`
           }
         }
         break
@@ -815,13 +985,13 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       case 'tiktok':
         // TikTok: Exactly 1 video (no photos allowed)
         if (videoCount === 0) {
-          return 'TikTok requires exactly 1 video'
+          return 'TikTok needs a video to post'
         }
         if (videoCount > 1) {
-          return `TikTok can only post 1 video. You have ${videoCount} videos - customize by channel`
+          return `TikTok can only post 1 video (you have ${videoCount}). Remove extras or edit each platform separately`
         }
         if (photoCount > 0) {
-          return `TikTok requires video only. You have ${getMediaDescription()} - customize by channel`
+          return `TikTok only accepts videos, not photos. Remove photos or edit each platform separately`
         }
         break
 
@@ -829,43 +999,43 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
       case 'x':
         // Threads/X: 0-20 media OR caption
         if (totalMediaCount === 0 && !channelCaption.trim()) {
-          return `${platform?.name} requires at least 1 media item OR a caption`
+          return `Add a caption or media for ${platform?.name}`
         }
         if (totalMediaCount > 20) {
-          return `${platform?.name} can only have up to 20 media items. You have ${totalMediaCount} items - customize by channel`
+          return `${platform?.name} can only have up to 20 media items (you have ${totalMediaCount}). Remove extras or edit each platform separately`
         }
         break
 
       case 'youtube':
         // YouTube: Exactly 1 video (no photos allowed)
         if (videoCount === 0) {
-          return `YouTube ${channel.postType || 'Video'} requires exactly 1 video`
+          return `YouTube needs a video to post`
         }
         if (videoCount > 1) {
-          return `YouTube can only post 1 video. You have ${videoCount} videos - customize by channel`
+          return `YouTube can only post 1 video (you have ${videoCount}). Remove extras or edit each platform separately`
         }
         if (photoCount > 0) {
-          return `YouTube requires video only. You have ${getMediaDescription()} - customize by channel`
+          return `YouTube only accepts videos, not photos. Remove photos or edit each platform separately`
         }
         break
 
       case 'pinterest':
         // Pinterest: 1-20 media
         if (totalMediaCount === 0) {
-          return 'Pinterest requires at least 1 media item'
+          return 'Add at least 1 image or video for Pinterest'
         }
         if (totalMediaCount > 20) {
-          return `Pinterest can only have up to 20 media items. You have ${totalMediaCount} items - customize by channel`
+          return `Pinterest can only have up to 20 media items (you have ${totalMediaCount}). Remove extras or edit each platform separately`
         }
         break
 
       case 'linkedin':
         // LinkedIn: 0-20 media OR caption
         if (totalMediaCount === 0 && !channelCaption.trim()) {
-          return 'LinkedIn requires at least 1 media item OR a caption'
+          return 'Add a caption or media for LinkedIn'
         }
         if (totalMediaCount > 20) {
-          return `LinkedIn can only have up to 20 media items. You have ${totalMediaCount} items - customize by channel`
+          return `LinkedIn can only have up to 20 media items (you have ${totalMediaCount}). Remove extras or edit each platform separately`
         }
         break
     }
@@ -1067,23 +1237,57 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         }
       `}</style>
       
-      {/* Overlay */}
+      {/* Overlay - only show on tablet/desktop */}
+      {!isMobile && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 999
+          }}
+        />
+      )}
+
+      {/* Modal */}
       <div
-        style={{
+        ref={modalRef}
+        style={isMobile ? {
+          // Mobile: Full screen
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 999
-        }}
-      />
-      
-      {/* Modal */}
-      <div
-        ref={modalRef}
-        style={{
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'white',
+          borderRadius: 0,
+          boxShadow: 'none',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        } : isTablet ? {
+          // Tablet: Large centered modal
+          position: 'fixed',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: modalWidth,
+          height: modalHeight,
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        } : {
+          // Desktop: Current draggable modal
           position: 'fixed',
           left: position.x,
           top: position.y,
@@ -1097,7 +1301,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           flexDirection: 'column',
           overflow: 'hidden'
         }}
-        onMouseDown={handleMouseDown}
+        onMouseDown={isDesktop ? handleMouseDown : undefined}
       >
         {/* Header */}
         <div style={{
@@ -1107,26 +1311,28 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           borderBottom: '1px solid #e1e5e9',
           backgroundColor: '#f8f9fa'
         }}>
-          {/* Drag Handle */}
-          <div className="drag-handle" style={{
-            cursor: isDragging ? 'grabbing' : 'grab',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gridTemplateRows: 'repeat(3, 1fr)',
-            gap: '2px',
-            width: '12px',
-            height: '12px',
-            marginRight: '12px'
-          }}>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} style={{
-                width: '4px',
-                height: '4px',
-                backgroundColor: '#6c757d',
-                borderRadius: '50%'
-              }} />
-            ))}
-          </div>
+          {/* Drag Handle - only show on desktop */}
+          {isDesktop && (
+            <div className="drag-handle" style={{
+              cursor: isDragging ? 'grabbing' : 'grab',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gridTemplateRows: 'repeat(3, 1fr)',
+              gap: '2px',
+              width: '12px',
+              height: '12px',
+              marginRight: '12px'
+            }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{
+                  width: '4px',
+                  height: '4px',
+                  backgroundColor: '#6c757d',
+                  borderRadius: '50%'
+                }} />
+              ))}
+            </div>
+          )}
 
           {/* Title */}
           <div style={{
@@ -1204,19 +1410,22 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
             alignItems: 'center',
             gap: '12px'
           }}>
-            <button 
+            <button
               onClick={() => setShowPreview(!showPreview)}
               style={{
-                padding: '8px 12px',
+                padding: isMobile ? '6px 10px' : '8px 12px',
                 backgroundColor: showPreview ? '#e9ecef' : '#62759F',
                 color: showPreview ? '#495057' : 'white',
                 border: 'none',
                 borderRadius: '6px',
                 cursor: 'pointer',
-                fontSize: '14px'
+                fontSize: isMobile ? '12px' : '14px'
               }}
             >
-              {showPreview ? 'Hide Post Preview' : 'Show Post Preview'}
+              {isMobile
+                ? (showPreview ? 'Hide Preview' : 'Show Preview')
+                : (showPreview ? 'Hide Post Preview' : 'Show Post Preview')
+              }
             </button>
             
             <button 
@@ -1239,15 +1448,21 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         <div style={{
           display: 'flex',
           flex: 1,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          flexDirection: isMobile && showPreview ? 'column' : 'row'
         }}>
           {/* Left Panel */}
           <div style={{
-            width: showPreview ? '60%' : '100%',
-            borderRight: showPreview ? '1px solid #e1e5e9' : 'none',
+            width: isMobile
+              ? '100%'
+              : (showPreview ? '60%' : '100%'),
+            height: isMobile && showPreview ? '60%' : 'auto',
+            borderRight: showPreview && !isMobile ? '1px solid #e1e5e9' : 'none',
+            borderBottom: showPreview && isMobile ? '1px solid #e1e5e9' : 'none',
             display: 'flex',
             flexDirection: 'column',
-            position: 'relative'
+            position: 'relative',
+            overflow: isMobile ? 'auto' : 'visible'
           }}>
             {/* Channel Warnings */}
             {selectedChannels.length > 0 && (() => {
@@ -1781,7 +1996,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                   }
                                 }}
                                 onRemoveDate={() => channelsSeparated ? handleRemoveSeparatedChannelDate(activeChannelTab) : handleRemoveChannelDate(activeChannelTab)}
-                                placeholder={getIndividualChannelDateText()}
+                                placeholder="Select date"
                                 style={{ flex: 1 }}
                               />
 
@@ -1963,17 +2178,20 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                 {/* Sticky Footer */}
                 <div style={{
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: isMobile ? 'stretch' : 'center',
                     justifyContent: 'space-between',
-                    padding: '16px 20px',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    padding: isMobile ? '12px 16px' : '16px 20px',
                     borderTop: '1px solid #e1e5e9',
                     backgroundColor: 'white',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    gap: isMobile ? '12px' : '0'
                   }}>
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px'
+                    gap: isMobile ? '8px' : '12px',
+                    flexWrap: isMobile ? 'wrap' : 'nowrap'
                   }}>
                     <button
                       onClick={handleCloseRequest}
@@ -1994,12 +2212,16 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     <button
                       onClick={() => setShowDateScheduling(!showDateScheduling)}
                       style={{
-                        padding: '8px 12px',
+                        padding: isMobile ? '6px 10px' : '8px 12px',
                         backgroundColor: showDateScheduling ? '#e9ecef' : '#f8f9fa',
                         border: '1px solid #dee2e6',
                         borderRadius: '6px',
                         cursor: 'pointer',
-                        fontSize: '14px'
+                        fontSize: isMobile ? '12px' : '14px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        maxWidth: isMobile ? '140px' : 'none'
                       }}
                     >
                       📅 {getSchedulingButtonText()}
@@ -2009,21 +2231,25 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px'
+                    gap: isMobile ? '8px' : '12px',
+                    flexWrap: isMobile ? 'wrap' : 'nowrap',
+                    justifyContent: isMobile ? 'stretch' : 'flex-end'
                   }}>
                     {selectedChannels.length > 1 && (
                       <button
                         onClick={handleCustomizeClick}
                         style={{
-                          padding: '8px 12px',
-                          fontSize: '14px',
+                          padding: isMobile ? '6px 10px' : '8px 12px',
+                          fontSize: isMobile ? '12px' : '14px',
                           backgroundColor: 'transparent',
                           color: '#6c757d',
                           border: 'none',
                           borderRadius: '6px',
                           cursor: 'pointer',
                           fontWeight: '400',
-                          textDecoration: channelsSeparated ? 'none' : 'none'
+                          textDecoration: channelsSeparated ? 'none' : 'none',
+                          flex: isMobile ? '1' : 'none',
+                          whiteSpace: 'nowrap'
                         }}
                         onMouseEnter={(e) => {
                           e.target.style.textDecoration = 'underline'
@@ -2034,7 +2260,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           e.target.style.color = '#6c757d'
                         }}
                       >
-                        {channelsSeparated ? 'Revert to Unified Post' : 'Customize for each channel'}
+                        {channelsSeparated
+                          ? (isMobile ? 'Revert to Unified' : 'Revert to Unified Post')
+                          : (isMobile ? 'Customize Channels' : 'Customize for each channel')
+                        }
                       </button>
                     )}
 
@@ -2043,7 +2272,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       onClick={() => setShowSavePostMenu(!showSavePostMenu)}
                       disabled={isSaving}
                       style={{
-                        padding: '10px 20px',
+                        padding: isMobile ? '12px 16px' : '10px 20px',
                         backgroundColor: isSaving ? '#6c757d' : '#3c3c3c',
                         color: 'white',
                         border: 'none',
@@ -2052,7 +2281,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         fontWeight: '500',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px'
+                        gap: '8px',
+                        flex: isMobile ? '1' : 'none',
+                        minWidth: isMobile ? '120px' : 'auto'
                       }}
                     >
                       {isSaving && <div style={{
@@ -2085,7 +2316,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       onClose={() => setShowSavePostMenu(false)}
                       buttonRef={saveButtonRef}
                       schedulingButtonText={getSchedulingButtonText()}
-                      hasScheduledChannels={getScheduledChannels().length > 0}
+                      hasScheduledChannels={selectedChannels.length > 0 && getScheduledChannels().length === selectedChannels.length}
                       isLoading={isSaving}
                       hasValidationErrors={getChannelWarnings().length > 0}
                     />
@@ -2235,13 +2466,18 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                     gap: '8px'
                                   }}>
                                     <DateTimeDisplay
-                                      date={channelScheduling[channel.id]?.date || ''}
-                                      time={channelScheduling[channel.id]?.time || '11:30'}
+                                      date={channelsSeparated ? separatedChannelData[channel.id]?.scheduling?.date || '' : channelScheduling[channel.id]?.date || ''}
+                                      time={channelsSeparated ? separatedChannelData[channel.id]?.scheduling?.time || '11:30' : channelScheduling[channel.id]?.time || '11:30'}
                                       onDateTimeChange={(date, time) => {
-                                        handleChannelSchedulingChange(channel.id, 'date', date)
-                                        handleChannelSchedulingChange(channel.id, 'time', time)
+                                        if (channelsSeparated) {
+                                          handleSeparatedChannelSchedulingChange(channel.id, 'date', date)
+                                          handleSeparatedChannelSchedulingChange(channel.id, 'time', time)
+                                        } else {
+                                          handleChannelSchedulingChange(channel.id, 'date', date)
+                                          handleChannelSchedulingChange(channel.id, 'time', time)
+                                        }
                                       }}
-                                      onRemoveDate={() => handleRemoveChannelDate(channel.id)}
+                                      onRemoveDate={() => channelsSeparated ? handleRemoveSeparatedChannelDate(channel.id) : handleRemoveChannelDate(channel.id)}
                                       placeholder="Select date"
                                       style={{
                                         flex: 1,
@@ -2252,8 +2488,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                     />
 
                                     <select
-                                      value={channelScheduling[channel.id]?.type || 'auto'}
-                                      onChange={(e) => handleChannelSchedulingChange(channel.id, 'type', e.target.value)}
+                                      value={channelsSeparated ? separatedChannelData[channel.id]?.scheduling?.type || 'auto' : channelScheduling[channel.id]?.type || 'auto'}
+                                      onChange={(e) => channelsSeparated ? handleSeparatedChannelSchedulingChange(channel.id, 'type', e.target.value) : handleChannelSchedulingChange(channel.id, 'type', e.target.value)}
                                       style={{
                                         padding: '6px',
                                         border: '1px solid #dee2e6',
@@ -2286,8 +2522,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           {/* Right Panel - Preview Carousel */}
           {showPreview && (
             <div style={{
-              width: '40%',
-              backgroundColor: '#f8f9fa'
+              width: isMobile ? '100%' : '40%',
+              height: isMobile ? '40%' : 'auto',
+              backgroundColor: '#f8f9fa',
+              overflow: 'auto'
             }}>
               <PreviewCarousel
                 selectedChannels={selectedChannels}
