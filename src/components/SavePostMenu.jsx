@@ -55,9 +55,10 @@ const SavePostMenu = ({
       return 'Fix content requirements first'
     }
     if (!hasScheduledChannels) {
-      return 'Please select date first'
+      return 'Select date for all channels'
     }
-    return schedulingButtonText.replace('📅 ', '').replace('Earliest at ', '')
+    // Don't show the date in the schedule button - just indicate it's ready
+    return 'Posts scheduled'
   }
 
   // Determine if schedule button should be disabled

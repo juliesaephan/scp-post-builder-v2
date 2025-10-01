@@ -14,7 +14,10 @@ const DateTimeDisplay = ({
   const formatDisplayText = () => {
     if (!date) return placeholder
 
-    const dateObj = new Date(date)
+    // Parse date components to avoid timezone issues
+    const [year, month, day] = date.split('-').map(num => parseInt(num))
+    const dateObj = new Date(year, month - 1, day)
+
     const options = {
       year: 'numeric',
       month: 'short',

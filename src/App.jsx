@@ -26,20 +26,21 @@ function App() {
   }
 
   return (
-    <div style={{ 
-      padding: '20px', 
-      minHeight: '100vh', 
-      backgroundColor: '#f5f5f5',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
+    <div style={{
+      padding: '20px',
+      minHeight: '100vh',
+      backgroundColor: 'var(--bg-secondary)',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      color: 'var(--text-primary)'
     }}>
       <h1>SCP Post Builder Prototype</h1>
       <p>Bestie's Bakes Social Media Manager</p>
-      
-      <button 
+
+      <button
         onClick={() => setIsModalOpen(true)}
         style={{
           padding: '12px 24px',
-          backgroundColor: '#62759F',
+          backgroundColor: 'var(--button-bg-primary)',
           color: 'white',
           border: 'none',
           borderRadius: '6px',

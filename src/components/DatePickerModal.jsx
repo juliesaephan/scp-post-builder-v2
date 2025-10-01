@@ -90,9 +90,9 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
       const isClickable = !isPast
 
       let backgroundColor = 'transparent'
-      let color = '#495057'
+      let color = 'var(--text-primary)'
       let cursor = 'pointer'
-      let hoverColor = '#f8f9fa'
+      let hoverColor = 'var(--bg-tertiary)'
 
       if (isSelected) {
         backgroundColor = '#62759F'
@@ -101,12 +101,12 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
         backgroundColor = '#3c3c3c'
         color = 'white'
       } else if (isPast) {
-        color = '#adb5bd'
+        color = 'var(--text-secondary)'
         cursor = 'not-allowed'
         hoverColor = 'transparent'
       } else if (isFuture) {
-        color = '#495057'
-        hoverColor = '#e3f2fd'
+        color = 'var(--text-primary)'
+        hoverColor = 'var(--bg-tertiary)'
       }
 
       currentWeek.push(
@@ -184,7 +184,7 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'var(--modal-overlay)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -194,7 +194,7 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
     >
       <div
         style={{
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-primary)',
           borderRadius: '12px',
           padding: '24px',
           width: '320px',
@@ -213,25 +213,25 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
             onClick={goToPreviousMonth}
             style={{
               background: 'none',
-              border: '1px solid #dee2e6',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '50%',
               width: '32px',
               height: '32px',
               cursor: 'pointer',
               fontSize: '16px',
-              color: '#495057',
+              color: 'var(--text-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#f8f9fa'
-              e.target.style.borderColor = '#adb5bd'
+              e.target.style.backgroundColor = 'var(--bg-tertiary)'
+              e.target.style.borderColor = 'var(--border-primary)'
             }}
             onMouseLeave={(e) => {
               e.target.style.backgroundColor = 'transparent'
-              e.target.style.borderColor = '#dee2e6'
+              e.target.style.borderColor = 'var(--border-secondary)'
             }}
             title="Previous month"
           >
@@ -242,7 +242,7 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
             margin: 0,
             fontSize: '18px',
             fontWeight: '600',
-            color: '#495057',
+            color: 'var(--text-primary)',
             minWidth: '180px',
             textAlign: 'center'
           }}>
@@ -254,25 +254,25 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
               onClick={goToNextMonth}
               style={{
                 background: 'none',
-                border: '1px solid #dee2e6',
+                border: '1px solid var(--border-secondary)',
                 borderRadius: '50%',
                 width: '32px',
                 height: '32px',
                 cursor: 'pointer',
                 fontSize: '16px',
-                color: '#495057',
+                color: 'var(--text-primary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.2s ease'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#f8f9fa'
-                e.target.style.borderColor = '#adb5bd'
+                e.target.style.backgroundColor = 'var(--bg-tertiary)'
+                e.target.style.borderColor = 'var(--border-primary)'
               }}
               onMouseLeave={(e) => {
                 e.target.style.backgroundColor = 'transparent'
-                e.target.style.borderColor = '#dee2e6'
+                e.target.style.borderColor = 'var(--border-secondary)'
               }}
               title="Next month"
             >
@@ -287,7 +287,7 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
                 fontSize: '18px',
                 cursor: 'pointer',
                 padding: '4px',
-                color: '#6c757d'
+                color: 'var(--text-secondary)'
               }}
               title="Close"
             >
@@ -307,7 +307,7 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
               justifyContent: 'center',
               fontSize: '12px',
               fontWeight: '600',
-              color: '#6c757d'
+              color: 'var(--text-secondary)'
             }}>
               {day}
             </div>
@@ -323,14 +323,14 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
         <div style={{
           marginBottom: '24px',
           padding: '16px',
-          backgroundColor: '#f8f9fa',
+          backgroundColor: 'var(--bg-tertiary)',
           borderRadius: '8px'
         }}>
           <label style={{
             display: 'block',
             fontSize: '14px',
             fontWeight: '500',
-            color: '#495057',
+            color: 'var(--text-primary)',
             marginBottom: '8px'
           }}>
             Time
@@ -342,10 +342,10 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
             style={{
               width: '100%',
               padding: '8px 12px',
-              border: '1px solid #dee2e6',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '6px',
               fontSize: '14px',
-              backgroundColor: 'white'
+              backgroundColor: 'var(--bg-primary)'
             }}
           />
         </div>
@@ -361,8 +361,8 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
             style={{
               padding: '8px 16px',
               backgroundColor: 'transparent',
-              color: '#6c757d',
-              border: '1px solid #dee2e6',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '14px'
@@ -375,8 +375,8 @@ const DatePickerModal = ({ isOpen, onClose, onSelect, initialDate = '', initialT
             disabled={!selectedDate}
             style={{
               padding: '8px 16px',
-              backgroundColor: selectedDate ? '#62759F' : '#e9ecef',
-              color: selectedDate ? 'white' : '#6c757d',
+              backgroundColor: selectedDate ? '#62759F' : 'var(--button-bg)',
+              color: selectedDate ? 'white' : 'var(--text-secondary)',
               border: 'none',
               borderRadius: '6px',
               cursor: selectedDate ? 'pointer' : 'not-allowed',

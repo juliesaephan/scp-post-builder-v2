@@ -15,15 +15,15 @@ const ChannelOptionField = ({ option, value, onChange, disabled = true }) => {
             style={{
               width: '100%',
               padding: '8px 12px',
-              border: '1px solid #dee2e6',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: disabled ? '#f8f9fa' : 'white',
-              color: disabled ? '#6c757d' : 'inherit'
+              backgroundColor: disabled ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+              color: disabled ? 'var(--text-secondary)' : 'var(--text-primary)'
             }}
           />
         )
-      
+
       case 'toggle':
         return (
           <label style={{
@@ -54,11 +54,11 @@ const ChannelOptionField = ({ option, value, onChange, disabled = true }) => {
             style={{
               width: '100%',
               padding: '8px 12px',
-              border: '1px solid #dee2e6',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: disabled ? '#f8f9fa' : 'white',
-              color: disabled ? '#6c757d' : 'inherit'
+              backgroundColor: disabled ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+              color: disabled ? 'var(--text-secondary)' : 'var(--text-primary)'
             }}
           >
             {option.placeholder && (
@@ -81,15 +81,15 @@ const ChannelOptionField = ({ option, value, onChange, disabled = true }) => {
             style={{
               width: '100%',
               padding: '8px 12px',
-              border: '1px solid #dee2e6',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: disabled ? '#f8f9fa' : 'white',
-              color: disabled ? '#6c757d' : 'inherit'
+              backgroundColor: disabled ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+              color: disabled ? 'var(--text-secondary)' : 'var(--text-primary)'
             }}
           />
         )
-      
+
       default:
         return null
     }
@@ -113,7 +113,7 @@ const ChannelOptionField = ({ option, value, onChange, disabled = true }) => {
         <label style={{
           fontSize: '14px',
           fontWeight: '500',
-          color: disabled ? '#6c757d' : 'inherit'
+          color: disabled ? 'var(--text-secondary)' : 'var(--text-primary)'
         }}>
           {option.label}
         </label>
@@ -139,23 +139,23 @@ const ChannelOptionsAccordion = ({
 
   return (
     <div style={{
-      border: '1px solid #e1e5e9',
+      border: '1px solid var(--border-primary)',
       borderRadius: '8px',
-      backgroundColor: 'white',
+      backgroundColor: 'var(--bg-primary)',
       marginBottom: '16px',
       overflow: 'hidden'
     }}>
       {/* Accordion Header */}
-      <div 
+      <div
         onClick={onToggle}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '12px 16px',
-          backgroundColor: '#f8f9fa',
+          backgroundColor: 'var(--bg-secondary)',
           cursor: 'pointer',
-          borderBottom: isExpanded ? '1px solid #e1e5e9' : 'none'
+          borderBottom: isExpanded ? '1px solid var(--border-primary)' : 'none'
         }}
       >
         <div style={{
@@ -175,17 +175,18 @@ const ChannelOptionsAccordion = ({
           }}>
             {IconComponent && <IconComponent size={10} color="white" />}
           </div>
-          <span style={{ 
-            fontWeight: '500', 
-            fontSize: '14px' 
+          <span style={{
+            fontWeight: '500',
+            fontSize: '14px',
+            color: 'var(--text-primary)'
           }}>
             {platform.name} options
           </span>
         </div>
-        
+
         <span style={{
           fontSize: '12px',
-          color: '#6c757d',
+          color: 'var(--text-secondary)',
           transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
           transition: 'transform 0.2s ease'
         }}>

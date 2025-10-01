@@ -46,7 +46,7 @@ const ChannelBadge = ({ channelId, postType, onRemove }) => {
           right: '8px',
           top: '50%',
           transform: 'translateY(-50%)',
-          background: 'rgba(255, 255, 255, 0.2)',
+          background: 'var(--button-bg)',
           border: 'none',
           borderRadius: '4px',
           padding: '4px',

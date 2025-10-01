@@ -36,18 +36,18 @@ const WarningModal = ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'var(--modal-overlay)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 10001, // Higher than other modals
+        zIndex: 10001,
         backdropFilter: 'blur(4px)'
       }}
       onClick={handleBackdropClick}
     >
       <div
         style={{
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-primary)',
           borderRadius: '16px',
           padding: '32px',
           width: '90%',
@@ -94,7 +94,7 @@ const WarningModal = ({
             margin: 0,
             fontSize: '24px',
             fontWeight: '700',
-            color: '#212529',
+            color: 'var(--text-primary)',
             lineHeight: '1.2'
           }}>
             {title}
@@ -106,7 +106,7 @@ const WarningModal = ({
           margin: '0 0 32px 0',
           fontSize: '16px',
           lineHeight: '1.5',
-          color: '#495057'
+          color: 'var(--text-secondary)'
         }}>
           {message}
         </p>
@@ -122,8 +122,8 @@ const WarningModal = ({
             style={{
               padding: '12px 24px',
               backgroundColor: 'transparent',
-              color: '#6c757d',
-              border: '2px solid #dee2e6',
+              color: 'var(--text-secondary)',
+              border: '2px solid var(--border-secondary)',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '16px',
@@ -131,12 +131,12 @@ const WarningModal = ({
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#f8f9fa'
-              e.target.style.borderColor = '#adb5bd'
+              e.target.style.backgroundColor = 'var(--bg-secondary)'
+              e.target.style.borderColor = 'var(--border-primary)'
             }}
             onMouseLeave={(e) => {
               e.target.style.backgroundColor = 'transparent'
-              e.target.style.borderColor = '#dee2e6'
+              e.target.style.borderColor = 'var(--border-secondary)'
             }}
           >
             {cancelText}

@@ -51,9 +51,9 @@ const CrossChannelEditor = ({
             
             return (
               <div key={channel.id} style={{
-                border: '1px solid #e1e5e9',
+                border: '1px solid var(--border-primary)',
                 borderRadius: '8px',
-                backgroundColor: 'white',
+                backgroundColor: 'var(--bg-primary)',
                 overflow: 'hidden'
               }}>
                 {/* Channel Header */}
@@ -61,14 +61,14 @@ const CrossChannelEditor = ({
                   display: 'flex',
                   alignItems: 'center',
                   padding: '12px 16px',
-                  backgroundColor: '#f8f9fa',
-                  borderBottom: '1px solid #e1e5e9'
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderBottom: '1px solid var(--border-primary)'
                 }}>
                   <div style={{
                     width: '24px',
                     height: '24px',
                     borderRadius: '4px',
-                    backgroundColor: platform?.color || '#ccc',
+                    backgroundColor: platform?.color || 'var(--bg-tertiary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -77,13 +77,13 @@ const CrossChannelEditor = ({
                   }}>
                     {IconComponent && <IconComponent size={12} color="white" />}
                   </div>
-                  <span style={{ fontWeight: '500', fontSize: '14px' }}>
+                  <span style={{ fontWeight: '500', fontSize: '14px', color: 'var(--text-primary)' }}>
                     {platform?.name} {channel.postType && `• ${channel.postType}`}
                   </span>
-                  <div style={{ 
+                  <div style={{
                     marginLeft: 'auto',
                     fontSize: '12px',
-                    color: '#6c757d'
+                    color: 'var(--text-secondary)'
                   }}>
                     {selectedMediaForChannel.length} media {isCustomized ? '' : '(inherited)'}
                   </div>
@@ -206,9 +206,9 @@ const CrossChannelEditor = ({
             const IconComponent = platform?.icon
             return (
               <div key={channel.id} style={{
-                border: '1px solid #e1e5e9',
+                border: '1px solid var(--border-primary)',
                 borderRadius: '8px',
-                backgroundColor: 'white',
+                backgroundColor: 'var(--bg-primary)',
                 overflow: 'hidden'
               }}>
                 {/* Channel Header */}
@@ -216,14 +216,14 @@ const CrossChannelEditor = ({
                   display: 'flex',
                   alignItems: 'center',
                   padding: '12px 16px',
-                  backgroundColor: '#f8f9fa',
-                  borderBottom: '1px solid #e1e5e9'
+                  backgroundColor: 'var(--bg-secondary)',
+                  borderBottom: '1px solid var(--border-primary)'
                 }}>
                   <div style={{
                     width: '24px',
                     height: '24px',
                     borderRadius: '4px',
-                    backgroundColor: platform?.color || '#ccc',
+                    backgroundColor: platform?.color || 'var(--bg-tertiary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -232,13 +232,13 @@ const CrossChannelEditor = ({
                   }}>
                     {IconComponent && <IconComponent size={12} color="white" />}
                   </div>
-                  <span style={{ fontWeight: '500', fontSize: '14px' }}>
+                  <span style={{ fontWeight: '500', fontSize: '14px', color: 'var(--text-primary)' }}>
                     {platform?.name} {channel.postType && `• ${channel.postType}`}
                   </span>
-                  <div style={{ 
+                  <div style={{
                     marginLeft: 'auto',
                     fontSize: '12px',
-                    color: '#6c757d'
+                    color: 'var(--text-secondary)'
                   }}>
                     {getChannelCaption(channel.id).length}/280 characters
                   </div>
@@ -254,23 +254,25 @@ const CrossChannelEditor = ({
                       width: '100%',
                       minHeight: '80px',
                       padding: '12px',
-                      border: '1px solid #dee2e6',
+                      border: '1px solid var(--border-secondary)',
                       borderRadius: '6px',
                       resize: 'vertical',
                       fontFamily: 'inherit',
                       fontSize: '14px',
-                      marginBottom: '12px'
+                      marginBottom: '12px',
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)'
                     }}
                   />
-                  
+
                   {/* Individual Apply to All Button */}
                   <button
                     onClick={() => handleApplyToAll(channel.id)}
                     style={{
                       padding: '6px 12px',
                       backgroundColor: 'transparent',
-                      color: '#6c757d',
-                      border: '1px solid #dee2e6',
+                      color: 'var(--text-secondary)',
+                      border: '1px solid var(--border-secondary)',
                       borderRadius: '4px',
                       cursor: 'pointer',
                       fontSize: '12px',
@@ -318,9 +320,9 @@ const CrossChannelEditor = ({
                 display: 'flex',
                 alignItems: 'center',
                 padding: '16px',
-                border: '1px solid #e1e5e9',
+                border: '1px solid var(--border-primary)',
                 borderRadius: '8px',
-                backgroundColor: 'white'
+                backgroundColor: 'var(--bg-primary)'
               }}>
                 {/* Platform Info */}
                 <div style={{
@@ -333,7 +335,7 @@ const CrossChannelEditor = ({
                     width: '32px',
                     height: '32px',
                     borderRadius: '4px',
-                    backgroundColor: platform?.color || '#ccc',
+                    backgroundColor: platform?.color || 'var(--bg-tertiary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -343,11 +345,11 @@ const CrossChannelEditor = ({
                     {IconComponent && <IconComponent size={12} color="white" />}
                   </div>
                   <div>
-                    <div style={{ fontWeight: '500', fontSize: '14px' }}>
+                    <div style={{ fontWeight: '500', fontSize: '14px', color: 'var(--text-primary)' }}>
                       {platform?.name}
                     </div>
                     {channel.postType && (
-                      <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                         {channel.postType}
                       </div>
                     )}
@@ -367,21 +369,25 @@ const CrossChannelEditor = ({
                     onChange={(e) => onChannelSchedulingChange(channel.id, 'date', e.target.value)}
                     style={{
                       padding: '8px',
-                      border: '1px solid #dee2e6',
+                      border: '1px solid var(--border-secondary)',
                       borderRadius: '4px',
-                      fontSize: '14px'
+                      fontSize: '14px',
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)'
                     }}
                   />
-                  
+
                   <input
                     type="time"
                     value={channelScheduling[channel.id]?.time || '11:30'}
                     onChange={(e) => onChannelSchedulingChange(channel.id, 'time', e.target.value)}
                     style={{
                       padding: '8px',
-                      border: '1px solid #dee2e6',
+                      border: '1px solid var(--border-secondary)',
                       borderRadius: '4px',
-                      fontSize: '14px'
+                      fontSize: '14px',
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)'
                     }}
                   />
 
@@ -390,10 +396,12 @@ const CrossChannelEditor = ({
                     onChange={(e) => onChannelSchedulingChange(channel.id, 'type', e.target.value)}
                     style={{
                       padding: '8px',
-                      border: '1px solid #dee2e6',
+                      border: '1px solid var(--border-secondary)',
                       borderRadius: '4px',
                       fontSize: '14px',
-                      minWidth: '120px'
+                      minWidth: '120px',
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)'
                     }}
                   >
                     {isConnected ? (
@@ -426,8 +434,8 @@ const CrossChannelEditor = ({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '12px 20px',
-        borderBottom: '1px solid #e1e5e9',
-        backgroundColor: '#f8f9fa'
+        borderBottom: '1px solid var(--border-primary)',
+        backgroundColor: 'var(--bg-secondary)'
       }}>
         {/* Tabs */}
         <div style={{
@@ -449,7 +457,7 @@ const CrossChannelEditor = ({
                 fontSize: '14px',
                 fontWeight: '500',
                 cursor: 'pointer',
-                color: activeTab === tab.key ? '#62759F' : '#6c757d',
+                color: activeTab === tab.key ? '#62759F' : 'var(--text-secondary)',
                 borderBottom: activeTab === tab.key ? '2px solid #62759F' : '2px solid transparent',
                 transition: 'all 0.2s'
               }}
@@ -468,7 +476,7 @@ const CrossChannelEditor = ({
             onClick={onCancel}
             style={{
               padding: '8px 16px',
-              backgroundColor: '#6c757d',
+              backgroundColor: 'var(--button-bg)',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -478,12 +486,12 @@ const CrossChannelEditor = ({
           >
             Cancel
           </button>
-          
+
           <button
             onClick={onUpdate}
             style={{
               padding: '8px 16px',
-              backgroundColor: '#3c3c3c',
+              backgroundColor: 'var(--button-bg-primary)',
               color: 'white',
               border: 'none',
               borderRadius: '6px',

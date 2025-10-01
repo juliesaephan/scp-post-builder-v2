@@ -43,7 +43,7 @@ const MediaTypeModal = ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'var(--modal-overlay)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -54,7 +54,7 @@ const MediaTypeModal = ({
     >
       <div
         style={{
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-primary)',
           borderRadius: '16px',
           padding: '32px',
           width: '90%',
@@ -86,7 +86,7 @@ const MediaTypeModal = ({
             margin: 0,
             fontSize: '24px',
             fontWeight: '700',
-            color: '#212529',
+            color: 'var(--text-primary)',
             lineHeight: '1.2',
             marginBottom: '8px'
           }}>
@@ -95,7 +95,7 @@ const MediaTypeModal = ({
           <p style={{
             margin: 0,
             fontSize: '16px',
-            color: '#6c757d',
+            color: 'var(--text-secondary)',
             lineHeight: '1.4'
           }}>
             {description}
@@ -118,21 +118,21 @@ const MediaTypeModal = ({
               alignItems: 'center',
               justifyContent: 'center',
               padding: '24px 16px',
-              backgroundColor: '#f8f9fa',
-              border: '2px solid #e9ecef',
+              backgroundColor: 'var(--bg-secondary)',
+              border: '2px solid var(--border-secondary)',
               borderRadius: '12px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               textAlign: 'center'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#e9ecef'
+              e.target.style.backgroundColor = 'var(--bg-tertiary)'
               e.target.style.borderColor = '#62759F'
               e.target.style.transform = 'translateY(-2px)'
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#f8f9fa'
-              e.target.style.borderColor = '#e9ecef'
+              e.target.style.backgroundColor = 'var(--bg-secondary)'
+              e.target.style.borderColor = 'var(--border-secondary)'
               e.target.style.transform = 'translateY(0)'
             }}
           >
@@ -146,14 +146,14 @@ const MediaTypeModal = ({
             <div style={{
               fontSize: '18px',
               fontWeight: '600',
-              color: '#212529',
+              color: 'var(--text-primary)',
               marginBottom: '4px'
             }}>
               Photos
             </div>
             <div style={{
               fontSize: '14px',
-              color: '#6c757d',
+              color: 'var(--text-secondary)',
               lineHeight: '1.3'
             }}>
               Add image content for your posts
@@ -169,21 +169,21 @@ const MediaTypeModal = ({
               alignItems: 'center',
               justifyContent: 'center',
               padding: '24px 16px',
-              backgroundColor: '#f8f9fa',
-              border: '2px solid #e9ecef',
+              backgroundColor: 'var(--bg-secondary)',
+              border: '2px solid var(--border-secondary)',
               borderRadius: '12px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               textAlign: 'center'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#e9ecef'
+              e.target.style.backgroundColor = 'var(--bg-tertiary)'
               e.target.style.borderColor = '#62759F'
               e.target.style.transform = 'translateY(-2px)'
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#f8f9fa'
-              e.target.style.borderColor = '#e9ecef'
+              e.target.style.backgroundColor = 'var(--bg-secondary)'
+              e.target.style.borderColor = 'var(--border-secondary)'
               e.target.style.transform = 'translateY(0)'
             }}
           >
@@ -197,14 +197,14 @@ const MediaTypeModal = ({
             <div style={{
               fontSize: '18px',
               fontWeight: '600',
-              color: '#212529',
+              color: 'var(--text-primary)',
               marginBottom: '4px'
             }}>
               Videos
             </div>
             <div style={{
               fontSize: '14px',
-              color: '#6c757d',
+              color: 'var(--text-secondary)',
               lineHeight: '1.3'
             }}>
               Add video content for your posts
@@ -222,8 +222,8 @@ const MediaTypeModal = ({
             style={{
               padding: '12px 24px',
               backgroundColor: 'transparent',
-              color: '#6c757d',
-              border: '2px solid #dee2e6',
+              color: 'var(--text-secondary)',
+              border: '2px solid var(--border-primary)',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '16px',
@@ -231,12 +231,12 @@ const MediaTypeModal = ({
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#f8f9fa'
-              e.target.style.borderColor = '#adb5bd'
+              e.target.style.backgroundColor = 'var(--bg-secondary)'
+              e.target.style.borderColor = 'var(--border-secondary)'
             }}
             onMouseLeave={(e) => {
               e.target.style.backgroundColor = 'transparent'
-              e.target.style.borderColor = '#dee2e6'
+              e.target.style.borderColor = 'var(--border-primary)'
             }}
           >
             Cancel

@@ -65,7 +65,7 @@ const ChannelMediaGrid = ({
           height: 60,
           border: '2px dashed #62759F',
           borderRadius: '8px',
-          backgroundColor: '#f8f9fb',
+          backgroundColor: 'var(--bg-tertiary)',
           color: '#62759F',
           cursor: 'pointer',
           fontSize: '20px',
@@ -80,14 +80,14 @@ const ChannelMediaGrid = ({
           e.target.style.color = 'white'
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = '#f8f9fb'
+          e.target.style.backgroundColor = 'var(--bg-tertiary)'
           e.target.style.color = '#62759F'
         }}
         title="Add media to this channel"
       >
         +
       </button>
-      
+
       {/* Empty state when no media selected for this channel */}
       {selectedMedia.length === 0 && (
         <div
@@ -98,10 +98,10 @@ const ChannelMediaGrid = ({
             justifyContent: 'center',
             minWidth: '200px',
             height: '60px',
-            border: '2px dashed #dee2e6',
+            border: '2px dashed var(--border-secondary)',
             borderRadius: '8px',
-            backgroundColor: '#f8f9fa',
-            color: '#6c757d',
+            backgroundColor: 'var(--bg-secondary)',
+            color: 'var(--text-secondary)',
             fontSize: '14px',
             cursor: 'pointer'
           }}

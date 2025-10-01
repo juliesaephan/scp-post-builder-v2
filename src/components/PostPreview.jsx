@@ -5,9 +5,9 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
 
   const InstagramPreview = () => (
     <div style={{
-      backgroundColor: 'white',
+      backgroundColor: 'var(--bg-primary)',
       borderRadius: '12px',
-      border: '1px solid #dbdbdb',
+      border: '1px solid var(--border-primary)',
       maxWidth: '300px',
       margin: '0 auto',
       overflow: 'hidden',
@@ -18,7 +18,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
         display: 'flex',
         alignItems: 'center',
         padding: '12px 16px',
-        borderBottom: '1px solid #efefef'
+        borderBottom: '1px solid var(--border-secondary)'
       }}>
         <div style={{
           width: '32px',
@@ -34,14 +34,14 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
         </div>
         <div>
           <div style={{ fontSize: '14px', fontWeight: '600' }}>{account}</div>
-          <div style={{ fontSize: '12px', color: '#8e8e8e' }}>2h</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>2h</div>
         </div>
       </div>
 
       {/* Image */}
       <div style={{
         aspectRatio: '1',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: 'var(--bg-secondary)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -90,9 +90,9 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
 
   const LinkedInPreview = () => (
     <div style={{
-      backgroundColor: 'white',
+      backgroundColor: 'var(--bg-primary)',
       borderRadius: '8px',
-      border: '1px solid #d0d0d0',
+      border: '1px solid var(--border-primary)',
       maxWidth: '350px',
       margin: '0 auto',
       overflow: 'hidden',
@@ -103,7 +103,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
         display: 'flex',
         alignItems: 'center',
         padding: '16px',
-        borderBottom: '1px solid #efefef'
+        borderBottom: '1px solid var(--border-secondary)'
       }}>
         <div style={{
           width: '48px',
@@ -119,17 +119,17 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
           🧁
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '14px', fontWeight: '600', color: '#000' }}>
+          <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
             {account}
           </div>
-          <div style={{ fontSize: '12px', color: '#666666' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
             1,234 followers
           </div>
-          <div style={{ fontSize: '12px', color: '#666666' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
             2h • 🌍
           </div>
         </div>
-        <div style={{ fontSize: '20px', color: '#666666' }}>⋯</div>
+        <div style={{ fontSize: '20px', color: 'var(--text-secondary)' }}>⋯</div>
       </div>
 
       {/* Content */}
@@ -138,7 +138,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
           padding: '16px',
           fontSize: '14px',
           lineHeight: '20px',
-          color: '#000'
+          color: 'var(--text-primary)'
         }}>
           {caption}
         </div>
@@ -148,7 +148,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
       {media && media.length > 0 && (
         <div style={{
           aspectRatio: '16/9',
-          backgroundColor: '#f5f5f5',
+          backgroundColor: 'var(--bg-secondary)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -165,7 +165,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
       {/* Engagement */}
       <div style={{
         padding: '12px 16px',
-        borderTop: '1px solid #efefef',
+        borderTop: '1px solid var(--border-secondary)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center'
@@ -177,7 +177,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            color: '#666666',
+            color: 'var(--text-secondary)',
             fontSize: '14px',
             cursor: 'pointer'
           }}>
@@ -189,7 +189,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            color: '#666666',
+            color: 'var(--text-secondary)',
             fontSize: '14px',
             cursor: 'pointer'
           }}>
@@ -201,7 +201,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            color: '#666666',
+            color: 'var(--text-secondary)',
             fontSize: '14px',
             cursor: 'pointer'
           }}>
@@ -213,7 +213,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            color: '#666666',
+            color: 'var(--text-secondary)',
             fontSize: '14px',
             cursor: 'pointer'
           }}>
@@ -226,9 +226,9 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
 
   const TwitterPreview = () => (
     <div style={{
-      backgroundColor: 'white',
+      backgroundColor: 'var(--bg-primary)',
       borderRadius: '16px',
-      border: '1px solid #cfd9de',
+      border: '1px solid var(--border-primary)',
       maxWidth: '350px',
       margin: '0 auto',
       padding: '16px',
@@ -253,16 +253,16 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
           🧁
         </div>
         <div>
-          <div style={{ 
-            fontSize: '15px', 
+          <div style={{
+            fontSize: '15px',
             fontWeight: '700',
-            color: '#0f1419'
+            color: 'var(--text-primary)'
           }}>
             {account}
           </div>
-          <div style={{ 
-            fontSize: '15px', 
-            color: '#536471'
+          <div style={{
+            fontSize: '15px',
+            color: 'var(--text-secondary)'
           }}>
             @bestiesbakes
           </div>
@@ -274,7 +274,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
         <div style={{
           fontSize: '15px',
           lineHeight: '20px',
-          color: '#0f1419',
+          color: 'var(--text-primary)',
           marginBottom: media && media.length > 0 ? '12px' : '16px'
         }}>
           {caption}
@@ -285,7 +285,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
       {media && media.length > 0 && (
         <div style={{
           aspectRatio: '16/9',
-          backgroundColor: '#f5f5f5',
+          backgroundColor: 'var(--bg-secondary)',
           borderRadius: '16px',
           display: 'flex',
           alignItems: 'center',
@@ -306,7 +306,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        color: '#536471',
+        color: 'var(--text-secondary)',
         fontSize: '14px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -447,9 +447,9 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
     const IconComponent = platform?.icon
     return (
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: 'var(--bg-primary)',
         borderRadius: '12px',
-        border: '1px solid #e1e5e9',
+        border: '1px solid var(--border-primary)',
         maxWidth: '300px',
         margin: '0 auto',
         padding: '16px',
@@ -471,7 +471,7 @@ const PostPreview = ({ platform, postType, content, isActive }) => {
       {caption ? (
         <div style={{
           fontSize: '14px',
-          color: '#6c757d',
+          color: 'var(--text-secondary)',
           lineHeight: '18px'
         }}>
           {caption.length > 100 ? `${caption.substring(0, 100)}...` : caption}

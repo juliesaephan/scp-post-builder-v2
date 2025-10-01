@@ -1246,7 +1246,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'var(--modal-overlay)',
             zIndex: 999
           }}
         />
@@ -1264,7 +1264,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           bottom: 0,
           width: '100vw',
           height: '100vh',
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-primary)',
           borderRadius: 0,
           boxShadow: 'none',
           zIndex: 1000,
@@ -1279,7 +1279,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           transform: 'translate(-50%, -50%)',
           width: modalWidth,
           height: modalHeight,
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-primary)',
           borderRadius: '12px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
           zIndex: 1000,
@@ -1293,7 +1293,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           top: position.y,
           width: modalWidth,
           height: modalHeight,
-          backgroundColor: 'white',
+          backgroundColor: 'var(--bg-primary)',
           borderRadius: '12px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
           zIndex: 1000,
@@ -1308,8 +1308,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
           display: 'flex',
           alignItems: 'center',
           padding: '16px 20px',
-          borderBottom: '1px solid #e1e5e9',
-          backgroundColor: '#f8f9fa'
+          borderBottom: '1px solid var(--border-primary)',
+          backgroundColor: 'var(--bg-secondary)'
         }}>
           {/* Drag Handle - only show on desktop */}
           {isDesktop && (
@@ -1327,7 +1327,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                 <div key={i} style={{
                   width: '4px',
                   height: '4px',
-                  backgroundColor: '#6c757d',
+                  backgroundColor: 'var(--text-secondary)',
                   borderRadius: '50%'
                 }} />
               ))}
@@ -1355,7 +1355,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                   border: '2px solid #62759F',
                   borderRadius: '4px',
                   padding: '4px 8px',
-                  backgroundColor: '#fff',
+                  backgroundColor: 'var(--bg-primary)',
                   outline: 'none',
                   minWidth: '150px'
                 }}
@@ -1372,7 +1372,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                 }}
                 onClick={handleTitleEdit}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#f8f9fa'
+                  e.target.style.backgroundColor = 'var(--bg-secondary)'
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.backgroundColor = 'transparent'
@@ -1400,7 +1400,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
               disabled={isEditingTitle}
               title="Edit title"
             >
-              <PencilIcon size={14} color="#6c757d" />
+              <PencilIcon size={14} color="var(--icon-color)" />
             </button>
           </div>
 
@@ -1414,8 +1414,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
               onClick={() => setShowPreview(!showPreview)}
               style={{
                 padding: isMobile ? '6px 10px' : '8px 12px',
-                backgroundColor: showPreview ? '#e9ecef' : '#62759F',
-                color: showPreview ? '#495057' : 'white',
+                backgroundColor: showPreview ? 'var(--bg-tertiary)' : '#62759F',
+                color: showPreview ? 'var(--text-primary)' : 'white',
                 border: 'none',
                 borderRadius: '6px',
                 cursor: 'pointer',
@@ -1457,8 +1457,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
               ? '100%'
               : (showPreview ? '60%' : '100%'),
             height: isMobile && showPreview ? '60%' : 'auto',
-            borderRight: showPreview && !isMobile ? '1px solid #e1e5e9' : 'none',
-            borderBottom: showPreview && isMobile ? '1px solid #e1e5e9' : 'none',
+            borderRight: showPreview && !isMobile ? '1px solid var(--border-primary)' : 'none',
+            borderBottom: showPreview && isMobile ? '1px solid var(--border-primary)' : 'none',
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
@@ -1471,8 +1471,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
               return (
                 <div style={{
-                  backgroundColor: '#fff3cd',
-                  borderBottom: '1px solid #ffeaa7',
+                  backgroundColor: 'var(--bg-warning)',
+                  borderBottom: '1px solid var(--border-warning)',
                   padding: '12px 20px'
                 }}>
                   <div style={{
@@ -1491,14 +1491,14 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       <div style={{
                         fontSize: '14px',
                         fontWeight: '600',
-                        color: '#856404',
+                        color: 'var(--text-warning)',
                         marginBottom: '4px'
                       }}>
                         Content Requirements Missing
                       </div>
                       <div style={{
                         fontSize: '13px',
-                        color: '#856404',
+                        color: 'var(--text-warning)',
                         lineHeight: '1.4'
                       }}>
                         {warnings.length === 1 ? (
@@ -1525,13 +1525,13 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
 
                         {/* Customize by channel link - only show when channels aren't separated */}
                         {!channelsSeparated && selectedChannels.length > 1 && (
-                          <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #ffeaa7' }}>
+                          <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border-warning)' }}>
                             <button
                               onClick={handleCustomizeClick}
                               style={{
                                 background: 'none',
                                 border: 'none',
-                                color: '#856404',
+                                color: 'var(--text-warning)',
                                 fontSize: '13px',
                                 fontWeight: '500',
                                 cursor: 'pointer',
@@ -1539,10 +1539,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 padding: 0
                               }}
                               onMouseEnter={(e) => {
-                                e.target.style.color = '#6c5a00'
+                                e.target.style.color = 'var(--text-warning-dark)'
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.color = '#856404'
+                                e.target.style.color = 'var(--text-warning)'
                               }}
                             >
                               Need different media for each channel? Customize by channel →
@@ -1590,10 +1590,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           style={{
                             position: 'relative',
                             height: '280px', // Increased height for individual Apply to All buttons
-                            border: '1px solid #dee2e6',
+                            border: '1px solid var(--border-primary)',
                             borderRadius: '8px',
                             overflow: 'hidden',
-                            backgroundColor: '#fff'
+                            backgroundColor: 'var(--bg-primary)'
                           }}
                         >
 
@@ -1623,7 +1623,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 bottom: '8px',
                                 right: '12px',
                                 fontSize: '11px',
-                                color: caption.length > 280 ? '#dc3545' : '#6c757d',
+                                color: caption.length > 280 ? 'var(--text-error)' : 'var(--text-secondary)',
                                 fontWeight: '500'
                               }}>
                                 {caption.length}/280
@@ -1659,13 +1659,13 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                       marginBottom: '6px',
                                       fontSize: '12px',
                                       fontWeight: '600',
-                                      color: '#495057'
+                                      color: 'var(--text-primary)'
                                     }}>
-                                      {IconComponent && <IconComponent size={14} color="#495057" />}
+                                      {IconComponent && <IconComponent size={14} color="var(--icon-color)" />}
                                       <span>{platform?.name}</span>
                                       {channel.postType && (
                                         <span style={{
-                                          color: '#6c757d',
+                                          color: 'var(--text-secondary)',
                                           fontWeight: '400'
                                         }}>
                                           • {channel.postType}
@@ -1689,13 +1689,13 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                           padding: '8px',
                                           paddingTop: '28px', // Space for Apply to All button
                                           paddingBottom: '24px', // Space for character counter
-                                          border: '1px solid #e1e5e9',
+                                          border: '1px solid var(--border-primary)',
                                           borderRadius: '6px',
                                           resize: 'none',
                                           fontFamily: 'inherit',
                                           fontSize: '13px',
                                           outline: 'none',
-                                          backgroundColor: '#fff'
+                                          backgroundColor: 'var(--bg-primary)'
                                         }}
                                       />
 
@@ -1732,7 +1732,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                         bottom: '4px',
                                         right: '8px',
                                         fontSize: '10px',
-                                        color: channelCaption.length > 280 ? '#dc3545' : '#6c757d',
+                                        color: channelCaption.length > 280 ? 'var(--text-error)' : 'var(--text-secondary)',
                                         fontWeight: '500'
                                       }}>
                                         {channelCaption.length}/280
@@ -1765,12 +1765,12 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       {/* Channel Tabs */}
                       <div style={{
                         display: 'flex',
-                        borderBottom: '1px solid #e1e5e9',
+                        borderBottom: '1px solid var(--border-primary)',
                         marginBottom: '20px',
                         position: 'relative',
                         overflowX: 'auto',
                         scrollbarWidth: 'thin',
-                        scrollbarColor: '#dee2e6 transparent'
+                        scrollbarColor: 'var(--border-primary) transparent'
                       }}>
                         {selectedChannels.map((channel) => {
                           const platform = getPlatformById(channel.id)
@@ -1789,25 +1789,25 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 alignItems: 'center',
                                 gap: '8px',
                                 padding: '12px 16px',
-                                backgroundColor: isActive ? '#f8f9fa' : 'transparent',
+                                backgroundColor: isActive ? 'var(--bg-secondary)' : 'transparent',
                                 border: 'none',
                                 borderBottom: isActive ? '2px solid #62759F' : '2px solid transparent',
                                 cursor: 'pointer',
                                 fontSize: '14px',
                                 fontWeight: isActive ? '600' : '500',
-                                color: isActive ? '#62759F' : '#495057',
+                                color: isActive ? '#62759F' : 'var(--text-primary)',
                                 transition: 'all 0.2s ease',
                                 position: 'relative',
                                 minWidth: 'fit-content',
                                 whiteSpace: 'nowrap'
                               }}
                             >
-                              {IconComponent && <IconComponent size={16} color={isActive ? '#62759F' : '#6c757d'} />}
+                              {IconComponent && <IconComponent size={16} color={isActive ? '#62759F' : 'var(--icon-color)'} />}
                               <span>{platform?.name}</span>
                               {channel.postType && (
                                 <span style={{
                                   fontSize: '12px',
-                                  color: '#6c757d',
+                                  color: 'var(--text-secondary)',
                                   fontWeight: '400'
                                 }}>
                                   • {channel.postType}
@@ -1828,7 +1828,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                     width: '16px',
                                     height: '16px',
                                     borderRadius: '50%',
-                                    backgroundColor: '#dc3545',
+                                    backgroundColor: 'var(--text-error)',
                                     color: 'white',
                                     border: 'none',
                                     cursor: 'pointer',
@@ -1908,10 +1908,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 style={{
                                   position: 'relative',
                                   height: '280px',
-                                  border: '1px solid #dee2e6',
+                                  border: '1px solid var(--border-primary)',
                                   borderRadius: '8px',
                                   overflow: 'hidden',
-                                  backgroundColor: '#fff'
+                                  backgroundColor: 'var(--bg-primary)'
                                 }}
                               >
                                 <textarea
@@ -1937,7 +1937,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                   bottom: '8px',
                                   right: '12px',
                                   fontSize: '11px',
-                                  color: (separatedChannelData[activeChannelTab].caption || '').length > 280 ? '#dc3545' : '#6c757d',
+                                  color: (separatedChannelData[activeChannelTab].caption || '').length > 280 ? 'var(--text-error)' : 'var(--text-secondary)',
                                   fontWeight: '500'
                                 }}>
                                   {(separatedChannelData[activeChannelTab].caption || '').length}/280
@@ -1974,9 +1974,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             flexDirection: 'column',
                             gap: '12px',
                             padding: '16px',
-                            border: '1px solid #e1e5e9',
+                            border: '1px solid var(--border-primary)',
                             borderRadius: '8px',
-                            backgroundColor: 'white'
+                            backgroundColor: 'var(--bg-primary)'
                           }}>
                             <div style={{
                               display: 'flex',
@@ -2005,11 +2005,11 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                 onChange={(e) => channelsSeparated ? handleSeparatedChannelSchedulingChange(activeChannelTab, 'type', e.target.value) : handleChannelSchedulingChange(activeChannelTab, 'type', e.target.value)}
                                 style={{
                                   padding: '8px 12px',
-                                  border: '1px solid #dee2e6',
+                                  border: '1px solid var(--border-primary)',
                                   borderRadius: '6px',
                                   fontSize: '14px',
                                   minWidth: '120px',
-                                  backgroundColor: 'white'
+                                  backgroundColor: 'var(--bg-primary)'
                                 }}
                               >
                                 <option value="auto">Auto-post</option>
@@ -2031,7 +2031,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     {selectedChannels.length === 0 ? (
                       // Empty State
                       <div style={{
-                        border: '1px solid #dee2e6',
+                        border: '1px solid var(--border-primary)',
                         borderRadius: '8px',
                         padding: '16px',
                         display: 'flex',
@@ -2039,7 +2039,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         justifyContent: 'space-between'
                       }}>
                         <span style={{
-                          color: '#6c757d',
+                          color: 'var(--text-secondary)',
                           fontSize: '14px'
                         }}>
                           Click the "+" to add your channels.
@@ -2068,7 +2068,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     ) : (
                       // Selected Channels State
                       <div style={{
-                        border: '1px solid #dee2e6',
+                        border: '1px solid var(--border-primary)',
                         borderRadius: '8px',
                         padding: '12px'
                       }}>
@@ -2165,9 +2165,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                 {saveError && (
                   <div style={{
                     padding: '12px 20px',
-                    backgroundColor: '#f8d7da',
-                    borderTop: '1px solid #e1e5e9',
-                    color: '#721c24',
+                    backgroundColor: 'var(--bg-error)',
+                    borderTop: '1px solid var(--border-primary)',
+                    color: 'var(--text-error)',
                     fontSize: '14px',
                     fontWeight: '500'
                   }}>
@@ -2182,8 +2182,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                     justifyContent: 'space-between',
                     flexDirection: isMobile ? 'column' : 'row',
                     padding: isMobile ? '12px 16px' : '16px 20px',
-                    borderTop: '1px solid #e1e5e9',
-                    backgroundColor: 'white',
+                    borderTop: '1px solid var(--border-primary)',
+                    backgroundColor: 'var(--bg-primary)',
                     flexShrink: 0,
                     gap: isMobile ? '12px' : '0'
                   }}>
@@ -2199,22 +2199,22 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: '#dc3545',
+                        color: 'var(--text-error)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         padding: '8px'
                       }}
                     >
-                      <TrashIcon size={18} color="#dc3545" />
+                      <TrashIcon size={18} color="var(--text-error)" />
                     </button>
 
                     <button
                       onClick={() => setShowDateScheduling(!showDateScheduling)}
                       style={{
                         padding: isMobile ? '6px 10px' : '8px 12px',
-                        backgroundColor: showDateScheduling ? '#e9ecef' : '#f8f9fa',
-                        border: '1px solid #dee2e6',
+                        backgroundColor: showDateScheduling ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
+                        border: '1px solid var(--border-primary)',
                         borderRadius: '6px',
                         cursor: 'pointer',
                         fontSize: isMobile ? '12px' : '14px',
@@ -2242,7 +2242,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                           padding: isMobile ? '6px 10px' : '8px 12px',
                           fontSize: isMobile ? '12px' : '14px',
                           backgroundColor: 'transparent',
-                          color: '#6c757d',
+                          color: 'var(--text-secondary)',
                           border: 'none',
                           borderRadius: '6px',
                           cursor: 'pointer',
@@ -2253,11 +2253,11 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         }}
                         onMouseEnter={(e) => {
                           e.target.style.textDecoration = 'underline'
-                          e.target.style.color = '#495057'
+                          e.target.style.color = 'var(--text-primary)'
                         }}
                         onMouseLeave={(e) => {
                           e.target.style.textDecoration = 'none'
-                          e.target.style.color = '#6c757d'
+                          e.target.style.color = 'var(--text-secondary)'
                         }}
                       >
                         {channelsSeparated
@@ -2273,7 +2273,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       disabled={isSaving}
                       style={{
                         padding: isMobile ? '12px 16px' : '10px 20px',
-                        backgroundColor: isSaving ? '#6c757d' : '#3c3c3c',
+                        backgroundColor: isSaving ? 'var(--text-secondary)' : '#3c3c3c',
                         color: 'white',
                         border: 'none',
                         borderRadius: '6px',
@@ -2289,7 +2289,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       {isSaving && <div style={{
                         width: '16px',
                         height: '16px',
-                        border: '2px solid #ffffff',
+                        border: '2px solid var(--bg-primary)',
                         borderTopColor: 'transparent',
                         borderRadius: '50%',
                         animation: 'spin 1s linear infinite'
@@ -2331,8 +2331,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         bottom: '70px',
                         right: '20px',
                         left: '20px',
-                        backgroundColor: 'white',
-                        border: '1px solid #dee2e6',
+                        backgroundColor: 'var(--bg-primary)',
+                        border: '1px solid var(--border-primary)',
                         borderRadius: '8px',
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                         zIndex: 1000,
@@ -2341,10 +2341,10 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       }}>
                       <div style={{
                         padding: '16px',
-                        borderBottom: '1px solid #e1e5e9',
+                        borderBottom: '1px solid var(--border-primary)',
                         fontSize: '14px',
                         fontWeight: '600',
-                        color: '#495057'
+                        color: 'var(--text-primary)'
                       }}>
                         Schedule Posts by Channel
                       </div>
@@ -2352,13 +2352,13 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                       {/* Unified Date/Time Selector */}
                       <div style={{
                         padding: '16px',
-                        borderBottom: '1px solid #e1e5e9',
-                        backgroundColor: '#f8f9fa'
+                        borderBottom: '1px solid var(--border-primary)',
+                        backgroundColor: 'var(--bg-secondary)'
                       }}>
                         <div style={{
                           fontSize: '12px',
                           fontWeight: '600',
-                          color: '#495057',
+                          color: 'var(--text-primary)',
                           marginBottom: '12px'
                         }}>
                           Set date and time for all channels
@@ -2381,8 +2381,8 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                             disabled={!unifiedDate}
                             style={{
                               padding: '8px 16px',
-                              backgroundColor: unifiedDate ? '#62759F' : '#e9ecef',
-                              color: unifiedDate ? 'white' : '#6c757d',
+                              backgroundColor: unifiedDate ? '#62759F' : 'var(--bg-tertiary)',
+                              color: unifiedDate ? 'white' : 'var(--text-secondary)',
                               border: 'none',
                               borderRadius: '6px',
                               cursor: unifiedDate ? 'pointer' : 'not-allowed',
@@ -2400,7 +2400,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                         {selectedChannels.length === 0 ? (
                           <div style={{
                             textAlign: 'center',
-                            color: '#6c757d',
+                            color: 'var(--text-secondary)',
                             fontSize: '14px',
                             padding: '20px'
                           }}>
@@ -2423,9 +2423,9 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                   alignItems: 'center',
                                   gap: '12px',
                                   padding: '12px',
-                                  border: '1px solid #e1e5e9',
+                                  border: '1px solid var(--border-primary)',
                                   borderRadius: '6px',
-                                  backgroundColor: '#f8f9fa'
+                                  backgroundColor: 'var(--bg-secondary)'
                                 }}>
                                   {/* Platform Info */}
                                   <div style={{
@@ -2451,7 +2451,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                         {platform?.name}
                                       </div>
                                       {channel.postType && (
-                                        <div style={{ fontSize: '11px', color: '#6c757d' }}>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                                           {channel.postType}
                                         </div>
                                       )}
@@ -2492,7 +2492,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
                                       onChange={(e) => channelsSeparated ? handleSeparatedChannelSchedulingChange(channel.id, 'type', e.target.value) : handleChannelSchedulingChange(channel.id, 'type', e.target.value)}
                                       style={{
                                         padding: '6px',
-                                        border: '1px solid #dee2e6',
+                                        border: '1px solid var(--border-primary)',
                                         borderRadius: '4px',
                                         fontSize: '12px',
                                         width: '100px'
@@ -2524,7 +2524,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
             <div style={{
               width: isMobile ? '100%' : '40%',
               height: isMobile ? '40%' : 'auto',
-              backgroundColor: '#f8f9fa',
+              backgroundColor: 'var(--bg-secondary)',
               overflow: 'auto'
             }}>
               <PreviewCarousel
@@ -2557,7 +2557,7 @@ const PostBuilderModal = ({ onClose, onPostSaved }) => {
         title="Revert to Unified Post"
         message="Are you sure you want to revert to unified posting? This will discard all individual channel customizations and merge everything back into a single unified post."
         confirmText="Revert to Unified"
-        confirmButtonColor="#dc3545"
+        confirmButtonColor="var(--text-error)"
       />
 
       {/* Confirmation Dialog */}

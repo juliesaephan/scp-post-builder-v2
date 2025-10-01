@@ -2,14 +2,14 @@ const ConfirmationDialog = ({ onSaveAsDraft, onDiscardChanges, onCancel, isLoadi
   return (
     <>
       {/* Overlay */}
-      <div 
+      <div
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backgroundColor: 'var(--modal-overlay)',
           zIndex: 10001,
           display: 'flex',
           alignItems: 'center',
@@ -20,7 +20,7 @@ const ConfirmationDialog = ({ onSaveAsDraft, onDiscardChanges, onCancel, isLoadi
         {/* Dialog */}
         <div
           style={{
-            backgroundColor: 'white',
+            backgroundColor: 'var(--bg-primary)',
             borderRadius: '12px',
             padding: '24px',
             width: '400px',
@@ -42,7 +42,7 @@ const ConfirmationDialog = ({ onSaveAsDraft, onDiscardChanges, onCancel, isLoadi
               margin: 0,
               fontSize: '18px',
               fontWeight: '600',
-              color: '#333'
+              color: 'var(--text-primary)'
             }}>
               Save Changes?
             </h3>
@@ -51,7 +51,7 @@ const ConfirmationDialog = ({ onSaveAsDraft, onDiscardChanges, onCancel, isLoadi
           {/* Message */}
           <p style={{
             margin: '0 0 24px 0',
-            color: '#666',
+            color: 'var(--text-secondary)',
             fontSize: '14px',
             lineHeight: '1.5'
           }}>
@@ -70,17 +70,17 @@ const ConfirmationDialog = ({ onSaveAsDraft, onDiscardChanges, onCancel, isLoadi
               style={{
                 padding: '10px 16px',
                 backgroundColor: 'transparent',
-                border: '1px solid #dee2e6',
+                border: '1px solid var(--border-secondary)',
                 borderRadius: '6px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
-                color: '#6c757d',
+                color: 'var(--text-secondary)',
                 opacity: isLoading ? 0.6 : 1
               }}
             >
               Cancel
             </button>
-            
+
             <button
               onClick={onDiscardChanges}
               disabled={isLoading}
@@ -97,13 +97,13 @@ const ConfirmationDialog = ({ onSaveAsDraft, onDiscardChanges, onCancel, isLoadi
             >
               Discard Changes
             </button>
-            
+
             <button
               onClick={onSaveAsDraft}
               disabled={isLoading}
               style={{
                 padding: '10px 16px',
-                backgroundColor: '#3c3c3c',
+                backgroundColor: 'var(--button-bg-primary)',
                 border: 'none',
                 borderRadius: '6px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',

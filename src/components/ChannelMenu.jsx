@@ -103,7 +103,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
             alignItems: 'center',
             padding: '12px 16px',
             cursor: 'pointer',
-            backgroundColor: showSubmenu ? '#f8f9fa' : 'transparent',
+            backgroundColor: showSubmenu ? 'var(--bg-secondary)' : 'transparent',
             borderRadius: '4px'
           }}
           onClick={(e) => handleChannelClick(platform, e)}
@@ -175,7 +175,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '8px',
-                  border: '2px solid white',
+                  border: '2px solid var(--bg-primary)',
                   boxSizing: 'border-box'
                 }}>
                   {IconComponent && <IconComponent size={8} color="white" />}
@@ -191,7 +191,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '2px solid #e1e5e9'
+                border: '2px solid var(--border-primary)'
               }}>
                 {IconComponent && <IconComponent size={16} color="white" />}
               </div>
@@ -210,9 +210,9 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
           </div>
           
           {hasTypes && (
-            <div style={{ 
-              fontSize: '12px', 
-              color: '#6c757d',
+            <div style={{
+              fontSize: '12px',
+              color: 'var(--text-secondary)',
               transform: showSubmenu ? 'rotate(90deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s'
             }}>
@@ -230,8 +230,8 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
               top: submenuPosition.top,
               left: submenuPosition.left,
               width: '160px',
-              backgroundColor: 'white',
-              border: '1px solid #e1e5e9',
+              backgroundColor: 'var(--bg-primary)',
+              border: '1px solid var(--border-primary)',
               borderRadius: '8px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               zIndex: 10000,
@@ -240,7 +240,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
           >
             <div style={{
               fontSize: '12px',
-              color: '#6c757d',
+              color: 'var(--text-secondary)',
               padding: '8px 12px',
               fontWeight: '500'
             }}>
@@ -257,7 +257,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
                   cursor: 'pointer',
                   borderRadius: '4px'
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--bg-secondary)'}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
                 <input
@@ -285,8 +285,8 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
         left: menuPosition.left,
         width: '280px',
         maxHeight: '400px',
-        backgroundColor: 'white',
-        border: '1px solid #e1e5e9',
+        backgroundColor: 'var(--bg-primary)',
+        border: '1px solid var(--border-primary)',
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         zIndex: 9999,
@@ -297,7 +297,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
       <div style={{ padding: '16px' }}>
         <div style={{
           fontSize: '12px',
-          color: '#6c757d',
+          color: 'var(--text-secondary)',
           fontWeight: '600',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
@@ -314,7 +314,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
       {/* Divider */}
       <div style={{
         height: '1px',
-        backgroundColor: '#e1e5e9',
+        backgroundColor: 'var(--border-primary)',
         margin: '0 16px'
       }} />
 
@@ -322,7 +322,7 @@ const ChannelMenu = ({ selectedChannels, onChannelToggle, onPostTypeSelect, onCl
       <div style={{ padding: '16px' }}>
         <div style={{
           fontSize: '12px',
-          color: '#6c757d',
+          color: 'var(--text-secondary)',
           fontWeight: '600',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',

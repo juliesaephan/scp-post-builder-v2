@@ -158,7 +158,7 @@ const PreviewCarousel = ({
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
-        color: '#6c757d',
+        color: 'var(--text-secondary)',
         fontSize: '14px',
         textAlign: 'center'
       }}>
@@ -178,7 +178,7 @@ const PreviewCarousel = ({
         display: 'flex',
         alignItems: 'center',
         padding: '16px',
-        borderBottom: '1px solid #e1e5e9',
+        borderBottom: '1px solid var(--border-primary)',
         gap: '8px',
         overflowX: 'auto'
       }}>
@@ -193,7 +193,7 @@ const PreviewCarousel = ({
               padding: '4px',
               borderRadius: '4px',
               fontSize: '16px',
-              color: '#6c757d'
+              color: 'var(--text-secondary)'
             }}
           >
             ‹
@@ -256,7 +256,7 @@ const PreviewCarousel = ({
               padding: '4px',
               borderRadius: '4px',
               fontSize: '16px',
-              color: '#6c757d'
+              color: 'var(--text-secondary)'
             }}
           >
             ›

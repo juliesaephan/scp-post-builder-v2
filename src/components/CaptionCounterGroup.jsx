@@ -34,7 +34,7 @@ const CaptionCounterGroup = ({
       flexWrap: 'wrap',
       gap: '12px',
       padding: '12px 0',
-      borderTop: '1px solid #e1e5e9',
+      borderTop: '1px solid var(--border-primary)',
       marginTop: '8px'
     }}>
       {Object.values(captionGroups).map((group, groupIndex) => (
@@ -43,8 +43,8 @@ const CaptionCounterGroup = ({
           alignItems: 'center',
           gap: '8px',
           padding: '6px 12px',
-          backgroundColor: '#f8f9fa',
-          border: '1px solid #e1e5e9',
+          backgroundColor: 'var(--bg-tertiary)',
+          border: '1px solid var(--border-primary)',
           borderRadius: '20px',
           fontSize: '12px'
         }}>
@@ -61,20 +61,20 @@ const CaptionCounterGroup = ({
                     marginLeft: index > 0 ? '-2px' : '0'
                   }}
                 >
-                  {IconComponent && <IconComponent size={14} color="#6c757d" />}
+                  {IconComponent && <IconComponent size={14} color="var(--icon-color)" />}
                 </div>
               )
             })}
           </div>
-          
+
           {/* Character Count */}
           <span style={{
-            color: group.caption.length > 280 ? '#dc3545' : '#6c757d',
+            color: group.caption.length > 280 ? 'var(--text-error)' : 'var(--text-secondary)',
             fontWeight: '500'
           }}>
             {group.caption.length}/280
           </span>
-          
+
         </div>
       ))}
     </div>

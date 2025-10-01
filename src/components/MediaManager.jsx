@@ -297,15 +297,16 @@ const MediaManager = ({ media, onMediaChange, maxMedia = 20 }) => {
       </div>
 
     </div>
+
       {/* Render modal at document level */}
       <MediaTypeModal
-      isOpen={showMediaTypeModal}
-      onClose={() => setShowMediaTypeModal(false)}
-      onSelectType={handleMediaTypeSelect}
-      title="Choose Media Type"
-      description="What type of media would you like to add to your post?"
-    />
-  </>
+        isOpen={showMediaTypeModal}
+        onClose={() => setShowMediaTypeModal(false)}
+        onSelectType={handleMediaTypeSelect}
+        title="Choose Media Type"
+        description="What type of media would you like to add to your post?"
+      />
+    </>
   )
 }
 

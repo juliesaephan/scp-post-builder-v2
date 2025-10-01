@@ -40,19 +40,19 @@ const Toast = ({ message, type = 'success', duration = 4000, onClose }) => {
 
     const typeStyles = {
       success: {
-        backgroundColor: '#d4edda',
-        color: '#155724',
-        border: '1px solid #c3e6cb'
+        backgroundColor: 'var(--bg-tertiary)',
+        color: 'var(--text-primary)',
+        border: '1px solid var(--border-primary)'
       },
       error: {
-        backgroundColor: '#f8d7da',
-        color: '#721c24',
-        border: '1px solid #f5c6cb'
+        backgroundColor: 'var(--bg-tertiary)',
+        color: 'var(--text-error)',
+        border: '1px solid var(--border-primary)'
       },
       info: {
-        backgroundColor: '#d1ecf1',
-        color: '#0c5460',
-        border: '1px solid #bee5eb'
+        backgroundColor: 'var(--bg-tertiary)',
+        color: 'var(--text-primary)',
+        border: '1px solid var(--border-primary)'
       }
     }
 

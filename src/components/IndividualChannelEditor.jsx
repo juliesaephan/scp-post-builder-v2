@@ -124,8 +124,8 @@ const IndividualChannelEditor = ({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '12px 20px',
-        borderBottom: '1px solid #e1e5e9',
-        backgroundColor: '#f8f9fa'
+        borderBottom: '1px solid var(--border-primary)',
+        backgroundColor: 'var(--bg-secondary)'
       }}>
         {/* Title */}
         <div style={{
@@ -133,12 +133,12 @@ const IndividualChannelEditor = ({
           alignItems: 'center',
           gap: '8px'
         }}>
-          <span style={{ fontSize: '14px', color: '#6c757d' }}>Customizing</span>
+          <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Customizing</span>
           <div style={{
             width: '20px',
             height: '20px',
             borderRadius: '4px',
-            backgroundColor: platform?.color || '#ccc',
+            backgroundColor: platform?.color || 'var(--bg-tertiary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -146,7 +146,7 @@ const IndividualChannelEditor = ({
           }}>
             {IconComponent && <IconComponent size={10} color="white" />}
           </div>
-          <span style={{ fontWeight: '500', fontSize: '14px' }}>
+          <span style={{ fontWeight: '500', fontSize: '14px', color: 'var(--text-primary)' }}>
             {platform?.name}
           </span>
         </div>
@@ -160,7 +160,7 @@ const IndividualChannelEditor = ({
             onClick={onCancel}
             style={{
               padding: '8px 16px',
-              backgroundColor: '#6c757d',
+              backgroundColor: 'var(--button-bg)',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -170,12 +170,12 @@ const IndividualChannelEditor = ({
           >
             Cancel
           </button>
-          
+
           <button
             onClick={onUpdate}
             style={{
               padding: '8px 16px',
-              backgroundColor: '#3c3c3c',
+              backgroundColor: 'var(--button-bg-primary)',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -216,24 +216,26 @@ const IndividualChannelEditor = ({
             display: 'flex',
             flexDirection: 'column'
           }}>
-            <textarea 
+            <textarea
               placeholder={`Write your caption for ${platform?.name}...`}
               value={tempChanges.channelCaptions?.[editingChannelId] || tempChanges.caption || ''}
               onChange={handleCaptionChange}
               style={{
                 flex: 1,
                 padding: '12px',
-                border: '1px solid #dee2e6',
+                border: '1px solid var(--border-secondary)',
                 borderRadius: '8px',
                 resize: 'none',
                 fontFamily: 'inherit',
                 fontSize: '14px',
-                minHeight: '120px'
+                minHeight: '120px',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)'
               }}
             />
             <div style={{
               fontSize: '12px',
-              color: '#6c757d',
+              color: 'var(--text-secondary)',
               marginTop: '4px',
               textAlign: 'right'
             }}>
@@ -260,33 +262,37 @@ const IndividualChannelEditor = ({
           alignItems: 'center',
           gap: '12px',
           padding: '16px',
-          border: '1px solid #e1e5e9',
+          border: '1px solid var(--border-primary)',
           borderRadius: '8px',
-          backgroundColor: 'white'
+          backgroundColor: 'var(--bg-primary)'
         }}>
-          <span style={{ fontSize: '14px', fontWeight: '500' }}>Post on</span>
-          
+          <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)' }}>Post on</span>
+
           <input
             type="date"
             value={channelScheduling[editingChannelId]?.date || ''}
             onChange={(e) => handleDateChange('date', e.target.value)}
             style={{
               padding: '8px',
-              border: '1px solid #dee2e6',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '4px',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)'
             }}
           />
-          
+
           <input
             type="time"
             value={channelScheduling[editingChannelId]?.time || '11:30'}
             onChange={(e) => handleDateChange('time', e.target.value)}
             style={{
               padding: '8px',
-              border: '1px solid #dee2e6',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '4px',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)'
             }}
           />
 
@@ -295,10 +301,12 @@ const IndividualChannelEditor = ({
             onChange={(e) => handleDateChange('type', e.target.value)}
             style={{
               padding: '8px',
-              border: '1px solid #dee2e6',
+              border: '1px solid var(--border-secondary)',
               borderRadius: '4px',
               fontSize: '14px',
-              minWidth: '120px'
+              minWidth: '120px',
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)'
             }}
           >
             <option value="auto">Auto-post</option>
